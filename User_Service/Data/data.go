@@ -3,7 +3,7 @@ package data
 type User struct {
 	User_id   uint   `gorm:"primaryKey;autoIncrement" json:"id"`
 	Full_Name string `gorm:"size:100;not null"`
-	Username  string `gorm:"size:100;not null"`
+	Username  string `gorm:"size:100;not null;uniqueIndex"`
 	Password  string `gorm:"size:100;not null"`
 
 	Email        string `gorm:"size:100"`
