@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: furqan
       POSTGRES_DB: User
     ports:
-      - "5430:5430"
+      - "5430:5432"
     volumes:
       - postgres_data:/backup
     networks:

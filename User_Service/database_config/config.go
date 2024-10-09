@@ -39,14 +39,16 @@ func Connection() {
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
-	// Auto-migrate the schema
-	err = DB.AutoMigrate(&data.User{})
-	if err != nil {
-		log.Fatalf("Failed to migrate database: %v", err)
-	}
+
 	err = DB.AutoMigrate(&data.Role{})
 	if err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
+
+	err = DB.AutoMigrate(&data.User{})
+	if err != nil {
+		log.Fatalf("Failed to migrate database: %v", err)
+	}
+
 	log.Println("Database connection established")
 }
