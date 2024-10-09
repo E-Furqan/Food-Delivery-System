@@ -12,6 +12,8 @@ import (
 	"gorm.io/gorm"
 )
 
+var DB *gorm.DB
+
 func Connection() {
 	err := godotenv.Load()
 	if err != nil {
@@ -33,7 +35,7 @@ func Connection() {
 	var connectionstring = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, db_name)
 
-	DB, err := gorm.Open(postgres.Open(connectionstring), &gorm.Config{})
+	DB, err = gorm.Open(postgres.Open(connectionstring), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
