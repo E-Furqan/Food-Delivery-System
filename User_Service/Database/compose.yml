@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:14
+    container_name: web_app_container
+    environment:
+      POSTGRES_USER: furqan
+      POSTGRES_PASSWORD: furqan
+      POSTGRES_DB: User
+    ports:
+      - "5430:5430"
+    volumes:
+      - postgres_data:/backup
+    networks:
+      - backend
+
+volumes:
+  postgres_data:
+
+networks:
+  backend:
