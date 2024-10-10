@@ -1,4 +1,4 @@
-package data
+package entity
 
 type User struct {
 	User_id   uint   `gorm:"primaryKey;autoIncrement" json:"id"`
@@ -6,8 +6,8 @@ type User struct {
 	Username  string `gorm:"size:100;not null;uniqueIndex"`
 	Password  string `gorm:"size:100;not null"`
 
-	Email        string `gorm:"size:100"`
-	Phone_number uint   `gorm:"size:100"`
+	Email        string `gorm:"size:100;uniqueIndex"`
+	Phone_number uint   `gorm:"size:100;uniqueIndex"`
 	Address      string `gorm:"size:100"`
 
 	Role_id string `gorm:"size:100;not null"`

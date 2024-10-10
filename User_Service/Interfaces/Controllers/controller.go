@@ -2,46 +2,59 @@ package controllers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
-	"os"
 	"time"
 
-	data "github.com/E-Furqan/Food-Delivery-System/Data"
-	config "github.com/E-Furqan/Food-Delivery-System/database_config"
+	entity "github.com/E-Furqan/Food-Delivery-System/Entity"
+	database "github.com/E-Furqan/Food-Delivery-System/Interfaces/Repositories"
+	environmentvariable "github.com/E-Furqan/Food-Delivery-System/enviorment_variable"
 	"github.com/E-Furqan/Food-Delivery-System/utils"
 	"github.com/gin-gonic/gin"
 )
 
-func Register(c *gin.Context) {
+// Controller struct that holds a reference to the repository
+type Controller struct {
+	Repo *database.Repository
+}
 
-	var reg_data data.User
+// NewController initializes the controller with the repository dependency
+func NewController(repo *database.Repository) *Controller {
+	return &Controller{Repo: repo}
+}
+
+func (ctrl *Controller) Register(c *gin.Context) {
+
+	var reg_data entity.User
 
 	if err := c.ShouldBindJSON(&reg_data); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := config.DB.Where("username = ?", reg_data.Username).First(&reg_data).Error; err == nil {
+	err := ctrl.Repo.WhereUsername(reg_data.Username, &reg_data)
+	if err == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Username already exist"})
 		return
 	}
 	// Check if the role exists
-	var role data.Role
-	if err := config.DB.Where("role_id = ?", reg_data.Role_id).First(&role).Error; err != nil {
+	var role entity.Role
+	err1 := ctrl.Repo.WhereRoleID(reg_data.Role_id, &role)
+	if err1 != nil {
 
 		if reg_data.Role_id == "1" {
 
 			role.Role_id = reg_data.Role_id
 			role.Role_type = "Customer"
 
-			config.DB.Create(&role)
+			ctrl.Repo.CreateRole(&role)
 
 		} else if reg_data.Role_id == "2" {
 
 			role.Role_id = reg_data.Role_id
 			role.Role_type = "Delivery driver"
 
-			config.DB.Create(&role)
+			ctrl.Repo.CreateRole(&role)
 
 		} else {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role ID"})
@@ -50,20 +63,25 @@ func Register(c *gin.Context) {
 
 	}
 
-	if err := config.DB.Create(&reg_data); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+	err = ctrl.Repo.CreateUser(&reg_data)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		return
 	}
 
-	var userWithRole data.User
-	if err := config.DB.Preload("Role").First(&userWithRole, reg_data.User_id).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to load user with role"})
+	log.Printf("User created successfully: %+v", reg_data)
+
+	userWithRole, err := ctrl.Repo.LoadUserWithRole(reg_data.User_id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": reg_data.User_id})
 		return
 	}
 
 	c.JSON(http.StatusCreated, userWithRole)
 }
 
-func Login(c *gin.Context) {
+func (ctrl *Controller) Login(c *gin.Context) {
+
 	var input struct {
 		Username string `json:"username" binding:"required"`
 		Password string `json:"password" binding:"required"`
@@ -74,8 +92,9 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	var user data.User
-	if err := config.DB.Where("username = ?", input.Username).First(&user).Error; err != nil {
+	var user entity.User
+	err := ctrl.Repo.WhereUsername(input.Username, &user)
+	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
@@ -98,31 +117,32 @@ func Login(c *gin.Context) {
 
 }
 
-func Get_user(c *gin.Context) {
+func (ctrl *Controller) Get_user(c *gin.Context) {
 
-	var user_data []data.User
-
-	if err := config.DB.Preload("Role").Order("User_id asc").Find(&user_data).Error; err != nil {
+	var user_data []entity.User
+	user_data, err := ctrl.Repo.Preload_in_order()
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, user_data)
 
 }
-func Get_role(c *gin.Context) {
-	var user_data []data.Role
-	if err := config.DB.Order("Role_id asc").Find(&user_data).Error; err != nil {
+func (ctrl *Controller) Get_role(c *gin.Context) {
+	var user_data []entity.Role
+	user_data, err := ctrl.Repo.Role_in_Asc_order()
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, user_data)
 }
 
-func Update_Role(c *gin.Context) {
-	var user data.User
+func (ctrl *Controller) Update_Role(c *gin.Context) {
+	var user entity.User
 
 	// Retrieve the username from the context
-	username, exists := c.Get("username")
+	usernameValue, exists := c.Get("username")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
@@ -140,24 +160,32 @@ func Update_Role(c *gin.Context) {
 	}
 
 	// Check if the Role_id exists in the database
-	var role data.Role
-	result := config.DB.Where("Role_id = ?", input.Role_id).First(&role)
+	var role entity.Role
+	result := ctrl.Repo.WhereRoleID(input.Role_id, &role)
 
-	if result.Error != nil {
+	if result != nil {
 		// Role_id not found in the database
-		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid Role ID: %v", result.Error)})
+		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid Role ID: %v", result)})
+		return
+	}
+
+	// Ensure that the username is a string
+	username, ok := usernameValue.(string) // Type assertion for usernameValue
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid username type"})
 		return
 	}
 
 	// Fetch the user by username
-	if err := config.DB.Where("username = ?", username).First(&user).Error; err != nil {
+	err := ctrl.Repo.WhereUsername(username, &user)
+	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
 
 	// Update the user's role_id
 	user.Role_id = input.Role_id
-	if err := config.DB.Save(&user).Error; err != nil {
+	if err := ctrl.Repo.Save(&user); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update role"})
 		return
 	}
@@ -166,8 +194,8 @@ func Update_Role(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Role updated successfully", "role_id": user.Role_id})
 }
 
-func Update_user(c *gin.Context) {
-	var user data.User
+func (ctrl *Controller) Update_user(c *gin.Context) {
+	var user entity.User
 
 	// Retrieve the username from the context
 	username, exists := c.Get("username")
@@ -182,25 +210,29 @@ func Update_user(c *gin.Context) {
 		return
 	}
 
-	if err := config.DB.Where("username = ?", usernameStr).First(&user).Error; err != nil {
+	// Fetch the user by username
+	err := ctrl.Repo.WhereUsername(usernameStr, &user)
+	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("User not found %v %s", err, usernameStr)})
 		return
 	}
 
-	var update_user data.User
+	var update_user entity.User
 	err1 := c.ShouldBindJSON(&update_user)
 	if err1 != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err1.Error()})
 		return
 	}
 
-	if err := config.DB.Model(&user).Updates(update_user).Error; err != nil {
+	err = ctrl.Repo.Update(&user, &update_user)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update student"})
 		return
 	}
 
-	var userWithRole data.User
-	if err := config.DB.Preload("Role").First(&userWithRole, user.User_id).Error; err != nil {
+	var userWithRole entity.User
+	err = ctrl.Repo.Preload_Role_first(&userWithRole, int(user.User_id))
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to load user with role"})
 		return
 	}
@@ -208,22 +240,31 @@ func Update_user(c *gin.Context) {
 	c.JSON(http.StatusCreated, userWithRole)
 }
 
-func Delete_user(c *gin.Context) {
+func (ctrl *Controller) Delete_user(c *gin.Context) {
 	// Retrieve the username from the context
-	username, exists := c.Get("username")
+	usernameValue, exists := c.Get("username")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
+	username, ok := usernameValue.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid username type"})
+		return
+	}
 
-	var user data.User
+	var user entity.User
+	var err error
+	err = ctrl.Repo.WhereUsername(username, &user)
+
 	// Fetch the user by username
-	if err := config.DB.Where("username = ?", username).First(&user).Error; err != nil {
+	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
+
 	// Delete the user
-	if err := config.DB.Delete(&user).Error; err != nil {
+	if err := ctrl.Repo.Delete_user(&user); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user"})
 		return
 	}
@@ -233,10 +274,10 @@ func Delete_user(c *gin.Context) {
 
 }
 
-func Delete_role(c *gin.Context) {
-
-	Admin := os.Getenv("Admin")
-	Admin_password := os.Getenv("Admin_pass")
+func (ctrl *Controller) Delete_role(c *gin.Context) {
+	envVar := environmentvariable.ReadEnv()
+	Admin := envVar.ADMIN
+	Admin_password := envVar.ADMIN_PASS
 	// Define the input structure for binding
 	var input struct {
 		Username string `json:"username_admin" binding:"required"`
@@ -249,15 +290,16 @@ func Delete_role(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	var role data.Role
+	var role entity.Role
 	if input.Username == Admin && input.Password == Admin_password {
 		// Fetch the role by role id
-		if err := config.DB.Where("Role_id = ?", input.Role_id).First(&role).Error; err != nil {
+		err := ctrl.Repo.WhereRoleID(input.Role_id, &role)
+		if err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Role not found"})
 			return
 		}
 		// Delete the role
-		if err := config.DB.Delete(&role).Error; err != nil {
+		if err := ctrl.Repo.Delete_role(&role); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete the role"})
 			return
 		}

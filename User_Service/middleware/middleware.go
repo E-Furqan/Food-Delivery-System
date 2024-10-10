@@ -1,16 +1,18 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
-	"os"
 	"strings"
 
+	environmentvariable "github.com/E-Furqan/Food-Delivery-System/enviorment_variable"
 	"github.com/E-Furqan/Food-Delivery-System/utils"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
 
-var jwtKey = []byte(os.Getenv("JWT_SECRET"))
+var env = environmentvariable.ReadEnv()
+var jwtKey = []byte(env.JWT_SECRET)
 
 // AuthMiddleware is used to protect routes
 func AuthMiddleware() gin.HandlerFunc {
@@ -30,7 +32,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		})
 
 		if err != nil || !token.Valid {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": fmt.Sprintf("Invalid token %v %s", err, jwtKey)})
 			c.Abort()
 			return
 		}

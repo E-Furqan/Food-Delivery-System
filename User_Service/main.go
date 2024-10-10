@@ -1,28 +1,34 @@
 package main
 
 import (
-	controllers "github.com/E-Furqan/Food-Delivery-System/Controllers"
+	controllers "github.com/E-Furqan/Food-Delivery-System/Interfaces/Controllers"
+	database "github.com/E-Furqan/Food-Delivery-System/Interfaces/Repositories"
 	config "github.com/E-Furqan/Food-Delivery-System/database_config"
 	"github.com/E-Furqan/Food-Delivery-System/middleware"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	config.Connection()
+	db := config.Connection()
+
+	repo := database.NewRepository(db)
+	// Initialize the controller with the repository
+	ctrl := controllers.NewController(repo)
+
 	server := gin.Default()
 
-	server.POST("/Register", controllers.Register)
-	server.GET("/Getuser", controllers.Get_user)
-	server.GET("/Getrole", controllers.Get_role)
-	server.POST("/Login", controllers.Login)
+	server.POST("/app/Register", ctrl.Register)
+	server.GET("/app/Getuser", ctrl.Get_user)
+	server.GET("/app/Getrole", ctrl.Get_role)
+	server.POST("/app/Login", ctrl.Login)
 
-	protected := server.Group("/protected")
+	protected := server.Group("/app")
 	protected.Use(middleware.AuthMiddleware())
 	{
-		protected.PATCH("/Update_role", controllers.Update_Role)
-		protected.PATCH("/Update_user", controllers.Update_user)
-		protected.DELETE("/Delete_user", controllers.Delete_user)
-		protected.DELETE("/Delete_role", controllers.Delete_role)
+		protected.PATCH("/role/update", ctrl.Update_Role)
+		protected.PATCH("/user/update", ctrl.Update_user)
+		protected.DELETE("/user/delete", ctrl.Delete_user)
+		protected.DELETE("/role/delete", ctrl.Delete_role)
 	}
 	server.Run(":8081")
 }

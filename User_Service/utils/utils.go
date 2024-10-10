@@ -1,13 +1,15 @@
 package utils
 
 import (
-	"os"
+	"log"
 	"time"
 
+	environmentvariable "github.com/E-Furqan/Food-Delivery-System/enviorment_variable"
 	"github.com/dgrijalva/jwt-go"
 )
 
-var jwtKey = []byte(os.Getenv("JWT_SECRET"))
+var env = environmentvariable.ReadEnv()
+var jwtKey = []byte(env.JWT_SECRET)
 
 type Claims struct {
 	Username string `json:"username"`
@@ -26,6 +28,7 @@ func GenerateJWT(username string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(jwtKey)
 	if err != nil {
+		log.Printf("Error generating token: %v", err) // Log error
 		return "", err
 	}
 
