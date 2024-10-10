@@ -14,12 +14,15 @@ func main() {
 	server.POST("/Register", controllers.Register)
 	server.GET("/Getuser", controllers.Getuser)
 	server.GET("/Getrole", controllers.Getrole)
-	server.POST("/login", controllers.Login)
+	server.POST("/Login", controllers.Login)
 
-	protected := server.Group("/api")
+	protected := server.Group("/protected")
 	protected.Use(middleware.AuthMiddleware())
 	{
-		protected.PATCH("/updaterole", controllers.Change_Role)
+		protected.PATCH("/Update_role", controllers.Update_Role)
+		protected.PATCH("/Update_user", controllers.Update_user)
+		protected.DELETE("/Delete_user", controllers.Delete_user)
+		protected.DELETE("/Delete_role", controllers.Delete_role)
 	}
 	server.Run(":8081")
 }
