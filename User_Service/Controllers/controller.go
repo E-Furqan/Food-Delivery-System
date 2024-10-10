@@ -20,17 +20,29 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	if err := config.DB.Where("username = ?", reg_data.Username).First(&reg_data).Error; err == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Username already exist"})
+		return
+	}
 	// Check if the role exists
 	var role data.Role
 	if err := config.DB.Where("role_id = ?", reg_data.Role_id).First(&role).Error; err != nil {
+
 		if reg_data.Role_id == "1" {
+
 			role.Role_id = reg_data.Role_id
 			role.Role_type = "Customer"
+
 			config.DB.Create(&role)
+
 		} else if reg_data.Role_id == "2" {
+
 			role.Role_id = reg_data.Role_id
 			role.Role_type = "Delivery driver"
+
 			config.DB.Create(&role)
+
 		} else {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role ID"})
 			return
@@ -86,7 +98,7 @@ func Login(c *gin.Context) {
 
 }
 
-func Getuser(c *gin.Context) {
+func Get_user(c *gin.Context) {
 
 	var user_data []data.User
 
@@ -97,7 +109,7 @@ func Getuser(c *gin.Context) {
 	c.JSON(http.StatusOK, user_data)
 
 }
-func Getrole(c *gin.Context) {
+func Get_role(c *gin.Context) {
 	var user_data []data.Role
 	if err := config.DB.Order("Role_id asc").Find(&user_data).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -228,7 +240,7 @@ func Delete_role(c *gin.Context) {
 	// Define the input structure for binding
 	var input struct {
 		Username string `json:"username_admin" binding:"required"`
-		Password string `json:"password" binding:"required"`
+		Password string `json:"password_admin" binding:"required"`
 		Role_id  string `json:"role_id" binding:"required"`
 	}
 

@@ -12,8 +12,8 @@ func main() {
 	server := gin.Default()
 
 	server.POST("/Register", controllers.Register)
-	server.GET("/Getuser", controllers.Getuser)
-	server.GET("/Getrole", controllers.Getrole)
+	server.GET("/Getuser", controllers.Get_user)
+	server.GET("/Getrole", controllers.Get_role)
 	server.POST("/Login", controllers.Login)
 
 	protected := server.Group("/protected")
