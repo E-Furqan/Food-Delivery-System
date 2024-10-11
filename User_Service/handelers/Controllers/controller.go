@@ -2,15 +2,16 @@ package controllers
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
 	environmentvariable "github.com/E-Furqan/Food-Delivery-System/enviorment_variable"
 	database "github.com/E-Furqan/Food-Delivery-System/handelers/Repositories"
 	model "github.com/E-Furqan/Food-Delivery-System/models"
+	"github.com/E-Furqan/Food-Delivery-System/payload"
 	"github.com/E-Furqan/Food-Delivery-System/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/lib/pq"
 )
 
 // Controller struct that holds a reference to the repository
@@ -32,33 +33,16 @@ func (ctrl *Controller) Register(c *gin.Context) {
 		return
 	}
 
-	exists, err := ctrl.Repo.CheckUserExistence(reg_data.Username, reg_data.Email, int(reg_data.Phone_number))
+	err := ctrl.Repo.CreateUser(&reg_data)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error checking user existence"})
-		return
-	}
-	if exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Username, phone number, or email already exists"})
-		return
-	}
-
-	var role model.Role
-	role_made := ctrl.Check_If_Role_Exist(reg_data.Role_id, c, &role)
-	if !role_made {
-		return
-	}
-
-	err = ctrl.Repo.CreateUser(&reg_data)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
-		return
-	}
-
-	log.Printf("User created successfully: %+v", reg_data)
-
-	reg_data, err = ctrl.Repo.LoadUserWithRole(reg_data.User_id)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": reg_data.User_id})
+		pqErr, ok := err.(*pq.Error)
+		if ok {
+			// Return only the Message field from the error
+			c.JSON(http.StatusInternalServerError, gin.H{"error": pqErr.Message})
+		} else {
+			// Return a generic error message if it's not a pq.Error
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
 		return
 	}
 
@@ -66,7 +50,6 @@ func (ctrl *Controller) Register(c *gin.Context) {
 }
 
 func (ctrl *Controller) Check_If_Role_Exist(Role_id string, c *gin.Context, role *model.Role) bool {
-	// Check if the role exists
 
 	err := ctrl.Repo.Find_Role_By_Role_Id(Role_id, role)
 	if err != nil {
@@ -96,11 +79,7 @@ func (ctrl *Controller) Check_If_Role_Exist(Role_id string, c *gin.Context, role
 
 func (ctrl *Controller) Login(c *gin.Context) {
 
-	var input struct {
-		Username string `json:"username" binding:"required"`
-		Password string `json:"password" binding:"required"`
-	}
-
+	var input payload.Input
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -143,6 +122,8 @@ func (ctrl *Controller) Get_user(c *gin.Context) {
 	c.JSON(http.StatusOK, user_data)
 
 }
+
+// siftcres acs
 func (ctrl *Controller) Get_role(c *gin.Context) {
 	var user_data []model.Role
 	user_data, err := ctrl.Repo.Role_in_Asc_order()
@@ -153,6 +134,7 @@ func (ctrl *Controller) Get_role(c *gin.Context) {
 	c.JSON(http.StatusOK, user_data)
 }
 
+// del
 func (ctrl *Controller) Update_Role(c *gin.Context) {
 
 	// Retrieve the username from the context
@@ -161,11 +143,6 @@ func (ctrl *Controller) Update_Role(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
-
-	// // Define the input structure for binding
-	// var input struct {
-	// 	Role_id string `json:"role_id" binding:"required"`
-	// }
 
 	var update_data model.User
 	var user model.User
@@ -242,13 +219,6 @@ func (ctrl *Controller) Update_user(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update student"})
 		return
 	}
-
-	err = ctrl.Repo.Preload_Role_first(&user, int(user.User_id))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to load user with role"})
-		return
-	}
-
 	c.JSON(http.StatusCreated, user)
 }
 
@@ -285,6 +255,7 @@ func (ctrl *Controller) Delete_user(c *gin.Context) {
 
 }
 
+// role con
 func (ctrl *Controller) Delete_role(c *gin.Context) {
 
 	Admin := environmentvariable.Get_env("ADMIN")
@@ -321,26 +292,4 @@ func (ctrl *Controller) Delete_role(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid username or password"})
 	}
 
-}
-
-func (ctrl *Controller) RefreshToken(c *gin.Context) {
-	var input struct {
-		RefreshToken string `json:"refresh_token" binding:"required"`
-	}
-
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	accessToken, err := utils.RefreshToken(input.RefreshToken, c)
-
-	if err != nil {
-		log.Fatal("Error while refreshing token; ", err)
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"access_token": accessToken,
-		"expires_at":   time.Now().Add(15 * time.Minute).Unix(), // Adjust based on your access token expiration
-	})
 }

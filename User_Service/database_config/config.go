@@ -21,10 +21,10 @@ func Connection() *gorm.DB {
 	}
 
 	portStr := environmentvariable.Get_env("PORT")
-	port, erro := strconv.Atoi(portStr)
+	port, err := strconv.Atoi(portStr)
 
-	if erro != nil {
-		log.Fatalf("Failed to convert port to integer : %v", erro)
+	if err != nil {
+		log.Fatalf("Failed to convert port to integer : %v", err)
 	}
 
 	var (
@@ -33,10 +33,10 @@ func Connection() *gorm.DB {
 		host     = environmentvariable.Get_env("HOST")
 		db_name  = environmentvariable.Get_env("DB_NAME")
 	)
-	var connectionstring = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+	var connection_string = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, db_name)
 
-	DB, err = gorm.Open(postgres.Open(connectionstring), &gorm.Config{})
+	DB, err = gorm.Open(postgres.Open(connection_string), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}

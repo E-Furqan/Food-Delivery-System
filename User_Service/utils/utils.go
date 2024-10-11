@@ -18,6 +18,7 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
+// auth
 func GenerateTokens(username string) (string, string, error) {
 	// Access Token expiration time
 	accessExpirationTime := time.Now().Add(15 * time.Minute) // 15 minutes

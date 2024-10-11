@@ -7,16 +7,16 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type Environment struct {
-	HOST       string
-	USER       string
-	PASSWORD   string
-	DB_NAME    string
-	PORT       int
-	JWT_SECRET string
-	ADMIN      string
-	ADMIN_PASS string
-}
+// type Environment struct {
+// 	HOST       string
+// 	USER       string
+// 	PASSWORD   string
+// 	DB_NAME    string
+// 	PORT       int
+// 	JWT_SECRET string
+// 	ADMIN      string
+// 	ADMIN_PASS string
+// }
 
 // // ReadEnv reads environment variables from a .env file and returns an Environment struct
 // func ReadEnv() Environment {

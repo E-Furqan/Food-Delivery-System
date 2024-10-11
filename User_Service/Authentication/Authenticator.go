@@ -1,9 +1,11 @@
-package middleware
+package authenticator
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	environmentvariable "github.com/E-Furqan/Food-Delivery-System/enviorment_variable"
 	"github.com/E-Furqan/Food-Delivery-System/utils"
@@ -39,4 +41,27 @@ func AuthMiddleware() gin.HandlerFunc {
 		c.Set("username", claims.Username)
 		c.Next()
 	}
+}
+
+// middle ware
+func RefreshToken(c *gin.Context) {
+	var input struct {
+		RefreshToken string `json:"refresh_token" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	accessToken, err := utils.RefreshToken(input.RefreshToken, c)
+
+	if err != nil {
+		log.Fatal("Error while refreshing token; ", err)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"access_token": accessToken,
+		"expires_at":   time.Now().Add(15 * time.Minute).Unix(), // Adjust based on your access token expiration
+	})
 }

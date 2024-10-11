@@ -32,13 +32,13 @@ func (repo *Repository) CreateRole(role *model.Role) error {
 // CreateUser inserts a new user into the database
 func (repo *Repository) CreateUser(user *model.User) error {
 	result := repo.DB.Create(user)
+	repo.LoadUserWithRole(user.User_id)
 	return result.Error
 }
 
 // LoadUserWithRole loads a user with its associated role from the database
 func (repo *Repository) LoadUserWithRole(userID uint) (model.User, error) {
 	var userWithRole model.User
-
 	// Load the user with the associated role
 	err := repo.DB.Preload("Role").First(&userWithRole, userID).Error
 	if err != nil {
@@ -80,11 +80,7 @@ func (repo *Repository) Role_in_Asc_order() ([]model.Role, error) {
 
 func (repo *Repository) Update(user *model.User, update_user *model.User) error {
 	err := repo.DB.Model(user).Updates(update_user).Error
-	return err
-}
-
-func (repo *Repository) Preload_Role_first(userWithRole *model.User, User_id int) error {
-	err := repo.DB.Preload("Role").First(userWithRole, User_id).Error
+	repo.LoadUserWithRole(user.User_id)
 	return err
 }
 
