@@ -53,5 +53,11 @@ func Get_env(key string) string {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
 
-	return os.Getenv(key)
+	value := os.Getenv(key)
+	if value == "" {
+		log.Fatalf("environment variable %s is not set", key)
+		return "" // Return an error if the variable is not found
+	}
+
+	return value
 }

@@ -8,12 +8,12 @@ import (
 
 func User_routes(ctrl *controllers.Controller, server *gin.Engine) {
 
-	server.POST("/app/Register", ctrl.Register)
-	server.GET("/app/Get_user", ctrl.Get_user)
-	server.GET("/app/Get_role", ctrl.Get_role)
-	server.POST("/app/Login", ctrl.Login)
+	server.POST("/user/Register", ctrl.Register)
+	server.GET("/user/Get_user", ctrl.Get_user)
+	server.GET("/user/Get_role", ctrl.Get_role)
+	server.POST("/user/Login", ctrl.Login)
 
-	protected := server.Group("/app")
+	protected := server.Group("/user")
 	protected.Use(middleware.AuthMiddleware())
 	{
 		protected.PATCH("/update/user/role", ctrl.Update_Role)
