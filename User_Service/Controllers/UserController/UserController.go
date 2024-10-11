@@ -57,7 +57,7 @@ func (ctrl *Controller) Login(c *gin.Context) {
 	}
 
 	var user model.User
-	err := ctrl.Repo.Find_User_By_Username(input.Username, &user)
+	err := ctrl.Repo.FindUser(input.Username, &user)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
@@ -85,7 +85,7 @@ func (ctrl *Controller) Login(c *gin.Context) {
 func (ctrl *Controller) GetUser(c *gin.Context) {
 
 	var user_data []model.User
-	user_data, err := ctrl.Repo.Preload_in_order()
+	user_data, err := ctrl.Repo.PreloadInOrder()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -111,7 +111,7 @@ func (ctrl *Controller) UpdateUser(c *gin.Context) {
 	}
 
 	// Fetch the user by username
-	err := ctrl.Repo.Find_User_By_Username(usernameStr, &user)
+	err := ctrl.Repo.FindUser(usernameStr, &user)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("User not found %v %s", err, usernameStr)})
 		return
@@ -147,7 +147,7 @@ func (ctrl *Controller) DeleteUser(c *gin.Context) {
 	}
 
 	user := model.User{}
-	err := ctrl.Repo.Find_User_By_Username(username, &user)
+	err := ctrl.Repo.FindUser(username, &user)
 
 	// Fetch the user by username
 	if err != nil {
@@ -156,7 +156,7 @@ func (ctrl *Controller) DeleteUser(c *gin.Context) {
 	}
 
 	// Delete the user
-	if err := ctrl.Repo.Delete_user(&user); err != nil {
+	if err := ctrl.Repo.DeleteUser(&user); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user"})
 		return
 	}
