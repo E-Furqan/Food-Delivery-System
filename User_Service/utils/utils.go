@@ -5,13 +5,13 @@ import (
 	"net/http"
 	"time"
 
-	environmentvariable "github.com/E-Furqan/Food-Delivery-System/enviorment_variable"
+	environmentVariable "github.com/E-Furqan/Food-Delivery-System/enviorment_variable"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
 
-var jwtKey = []byte(environmentvariable.Get_env("JWT_SECRET"))
-var refreshTokenKey = []byte(environmentvariable.Get_env("REFRESH_TOKEN_SECRET"))
+var jwtKey = []byte(environmentVariable.Get_env("JWT_SECRET"))
+var refreshTokenKey = []byte(environmentVariable.Get_env("REFRESH_TOKEN_SECRET"))
 
 type Claims struct {
 	Username string `json:"username"`

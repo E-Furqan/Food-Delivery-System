@@ -7,13 +7,13 @@ import (
 	"strings"
 	"time"
 
-	environmentvariable "github.com/E-Furqan/Food-Delivery-System/enviorment_variable"
+	environmentVariable "github.com/E-Furqan/Food-Delivery-System/enviorment_variable"
 	"github.com/E-Furqan/Food-Delivery-System/utils"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
 
-var jwtKey = []byte(environmentvariable.Get_env("JWT_SECRET"))
+var jwtKey = []byte(environmentVariable.Get_env("JWT_SECRET"))
 
 // AuthMiddleware is used to protect routes
 func AuthMiddleware() gin.HandlerFunc {

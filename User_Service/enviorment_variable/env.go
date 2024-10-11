@@ -1,4 +1,4 @@
-package environmentvariable
+package environmentVariable
 
 import (
 	"log"

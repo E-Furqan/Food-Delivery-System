@@ -5,7 +5,7 @@ import (
 	"log"
 	"strconv"
 
-	environmentvariable "github.com/E-Furqan/Food-Delivery-System/enviorment_variable"
+	environmentVariable "github.com/E-Furqan/Food-Delivery-System/enviorment_variable"
 	model "github.com/E-Furqan/Food-Delivery-System/models"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
@@ -20,7 +20,7 @@ func Connection() *gorm.DB {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
 
-	portStr := environmentvariable.Get_env("PORT")
+	portStr := environmentVariable.Get_env("PORT")
 	port, err := strconv.Atoi(portStr)
 
 	if err != nil {
@@ -28,10 +28,10 @@ func Connection() *gorm.DB {
 	}
 
 	var (
-		user     = environmentvariable.Get_env("USER1")
-		password = environmentvariable.Get_env("PASSWORD")
-		host     = environmentvariable.Get_env("HOST")
-		db_name  = environmentvariable.Get_env("DB_NAME")
+		user     = environmentVariable.Get_env("USER1")
+		password = environmentVariable.Get_env("PASSWORD")
+		host     = environmentVariable.Get_env("HOST")
+		db_name  = environmentVariable.Get_env("DB_NAME")
 	)
 	var connection_string = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, db_name)

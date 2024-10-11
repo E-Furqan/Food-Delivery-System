@@ -2,25 +2,26 @@ package route
 
 import (
 	authenticator "github.com/E-Furqan/Food-Delivery-System/Authentication"
-	controllers "github.com/E-Furqan/Food-Delivery-System/handelers/Controllers"
+	UserControllers "github.com/E-Furqan/Food-Delivery-System/Controllers/UserController"
+	RoleController "github.com/E-Furqan/Food-Delivery-System/Controllers/UserController/RoleControler"
+
 	"github.com/gin-gonic/gin"
 )
 
-func User_routes(ctrl *controllers.Controller, server *gin.Engine) {
+func User_routes(ctrl *UserControllers.Controller, role *RoleController.RoleController, server *gin.Engine) {
 
 	server.POST("/user/register", ctrl.Register)
-	server.GET("/user/get_users", ctrl.Get_user)
-	server.GET("/user/get_role", ctrl.Get_role)
+	server.GET("/user/get_users", ctrl.GetUser)
+	server.GET("/user/get_role", role.GetRole)
 	server.POST("/user/login", ctrl.Login)
 	server.POST("/user/refresh_token", authenticator.RefreshToken)
 
 	protected := server.Group("/user")
 	protected.Use(authenticator.AuthMiddleware())
 	{
-		protected.PATCH("/update/role", ctrl.Update_Role)
-		protected.PATCH("/update/user", ctrl.Update_user)
-		protected.DELETE("/delete/user", ctrl.Delete_user)
-		protected.DELETE("/delete/role", ctrl.Delete_role)
+		protected.PATCH("/update/user", ctrl.UpdateUser)
+		protected.DELETE("/delete/user", ctrl.DeleteUser)
+		protected.DELETE("/delete/role", role.DeleteRole)
 	}
 }
 
