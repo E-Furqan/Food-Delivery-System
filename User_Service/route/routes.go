@@ -3,12 +3,12 @@ package route
 import (
 	authenticator "github.com/E-Furqan/Food-Delivery-System/Authentication"
 	UserControllers "github.com/E-Furqan/Food-Delivery-System/Controllers/UserController"
-	RoleController "github.com/E-Furqan/Food-Delivery-System/Controllers/UserController/RoleControler"
+	roleController "github.com/E-Furqan/Food-Delivery-System/Controllers/UserController/RoleControler"
 
 	"github.com/gin-gonic/gin"
 )
 
-func User_routes(ctrl *UserControllers.Controller, role *RoleController.RoleController, server *gin.Engine) {
+func User_routes(ctrl *UserControllers.Controller, role *roleController.RoleController, server *gin.Engine) {
 
 	server.POST("/user/register", ctrl.Register)
 	server.GET("/user/get_users", ctrl.GetUser)

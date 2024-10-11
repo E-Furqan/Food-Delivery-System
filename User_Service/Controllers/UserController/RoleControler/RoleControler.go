@@ -1,4 +1,4 @@
-package RoleController
+package roleController
 
 import (
 	"net/http"
@@ -10,12 +10,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Controller struct that holds a reference to the repository
 type RoleController struct {
 	Repo *database.Repository
 }
 
-// NewController initializes the controller with the repository dependency
 func NewController(repo *database.Repository) *RoleController {
 	return &RoleController{Repo: repo}
 }
