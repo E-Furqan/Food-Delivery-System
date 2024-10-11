@@ -42,30 +42,10 @@ func (ctrl *Controller) Register(c *gin.Context) {
 		return
 	}
 
-	// Check if the role exists
 	var role model.Role
-	err = ctrl.Repo.Find_Role_By_Role_Id(reg_data.Role_id, &role)
-	if err != nil {
-
-		if reg_data.Role_id == "1" {
-
-			role.Role_id = reg_data.Role_id
-			role.Role_type = "Customer"
-
-			ctrl.Repo.CreateRole(&role)
-
-		} else if reg_data.Role_id == "2" {
-
-			role.Role_id = reg_data.Role_id
-			role.Role_type = "Delivery driver"
-
-			ctrl.Repo.CreateRole(&role)
-
-		} else {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role ID"})
-			return
-		}
-
+	role_made := ctrl.Check_If_Role_Exist(reg_data.Role_id, c, &role)
+	if !role_made {
+		return
 	}
 
 	err = ctrl.Repo.CreateUser(&reg_data)
@@ -83,6 +63,35 @@ func (ctrl *Controller) Register(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, reg_data)
+}
+
+func (ctrl *Controller) Check_If_Role_Exist(Role_id string, c *gin.Context, role *model.Role) bool {
+	// Check if the role exists
+
+	err := ctrl.Repo.Find_Role_By_Role_Id(Role_id, role)
+	if err != nil {
+
+		if Role_id == "1" {
+
+			role.Role_id = Role_id
+			role.Role_type = "Customer"
+
+			ctrl.Repo.CreateRole(role)
+
+		} else if Role_id == "2" {
+
+			role.Role_id = Role_id
+			role.Role_type = "Delivery driver"
+
+			ctrl.Repo.CreateRole(role)
+
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role ID"})
+			return false
+		}
+
+	}
+	return true
 }
 
 func (ctrl *Controller) Login(c *gin.Context) {
@@ -144,7 +153,6 @@ func (ctrl *Controller) Get_role(c *gin.Context) {
 }
 
 func (ctrl *Controller) Update_Role(c *gin.Context) {
-	var user model.User
 
 	// Retrieve the username from the context
 	usernameValue, exists := c.Get("username")
@@ -153,23 +161,23 @@ func (ctrl *Controller) Update_Role(c *gin.Context) {
 		return
 	}
 
-	// Define the input structure for binding
-	var input struct {
-		Role_id string `json:"role_id" binding:"required"`
-	}
+	// // Define the input structure for binding
+	// var input struct {
+	// 	Role_id string `json:"role_id" binding:"required"`
+	// }
 
+	var update_data model.User
+	var user model.User
 	// Bind incoming JSON to input struct
-	if err := c.ShouldBindJSON(&input); err != nil {
+	if err := c.ShouldBindJSON(&update_data); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	// Check if the Role_id exists in the database
 	var role model.Role
-	result := ctrl.Repo.Find_Role_By_Role_Id(input.Role_id, &role)
-	if result != nil {
-		// Role_id not found in the database
-		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid Role ID: %v", result)})
+	role_made := ctrl.Check_If_Role_Exist(update_data.Role_id, c, &role)
+	if !role_made {
 		return
 	}
 
@@ -188,8 +196,7 @@ func (ctrl *Controller) Update_Role(c *gin.Context) {
 	}
 
 	// Update the user's role_id
-	user.Role_id = input.Role_id
-	if err := ctrl.Repo.Save(&user); err != nil {
+	if err := ctrl.Repo.Update(&user, &update_data); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update role"})
 		return
 	}

@@ -74,9 +74,9 @@ func (repo *Repository) Role_in_Asc_order() ([]model.Role, error) {
 	return user_data, err
 }
 
-func (repo *Repository) Save(user *model.User) error {
-	return repo.DB.Save(user).Error
-}
+// func (repo *Repository) Save(user *model.User) error {
+// 	return repo.DB.Save(user).Error
+// }
 
 func (repo *Repository) Update(user *model.User, update_user *model.User) error {
 	err := repo.DB.Model(user).Updates(update_user).Error
