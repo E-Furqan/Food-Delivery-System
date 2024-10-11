@@ -8,8 +8,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-var env = environmentvariable.ReadEnv()
-var jwtKey = []byte(env.JWT_SECRET)
+var jwtKey = []byte(environmentvariable.Get_env("JWT_SECRET"))
 
 type Claims struct {
 	Username string `json:"username"`

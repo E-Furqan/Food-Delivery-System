@@ -3,9 +3,10 @@ package config
 import (
 	"fmt"
 	"log"
+	"strconv"
 
-	entity "github.com/E-Furqan/Food-Delivery-System/Entity"
 	environmentvariable "github.com/E-Furqan/Food-Delivery-System/enviorment_variable"
+	model "github.com/E-Furqan/Food-Delivery-System/models"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -18,14 +19,19 @@ func Connection() *gorm.DB {
 	if err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
-	envVar := environmentvariable.ReadEnv()
-	port := envVar.PORT
+
+	portStr := environmentvariable.Get_env("PORT")
+	port, erro := strconv.Atoi(portStr)
+
+	if erro != nil {
+		log.Fatalf("Failed to convert port to integer : %v", erro)
+	}
 
 	var (
-		user     = envVar.USER
-		password = envVar.PASSWORD
-		host     = envVar.HOST
-		db_name  = envVar.DB_NAME
+		user     = environmentvariable.Get_env("USER1")
+		password = environmentvariable.Get_env("PASSWORD")
+		host     = environmentvariable.Get_env("HOST")
+		db_name  = environmentvariable.Get_env("DB_NAME")
 	)
 	var connectionstring = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, db_name)
@@ -35,12 +41,12 @@ func Connection() *gorm.DB {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	err = DB.AutoMigrate(&entity.Role{})
+	err = DB.AutoMigrate(&model.Role{})
 	if err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
 
-	err = DB.AutoMigrate(&entity.User{})
+	err = DB.AutoMigrate(&model.User{})
 	if err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}

@@ -11,8 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var env = environmentvariable.ReadEnv()
-var jwtKey = []byte(env.JWT_SECRET)
+var jwtKey = []byte(environmentvariable.Get_env("JWT_SECRET"))
 
 // AuthMiddleware is used to protect routes
 func AuthMiddleware() gin.HandlerFunc {
