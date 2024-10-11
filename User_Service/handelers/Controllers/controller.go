@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	database "github.com/E-Furqan/Food-Delivery-System/Interfaces/Repositories"
 	environmentvariable "github.com/E-Furqan/Food-Delivery-System/enviorment_variable"
+	database "github.com/E-Furqan/Food-Delivery-System/handelers/Repositories"
 	model "github.com/E-Furqan/Food-Delivery-System/models"
 	"github.com/E-Furqan/Food-Delivery-System/utils"
 	"github.com/gin-gonic/gin"
@@ -118,15 +118,16 @@ func (ctrl *Controller) Login(c *gin.Context) {
 		return
 	}
 
-	token, err := utils.GenerateJWT(user.Username)
+	access_token, refresh_token, err := utils.GenerateTokens(user.Username)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"token":      token,
-		"expires_at": time.Now().Add(24 * time.Hour).Unix(),
+		"access token":  access_token,
+		"refresh token": refresh_token,
+		"expires_at":    time.Now().Add(24 * time.Hour).Unix(),
 	})
 
 }
@@ -320,4 +321,26 @@ func (ctrl *Controller) Delete_role(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid username or password"})
 	}
 
+}
+
+func (ctrl *Controller) RefreshToken(c *gin.Context) {
+	var input struct {
+		RefreshToken string `json:"refresh_token" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	accessToken, err := utils.RefreshToken(input.RefreshToken, c)
+
+	if err != nil {
+		log.Fatal("Error while refreshing token; ", err)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"access_token": accessToken,
+		"expires_at":   time.Now().Add(15 * time.Minute).Unix(), // Adjust based on your access token expiration
+	})
 }
