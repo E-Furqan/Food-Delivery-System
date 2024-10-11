@@ -50,25 +50,25 @@ func (repo *Repository) LoadUserWithRole(userID uint) (model.User, error) {
 }
 
 // WhereUsername retrieves a user by username
-func (repo *Repository) Find_User_By_Username(username string, user *model.User) error {
-	err := repo.DB.Where("username = ?", username).First(user).Error
+func (repo *Repository) FindUser(FindParameter string, user *model.User) error {
+	err := repo.DB.Where("username = ?", FindParameter).First(user).Error
 	return err
 }
 
 // WhereRoleID retrieves a role by user role ID
-func (repo *Repository) Find_Role_By_Role_Id(Role_id string, role *model.Role) error {
+func (repo *Repository) FindRole(FindParameter string, role *model.Role) error {
 
-	err := repo.DB.Where("role_id = ?", Role_id).First(role).Error
+	err := repo.DB.Where("role_id = ?", FindParameter).First(role).Error
 	return err
 }
 
-func (repo *Repository) Preload_in_order() ([]model.User, error) {
+func (repo *Repository) PreloadInOrder() ([]model.User, error) {
 	var user_data []model.User
 	err := repo.DB.Preload("Role").Order("User_id asc").Find(&user_data).Error
 	return user_data, err
 }
 
-func (repo *Repository) Role_in_Asc_order() ([]model.Role, error) {
+func (repo *Repository) RoleInAscOrder() ([]model.Role, error) {
 	var user_data []model.Role
 	err := repo.DB.Order("Role_id asc").Find(&user_data).Error
 	return user_data, err
@@ -84,12 +84,12 @@ func (repo *Repository) Update(user *model.User, update_user *model.User) error 
 	return err
 }
 
-func (repo *Repository) Delete_user(user *model.User) error {
+func (repo *Repository) DeleteUser(user *model.User) error {
 	err := repo.DB.Delete(user).Error
 	return err
 }
 
-func (repo *Repository) Delete_role(Role *model.Role) error {
+func (repo *Repository) DeleteRole(Role *model.Role) error {
 	err := repo.DB.Delete(Role).Error
 	return err
 }
