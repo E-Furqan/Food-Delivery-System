@@ -15,12 +15,12 @@ var refreshTokenKey = []byte(environmentVariable.Get_env("REFRESH_TOKEN_SECRET")
 
 type Claims struct {
 	Username string `json:"username"`
-	RoleId   string `json:"RoleId"`
+	RoleId   []uint `json:"RoleId"`
 	jwt.StandardClaims
 }
 
 // auth
-func GenerateTokens(username string) (string, string, error) {
+func GenerateTokens(username string, roleId []uint) (string, string, error) {
 	// Access Token expiration time
 	accessExpirationTime := time.Now().Add(15 * time.Minute) // 15 minutes
 	accessClaims := &Claims{
@@ -42,6 +42,7 @@ func GenerateTokens(username string) (string, string, error) {
 	refreshExpirationTime := time.Now().Add(7 * 24 * time.Hour) // 7 days
 	refreshClaims := &Claims{
 		Username: username,
+		RoleId:   roleId,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: refreshExpirationTime.Unix(),
 		},
@@ -79,7 +80,7 @@ func RefreshToken(refreshToken string, c *gin.Context) (string, error) {
 	}
 
 	// Generate new access token
-	accessToken, _, err := GenerateTokens(claims.Username)
+	accessToken, _, err := GenerateTokens(claims.Username, claims.RoleId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate new access token"})
 		return "", err

@@ -15,7 +15,12 @@ func main() {
 	repo := database.NewRepository(db)
 	ctrl := UserControllers.NewController(repo)
 	rctrl := RoleController.NewController(repo)
+
 	server := gin.Default()
+
+	// Invoke AddDefaultRoles function to initialize roles
+	rctrl.AddDefaultRoles(&gin.Context{}) // Passing an empty context, can be modified as per requirement
+
 	route.User_routes(ctrl, rctrl, server)
-	server.Run(":8082")
+	server.Run(":8083")
 }
