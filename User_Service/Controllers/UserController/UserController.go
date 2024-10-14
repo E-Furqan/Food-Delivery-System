@@ -191,8 +191,18 @@ func (ctrl *Controller) UpdateUser(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
+	var roleType string
+	for _, role := range updateUserData.Roles {
+		if role.RoleId == 3 || role.RoleType == "Admin" {
+			roleType = "Admin"
+			break
+		} else {
+			roleType = role.RoleType // Save the first other role type encountered
+		}
+	}
 
 	user.Roles = updateUserData.Roles
+	user.ActiveRole = roleType
 	err = ctrl.Repo.Update(&user, &updateUserData)
 
 	if err != nil {

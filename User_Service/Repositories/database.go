@@ -109,10 +109,6 @@ func (repo *Repository) RoleInOrder(columnName string, order string) ([]model.Ro
 	return user_data, err
 }
 
-// func (repo *Repository) Save(user *model.User) error {
-// 	return repo.DB.Save(user).Error
-// }
-
 func (repo *Repository) Update(user *model.User, update_user *model.User) error {
 	err := repo.DB.Model(user).Updates(update_user).Error
 	log.Print("inside update")
@@ -161,19 +157,12 @@ func (repo *Repository) DeleteUserRoleInfo(ID uint, columnName string) error {
 	return result.Error
 }
 
-//	func (repo *Repository) DeleteUserRoleInfo(roleId uint, tablename string) error {
-//		var UserRole model.UserRole
-//		query := fmt.Sprintf("%s = ?", tablename)
-//		// Delete all entries in the user_roles table that reference the given roleId
-//		result := repo.DB.Where(query, roleId).Delete(&UserRole)
-//		return result.Error
-//	}
 func (repo *Repository) AddUserRole(userId uint, roleId uint) error {
 
 	var existingUserRole model.UserRole
 	if err := repo.DB.Where("user_user_id = ? AND role_role_id = ?", userId, roleId).First(&existingUserRole).Error; err == nil {
-		// Role already exists for this user, so return nil or a custom message
-		return nil // or return fmt.Errorf("role already exists for this user")
+		// Role already exists for this user
+		return nil
 	}
 
 	userRole := model.UserRole{
