@@ -15,6 +15,7 @@ var refreshTokenKey = []byte(environmentVariable.Get_env("REFRESH_TOKEN_SECRET")
 
 type Claims struct {
 	Username string `json:"username"`
+	RoleId   string `json:"RoleId"`
 	jwt.StandardClaims
 }
 

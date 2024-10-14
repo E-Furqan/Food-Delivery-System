@@ -1,8 +1,8 @@
 package main
 
 import (
+	RoleController "github.com/E-Furqan/Food-Delivery-System/Controllers/RoleControler"
 	UserControllers "github.com/E-Furqan/Food-Delivery-System/Controllers/UserController"
-	RoleController "github.com/E-Furqan/Food-Delivery-System/Controllers/UserController/RoleControler"
 	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
 	config "github.com/E-Furqan/Food-Delivery-System/database_config"
 	"github.com/E-Furqan/Food-Delivery-System/route"

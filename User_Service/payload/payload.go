@@ -1,7 +1,12 @@
 package payload
 
 type Input struct {
-	Username string `json:"username_admin"`
-	Password string `json:"password_admin"`
-	Role_id  string `json:"role_id"`
+	Username string `json:"usernameAdmin"`
+	Password string `json:"passwordAdmin"`
+	RoleId   string `json:"roleId"`
+}
+
+type Order struct {
+	ColumnName string `json:"columnName"`
+	OrderType  string `json:"OrderType"`
 }

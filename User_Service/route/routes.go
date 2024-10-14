@@ -2,8 +2,8 @@ package route
 
 import (
 	authenticator "github.com/E-Furqan/Food-Delivery-System/Authentication"
+	roleController "github.com/E-Furqan/Food-Delivery-System/Controllers/RoleControler"
 	UserControllers "github.com/E-Furqan/Food-Delivery-System/Controllers/UserController"
-	roleController "github.com/E-Furqan/Food-Delivery-System/Controllers/UserController/RoleControler"
 
 	"github.com/gin-gonic/gin"
 )

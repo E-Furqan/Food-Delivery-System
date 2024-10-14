@@ -25,14 +25,14 @@ func NewController(repo *database.Repository) *Controller {
 
 func (ctrl *Controller) Register(c *gin.Context) {
 
-	var reg_data model.User
+	var registrationData model.User
 
-	if err := c.ShouldBindJSON(&reg_data); err != nil {
+	if err := c.ShouldBindJSON(&registrationData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	err := ctrl.Repo.CreateUser(&reg_data)
+	err := ctrl.Repo.CreateUser(&registrationData)
 	if err != nil {
 		pqErr, ok := err.(*pq.Error)
 		if ok {
@@ -45,7 +45,7 @@ func (ctrl *Controller) Register(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, reg_data)
+	c.JSON(http.StatusCreated, registrationData)
 }
 
 func (ctrl *Controller) Login(c *gin.Context) {
@@ -77,20 +77,29 @@ func (ctrl *Controller) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"access token":  access_token,
 		"refresh token": refresh_token,
-		"expires_at":    time.Now().Add(24 * time.Hour).Unix(),
+		"expires at":    time.Now().Add(24 * time.Hour).Unix(),
 	})
 
 }
 
 func (ctrl *Controller) GetUser(c *gin.Context) {
 
-	var user_data []model.User
-	user_data, err := ctrl.Repo.PreloadInOrder()
+	var userData []model.User
+	var OrderInfo payload.Order
+
+	if err := c.ShouldBindJSON(&OrderInfo); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	userData, err := ctrl.Repo.PreloadInOrder(OrderInfo.ColumnName, OrderInfo.OrderType)
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, user_data)
+
+	c.JSON(http.StatusOK, userData)
 
 }
 

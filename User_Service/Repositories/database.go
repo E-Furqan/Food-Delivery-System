@@ -1,6 +1,7 @@
 package database
 
 import (
+	"fmt"
 	"log"
 
 	model "github.com/E-Furqan/Food-Delivery-System/models"
@@ -32,7 +33,7 @@ func (repo *Repository) CreateRole(role *model.Role) error {
 // CreateUser inserts a new user into the database
 func (repo *Repository) CreateUser(user *model.User) error {
 	result := repo.DB.Create(user)
-	repo.LoadUserWithRole(user.User_id)
+	repo.LoadUserWithRole(user.UserId)
 	return result.Error
 }
 
@@ -42,10 +43,10 @@ func (repo *Repository) LoadUserWithRole(userID uint) (model.User, error) {
 	// Load the user with the associated role
 	err := repo.DB.Preload("Role").First(&userWithRole, userID).Error
 	if err != nil {
-		log.Printf("Error loading user with role: %v  %s", err, userWithRole.Role.Role_type)
+		log.Printf("Error loading user with role: %v  %s", err, userWithRole.Role.RoleType)
 		return model.User{}, err // Return an empty User struct and the error
 	}
-	log.Printf("Error loading user with role: %v  %s", err, userWithRole.Role.Role_type)
+	log.Printf("Error loading user with role: %v  %s", err, userWithRole.Role.RoleType)
 	return userWithRole, err // Return the loaded user and a nil error
 }
 
@@ -58,19 +59,41 @@ func (repo *Repository) FindUser(FindParameter string, user *model.User) error {
 // WhereRoleID retrieves a role by user role ID
 func (repo *Repository) FindRole(FindParameter string, role *model.Role) error {
 
-	err := repo.DB.Where("role_id = ?", FindParameter).First(role).Error
+	err := repo.DB.Where("RoleId = ?", FindParameter).First(role).Error
 	return err
 }
 
-func (repo *Repository) PreloadInOrder() ([]model.User, error) {
+func (repo *Repository) PreloadInOrder(columnName string, order string) ([]model.User, error) {
+
+	if columnName == "" {
+		columnName = "UserId"
+	}
+	if order == "" {
+		order = "asc"
+	}
+	query := fmt.Sprintf("%s %v", columnName, order)
+
 	var user_data []model.User
-	err := repo.DB.Preload("Role").Order("User_id asc").Find(&user_data).Error
+	err := repo.DB.Preload("Role").Order(query).Find(&user_data).Error
+
 	return user_data, err
 }
 
-func (repo *Repository) RoleInAscOrder() ([]model.Role, error) {
+func (repo *Repository) RoleInOrder(columnName string, order string) ([]model.Role, error) {
+
+	if columnName == "" {
+		columnName = "RoleId"
+	}
+	if order == "" {
+		order = "asc"
+	}
+
 	var user_data []model.Role
-	err := repo.DB.Order("Role_id asc").Find(&user_data).Error
+
+	query := fmt.Sprintf("%s %v", columnName, order)
+
+	err := repo.DB.Order(query).Find(&user_data).Error
+
 	return user_data, err
 }
 
@@ -80,7 +103,7 @@ func (repo *Repository) RoleInAscOrder() ([]model.Role, error) {
 
 func (repo *Repository) Update(user *model.User, update_user *model.User) error {
 	err := repo.DB.Model(user).Updates(update_user).Error
-	repo.LoadUserWithRole(user.User_id)
+	repo.LoadUserWithRole(user.UserId)
 	return err
 }
 
