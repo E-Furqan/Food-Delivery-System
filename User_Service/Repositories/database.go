@@ -33,43 +33,41 @@ func (repo *Repository) CreateRole(role *model.Role) error {
 // CreateUser inserts a new user into the database
 func (repo *Repository) CreateUser(user *model.User) error {
 	result := repo.DB.Create(user)
-	repo.LoadUserWithRoles(user.UserId)
+	log.Print(user)
+	repo.LoadUserWithRoles(user)
+	log.Print(user)
 	return result.Error
 }
 
 // LoadUserWithRole loads a user with its associated role from the database
-func (repo *Repository) LoadUserWithRoles(userID uint) (model.User, error) {
-	var userWithRoles model.User
+func (repo *Repository) LoadUserWithRoles(user *model.User) error {
 	// Load the user with the associated roles
-	err := repo.DB.Preload("Roles").First(&userWithRoles, userID).Error
+	err := repo.DB.Preload("Roles").First(user, user.UserId).Error
 	if err != nil {
 		log.Printf("Error loading user with roles: %v", err)
-		return model.User{}, err
+		return err
 	}
 
-	log.Printf("Successfully loaded user with roles: %v", userWithRoles.Roles)
-	return userWithRoles, nil
+	log.Printf("Successfully loaded user with roles: %v", user.Roles)
+	return nil
 }
 
 // FindUser retrieves a user
 func (repo *Repository) FindUser(columnName string, findParameter interface{}, user *model.User) error {
 	query := fmt.Sprintf("%s = ?", columnName)
 	err := repo.DB.Where(query, findParameter).First(user).Error
-
-	// Load roles for the user
-	userWithRoles, err := repo.LoadUserWithRoles(user.UserId)
 	if err != nil {
-		return err // Return error if loading roles fails
+		log.Printf("Error : %s", err)
+		return err
 	}
-
-	// Update the user with roles
-	*user = userWithRoles
+	// Load roles for the user
+	err = repo.LoadUserWithRoles(user)
 
 	return err
 }
 
 // WhereRoleID retrieves a role by user role ID
-func (repo *Repository) FindRole(RoleId interface{}, role *model.Role) error {
+func (repo *Repository) FindRole(RoleId uint, role *model.Role) error {
 
 	err := repo.DB.Where("role_id = ?", RoleId).First(role).Error
 	return err
@@ -111,10 +109,7 @@ func (repo *Repository) RoleInOrder(columnName string, order string) ([]model.Ro
 
 func (repo *Repository) Update(user *model.User, update_user *model.User) error {
 	err := repo.DB.Model(user).Updates(update_user).Error
-	log.Print("inside update")
-	log.Print(update_user.Roles)
-	log.Print(user.Roles)
-	repo.LoadUserWithRoles(user.UserId)
+	_ = repo.LoadUserWithRoles(user)
 	return err
 }
 
@@ -171,4 +166,8 @@ func (repo *Repository) AddUserRole(userId uint, roleId uint) error {
 	}
 	err := repo.DB.Create(&userRole).Error
 	return err
+}
+
+func (repo *Repository) UpdateUserActiveRole(user *model.User) error {
+	return repo.DB.Model(user).Update("ActiveRole", user.ActiveRole).Error
 }

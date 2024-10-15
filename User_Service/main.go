@@ -1,16 +1,22 @@
 package main
 
 import (
+	authenticator "github.com/E-Furqan/Food-Delivery-System/Authentication"
 	RoleController "github.com/E-Furqan/Food-Delivery-System/Controllers/RoleControler"
 	UserControllers "github.com/E-Furqan/Food-Delivery-System/Controllers/UserController"
 	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
 	config "github.com/E-Furqan/Food-Delivery-System/database_config"
+	environmentVariable "github.com/E-Furqan/Food-Delivery-System/enviorment_variable"
 	"github.com/E-Furqan/Food-Delivery-System/route"
+	"github.com/E-Furqan/Food-Delivery-System/utils"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	db := config.Connection()
+	envVar := environmentVariable.ReadEnv()
+	utils.SetEnvValue(envVar)
+	authenticator.SetEnvValue(envVar)
 
 	repo := database.NewRepository(db)
 	ctrl := UserControllers.NewController(repo)

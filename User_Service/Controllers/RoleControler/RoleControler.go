@@ -1,6 +1,7 @@
 package roleController
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -214,6 +215,57 @@ func (rCtrl *RoleController) AddDefaultRoles(c *gin.Context) {
 }
 
 func (rctrl *RoleController) SwitchRole(c *gin.Context) {
+	username, exists := c.Get("username")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	usernameStr, ok := username.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid username type"})
+		return
+	}
+
+	var user model.User
+	err := rctrl.Repo.FindUser("username", usernameStr, &user)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("User not found %v %s", err, usernameStr)})
+		return
+	}
+
+	var RoleSwitch payload.RoleSwitch
+	err = c.ShouldBindJSON(&RoleSwitch)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Check if the new role exists in the user's roles
+	var roleExists bool
+	var newRole model.Role
+	for _, role := range user.Roles {
+		if role.RoleId == RoleSwitch.NewRoleID { // Check if role exists in user's roles
+			roleExists = true
+			newRole = role
+			break
+		}
+	}
+
+	// If the role doesn't exist, return an error
+	if !roleExists {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Role not found in user's roles"})
+		return
+	}
+
+	user.ActiveRole = newRole.RoleType
+	// Save the updated user to the database
+	if err := rctrl.Repo.UpdateUserActiveRole(&user); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user active role"})
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
 
 }
 

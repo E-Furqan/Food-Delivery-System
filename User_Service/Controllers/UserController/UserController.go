@@ -37,7 +37,7 @@ func (ctrl *Controller) Register(c *gin.Context) {
 	// Make sure Roles is populated as expected
 	if len(registrationData.Roles) > 0 && registrationData.ActiveRole == "" {
 		var role model.Role
-		if err := ctrl.Repo.FindRole(registrationData.Roles[0], &role); err != nil {
+		if err := ctrl.Repo.FindRole(registrationData.Roles[0].RoleId, &role); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Role not found"})
 			return
 		}
@@ -184,8 +184,6 @@ func (ctrl *Controller) UpdateUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	err = ctrl.Repo.FindUser("username", username, &user)
-
 	// Fetch the user by username
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})

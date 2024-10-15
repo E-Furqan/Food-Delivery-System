@@ -13,7 +13,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var jwtKey = []byte(environmentVariable.Get_env("JWT_SECRET"))
+var jwtKey []byte
+
+func SetEnvValue(envVar environmentVariable.Environment) {
+	jwtKey = []byte(envVar.JWT_SECRET)
+}
 
 // AuthMiddleware is used to protect routes
 func AuthMiddleware() gin.HandlerFunc {

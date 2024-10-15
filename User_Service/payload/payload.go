@@ -19,6 +19,10 @@ type Order struct {
 	OrderType  string `json:"OrderType"`
 }
 
+type RoleSwitch struct {
+	NewRoleID uint `json:"SwitchTo"`
+}
+
 var RolesList = []struct {
 	RoleId   uint
 	RoleType string

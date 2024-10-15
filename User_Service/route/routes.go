@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func User_routes(ctrl *UserControllers.Controller, role *roleController.RoleController, server *gin.Engine) {
+func User_routes(ctrl *UserControllers.Controller, rctrl *roleController.RoleController, server *gin.Engine) {
 
 	server.POST("/user/register", ctrl.Register)
 	server.POST("/user/login", ctrl.Login)
@@ -17,19 +17,18 @@ func User_routes(ctrl *UserControllers.Controller, role *roleController.RoleCont
 	protected := server.Group("/user")
 	protected.Use(authenticator.AuthMiddleware())
 	{
-		protected.GET("/get_role", role.GetRole)
+		protected.GET("/get_role", rctrl.GetRole)
 		protected.GET("/get_users", ctrl.GetUser)
 		protected.GET("/profile", ctrl.Profile)
 
 		// protected.PATCH("/add/user_roles", role.AddRoleToUser)
 		protected.PATCH("/update/profile", ctrl.UpdateUser)
+		protected.PATCH("/switch/role", rctrl.SwitchRole)
 
 		protected.DELETE("/delete/user", ctrl.DeleteUser)
-		protected.DELETE("/delete/role", role.DeleteRole)
+		protected.DELETE("/delete/role", rctrl.DeleteRole)
 
-		protected.POST("/add/role", role.AddRolesByAdmin)
+		protected.POST("/add/role", rctrl.AddRolesByAdmin)
 		protected.POST("/search/user", ctrl.SearchForUser)
 	}
 }
-
-//grapql

@@ -10,13 +10,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var jwtKey = []byte(environmentVariable.Get_env("JWT_SECRET"))
-var refreshTokenKey = []byte(environmentVariable.Get_env("REFRESH_TOKEN_SECRET"))
+var jwtKey []byte
+var refreshTokenKey []byte
 
 type Claims struct {
 	Username string `json:"username"`
 	RoleId   []uint `json:"RoleId"`
 	jwt.StandardClaims
+}
+
+func SetEnvValue(envVar environmentVariable.Environment) {
+	jwtKey = []byte(envVar.JWT_SECRET)
+	refreshTokenKey = []byte(envVar.RefreshTokenKey)
 }
 
 // auth
