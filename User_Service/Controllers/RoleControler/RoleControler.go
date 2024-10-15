@@ -1,7 +1,6 @@
 package roleController
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -21,7 +20,6 @@ func NewController(repo *database.Repository) *RoleController {
 
 func (rCtrl *RoleController) AddRolesByAdmin(c *gin.Context) {
 
-	// Retrieve the slice of Role IDs from the context
 	roleIdsValue, exists := c.Get("roleId")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
@@ -33,12 +31,11 @@ func (rCtrl *RoleController) AddRolesByAdmin(c *gin.Context) {
 		return
 	}
 
-	// Check if any of the role IDs is for Admin
 	var isAdmin bool
 	var roleCheck model.Role
 
 	for _, roleId := range roleIds {
-		err := rCtrl.Repo.FindRole(roleId, &roleCheck)
+		err := rCtrl.Repo.GetRole(roleId, &roleCheck)
 		if err == nil && roleCheck.RoleType == "Admin" {
 			isAdmin = true
 			break
@@ -56,11 +53,10 @@ func (rCtrl *RoleController) AddRolesByAdmin(c *gin.Context) {
 		return
 	}
 	var role model.Role
-	// Assign the role type based on the map
+
 	role.RoleId = input.RoleId
 	role.RoleType = input.RoleType
 
-	// Create the role in the repository
 	err := rCtrl.Repo.CreateRole(&role)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create role"})
@@ -73,7 +69,6 @@ func (rCtrl *RoleController) AddRolesByAdmin(c *gin.Context) {
 
 func (rCtrl *RoleController) GetRole(c *gin.Context) {
 
-	// Retrieve the slice of Role IDs from the context
 	roleIdsValue, exists := c.Get("roleId")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
@@ -85,12 +80,11 @@ func (rCtrl *RoleController) GetRole(c *gin.Context) {
 		return
 	}
 
-	// Check if any of the role IDs is for Admin
 	var isAdmin bool
 	var roleCheck model.Role
 
 	for _, roleId := range roleIds {
-		err := rCtrl.Repo.FindRole(roleId, &roleCheck)
+		err := rCtrl.Repo.GetRole(roleId, &roleCheck)
 		if err == nil && roleCheck.RoleType == "Admin" {
 			isAdmin = true
 			break
@@ -117,10 +111,8 @@ func (rCtrl *RoleController) GetRole(c *gin.Context) {
 	c.JSON(http.StatusOK, RoleData)
 }
 
-// role con
 func (rCtrl *RoleController) DeleteRole(c *gin.Context) {
 
-	// Retrieve the slice of Role IDs from the context
 	roleIdsValue, exists := c.Get("roleId")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
@@ -132,12 +124,12 @@ func (rCtrl *RoleController) DeleteRole(c *gin.Context) {
 		return
 	}
 
-	// Check if any of the role IDs is for Admin
 	var isAdmin bool
 	var roleCheck model.Role
 
 	for _, roleId := range roleIds {
-		err := rCtrl.Repo.FindRole(roleId, &roleCheck)
+		// make it database querry to use in clause so that we dont hae to send separate database query
+		err := rCtrl.Repo.GetRole(roleId, &roleCheck)
 		if err == nil && roleCheck.RoleType == "Admin" {
 			isAdmin = true
 			break
@@ -157,19 +149,17 @@ func (rCtrl *RoleController) DeleteRole(c *gin.Context) {
 		return
 	}
 
-	err = rCtrl.Repo.FindRole(input.RoleId, &Role)
+	err = rCtrl.Repo.GetRole(input.RoleId, &Role)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Role does not exist"})
 		return
 	}
 
-	// First, delete the associations in the user_roles table
 	if err := rCtrl.Repo.DeleteUserRoleInfo(input.RoleId, "role_role_id"); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Delete the role
 	if err := rCtrl.Repo.DeleteRole(&Role); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete the role"})
 		return
@@ -182,12 +172,11 @@ func (rCtrl *RoleController) DeleteRole(c *gin.Context) {
 func (rCtrl *RoleController) AddDefaultRoles(c *gin.Context) {
 	var roles []model.Role
 
-	// Convert the predefined RolesList into model.Role objects
 	for _, RolesFromPayLoad := range payload.RolesList {
 		var existingRole model.Role
-		err := rCtrl.Repo.FindRole(RolesFromPayLoad.RoleId, &existingRole)
+		err := rCtrl.Repo.GetRole(RolesFromPayLoad.RoleId, &existingRole)
 		if err == nil {
-			// Role already exists, skip adding it
+
 			log.Printf("Role %v already exists, skipping.", RolesFromPayLoad.RoleId)
 			continue
 		}
@@ -200,73 +189,16 @@ func (rCtrl *RoleController) AddDefaultRoles(c *gin.Context) {
 
 	if len(roles) == 0 {
 		log.Println("No new roles to add, exiting function.")
-		return // Exit if there are no roles to add
+		return
 	}
 
-	// Bulk insert all roles at once
 	err := rCtrl.Repo.BulkCreateRoles(roles)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add default roles"})
 		return
 	}
 
-	// Send success response
 	log.Printf("Message: Default roles added successfully ")
-}
-
-func (rctrl *RoleController) SwitchRole(c *gin.Context) {
-	username, exists := c.Get("username")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
-		return
-	}
-
-	usernameStr, ok := username.(string)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid username type"})
-		return
-	}
-
-	var user model.User
-	err := rctrl.Repo.FindUser("username", usernameStr, &user)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("User not found %v %s", err, usernameStr)})
-		return
-	}
-
-	var RoleSwitch payload.RoleSwitch
-	err = c.ShouldBindJSON(&RoleSwitch)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Check if the new role exists in the user's roles
-	var roleExists bool
-	var newRole model.Role
-	for _, role := range user.Roles {
-		if role.RoleId == RoleSwitch.NewRoleID { // Check if role exists in user's roles
-			roleExists = true
-			newRole = role
-			break
-		}
-	}
-
-	// If the role doesn't exist, return an error
-	if !roleExists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Role not found in user's roles"})
-		return
-	}
-
-	user.ActiveRole = newRole.RoleType
-	// Save the updated user to the database
-	if err := rctrl.Repo.UpdateUserActiveRole(&user); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user active role"})
-		return
-	}
-
-	c.JSON(http.StatusOK, user)
-
 }
 
 // func (rCtrl *RoleController) AddRoleToUser(c *gin.Context) {

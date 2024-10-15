@@ -18,12 +18,12 @@ func User_routes(ctrl *UserControllers.Controller, rctrl *roleController.RoleCon
 	protected.Use(authenticator.AuthMiddleware())
 	{
 		protected.GET("/get_role", rctrl.GetRole)
-		protected.GET("/get_users", ctrl.GetUser)
+		protected.GET("/get_users", ctrl.GetUsers)
 		protected.GET("/profile", ctrl.Profile)
 
 		// protected.PATCH("/add/user_roles", role.AddRoleToUser)
 		protected.PATCH("/update/profile", ctrl.UpdateUser)
-		protected.PATCH("/switch/role", rctrl.SwitchRole)
+		protected.PATCH("/switch/role", ctrl.SwitchRole)
 
 		protected.DELETE("/delete/user", ctrl.DeleteUser)
 		protected.DELETE("/delete/role", rctrl.DeleteRole)

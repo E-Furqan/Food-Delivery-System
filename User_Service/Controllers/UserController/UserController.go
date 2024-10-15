@@ -34,18 +34,16 @@ func (ctrl *Controller) Register(c *gin.Context) {
 		return
 	}
 
-	// Make sure Roles is populated as expected
 	if len(registrationData.Roles) > 0 && registrationData.ActiveRole == "" {
 		var role model.Role
-		if err := ctrl.Repo.FindRole(registrationData.Roles[0].RoleId, &role); err != nil {
+		if err := ctrl.Repo.GetRole(registrationData.Roles[0].RoleId, &role); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Role not found"})
 			return
 		}
-		registrationData.ActiveRole = role.RoleType // Set ActiveRole if it is not already set
+		registrationData.ActiveRole = role.RoleType
 		log.Print("active role set")
 	}
 
-	// Create the user in the database
 	err := ctrl.Repo.CreateUser(&registrationData)
 	if err != nil {
 		pqErr, ok := err.(*pq.Error)
@@ -70,7 +68,7 @@ func (ctrl *Controller) Login(c *gin.Context) {
 	}
 
 	var user model.User
-	err := ctrl.Repo.FindUser("username", input.Username, &user)
+	err := ctrl.Repo.GetUser("username", input.Username, &user)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
@@ -101,7 +99,7 @@ func (ctrl *Controller) Login(c *gin.Context) {
 
 }
 
-func (ctrl *Controller) GetUser(c *gin.Context) {
+func (ctrl *Controller) GetUsers(c *gin.Context) {
 
 	// Retrieve the slice of Role IDs from the context
 	roleIdsValue, exists := c.Get("roleId")
@@ -120,7 +118,7 @@ func (ctrl *Controller) GetUser(c *gin.Context) {
 	var role model.Role
 
 	for _, roleId := range roleIds {
-		err := ctrl.Repo.FindRole(roleId, &role)
+		err := ctrl.Repo.GetRole(roleId, &role)
 		if err == nil && role.RoleType == "Admin" {
 			isAdmin = true
 			break
@@ -154,7 +152,7 @@ func (ctrl *Controller) UpdateUser(c *gin.Context) {
 	// Retrieve the username from the context
 	usernameValue, exists := c.Get("username")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		c.JSON(http.StatusUnauthorized, gin.H{"errors": "User not authenticated"})
 		return
 	}
 	username, ok := usernameValue.(string)
@@ -164,7 +162,7 @@ func (ctrl *Controller) UpdateUser(c *gin.Context) {
 	}
 
 	user := model.User{}
-	err := ctrl.Repo.FindUser("username", username, &user)
+	err := ctrl.Repo.GetUser("username", username, &user)
 
 	// Fetch the user by username
 	if err != nil {
@@ -235,7 +233,7 @@ func (ctrl *Controller) DeleteUser(c *gin.Context) {
 	}
 
 	user := model.User{}
-	err := ctrl.Repo.FindUser("username", username, &user)
+	err := ctrl.Repo.GetUser("username", username, &user)
 
 	// Fetch the user by username
 	if err != nil {
@@ -276,7 +274,7 @@ func (ctrl *Controller) Profile(c *gin.Context) {
 
 	var user model.User
 	// Fetch the user by username
-	err := ctrl.Repo.FindUser("username", usernameStr, &user)
+	err := ctrl.Repo.GetUser("username", usernameStr, &user)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("User not found %v %s", err, usernameStr)})
 		return
@@ -285,6 +283,7 @@ func (ctrl *Controller) Profile(c *gin.Context) {
 	c.JSON(http.StatusFound, user)
 }
 
+// admin only for admin
 func (ctrl *Controller) SearchForUser(c *gin.Context) {
 	var input payload.UserSearch
 	err := c.ShouldBindJSON(&input)
@@ -295,11 +294,65 @@ func (ctrl *Controller) SearchForUser(c *gin.Context) {
 
 	var user model.User
 	// Fetch the user by username
-	err = ctrl.Repo.FindUser(input.ColumnName, input.SearchParameter, &user)
+	err = ctrl.Repo.GetUser(input.ColumnName, input.SearchParameter, &user)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("Error: %v \nUser not found: %s", err, input.SearchParameter)})
 		return
 	}
 
 	c.JSON(http.StatusFound, user)
+}
+func (ctrl *Controller) SwitchRole(c *gin.Context) {
+	username, exists := c.Get("username")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	usernameStr, ok := username.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid username type"})
+		return
+	}
+
+	var user model.User
+	err := ctrl.Repo.GetUser("username", usernameStr, &user)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("User not found %v %s", err, usernameStr)})
+		return
+	}
+
+	var RoleSwitch payload.RoleSwitch
+	err = c.ShouldBindJSON(&RoleSwitch)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Check if the new role exists in the user's roles
+	var roleExists bool
+	var newRole model.Role
+	for _, role := range user.Roles {
+		if role.RoleId == RoleSwitch.NewRoleID { // Check if role exists in user's roles
+			roleExists = true
+			newRole = role
+			break
+		}
+	}
+
+	// If the role doesn't exist, return an error
+	if !roleExists {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Role not found in user's roles"})
+		return
+	}
+
+	user.ActiveRole = newRole.RoleType
+	// Save the updated user to the database
+	if err := ctrl.Repo.UpdateUserActiveRole(&user); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user active role"})
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
+
 }

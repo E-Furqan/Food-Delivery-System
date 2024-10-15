@@ -13,6 +13,7 @@ import (
 var jwtKey []byte
 var refreshTokenKey []byte
 
+// add active token and when user switch role generate a new jwt token
 type Claims struct {
 	Username string `json:"username"`
 	RoleId   []uint `json:"RoleId"`
@@ -24,10 +25,9 @@ func SetEnvValue(envVar environmentVariable.Environment) {
 	refreshTokenKey = []byte(envVar.RefreshTokenKey)
 }
 
-// auth
 func GenerateTokens(username string, roleId []uint) (string, string, error) {
-	// Access Token expiration time
-	accessExpirationTime := time.Now().Add(15 * time.Minute) // 15 minutes
+
+	accessExpirationTime := time.Now().Add(15 * time.Minute)
 	accessClaims := &Claims{
 		Username: username,
 		StandardClaims: jwt.StandardClaims{
@@ -35,7 +35,6 @@ func GenerateTokens(username string, roleId []uint) (string, string, error) {
 		},
 	}
 
-	// Generate Access Token
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims)
 	accessTokenString, err := accessToken.SignedString(jwtKey)
 	if err != nil {
@@ -43,7 +42,6 @@ func GenerateTokens(username string, roleId []uint) (string, string, error) {
 		return "", "", err
 	}
 
-	// Refresh Token expiration time
 	refreshExpirationTime := time.Now().Add(7 * 24 * time.Hour) // 7 days
 	refreshClaims := &Claims{
 		Username: username,
@@ -53,7 +51,6 @@ func GenerateTokens(username string, roleId []uint) (string, string, error) {
 		},
 	}
 
-	// Generate Refresh Token
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
 	refreshTokenString, err := refreshToken.SignedString(refreshTokenKey)
 	if err != nil {
@@ -64,16 +61,15 @@ func GenerateTokens(username string, roleId []uint) (string, string, error) {
 	return accessTokenString, refreshTokenString, nil
 }
 
-// RefreshToken generates a new access token using a valid refresh token
 func RefreshToken(refreshToken string, c *gin.Context) (string, error) {
-	// Parse the refresh token
+
 	claims := &Claims{}
 	token, err := jwt.ParseWithClaims(refreshToken, claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte(refreshTokenKey), nil // Ensure you are returning the key as a byte slice
+		return []byte(refreshTokenKey), nil
 	})
 
 	if err != nil {
-		// Log the error for debugging
+
 		log.Printf("Error parsing refresh token: %v", err)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid refresh token"})
 		return "", err
@@ -81,15 +77,14 @@ func RefreshToken(refreshToken string, c *gin.Context) (string, error) {
 
 	if !token.Valid {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid refresh token"})
-		return "", nil // Returning nil error for invalid token (client-side handling)
+		return "", nil
 	}
 
-	// Generate new access token
 	accessToken, _, err := GenerateTokens(claims.Username, claims.RoleId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate new access token"})
 		return "", err
 	}
 
-	return accessToken, nil // Return the new access token and no error
+	return accessToken, nil
 }

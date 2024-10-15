@@ -53,7 +53,7 @@ func (repo *Repository) LoadUserWithRoles(user *model.User) error {
 }
 
 // FindUser retrieves a user
-func (repo *Repository) FindUser(columnName string, findParameter interface{}, user *model.User) error {
+func (repo *Repository) GetUser(columnName string, findParameter interface{}, user *model.User) error {
 	query := fmt.Sprintf("%s = ?", columnName)
 	err := repo.DB.Where(query, findParameter).First(user).Error
 	if err != nil {
@@ -67,7 +67,7 @@ func (repo *Repository) FindUser(columnName string, findParameter interface{}, u
 }
 
 // WhereRoleID retrieves a role by user role ID
-func (repo *Repository) FindRole(RoleId uint, role *model.Role) error {
+func (repo *Repository) GetRole(RoleId uint, role *model.Role) error {
 
 	err := repo.DB.Where("role_id = ?", RoleId).First(role).Error
 	return err
