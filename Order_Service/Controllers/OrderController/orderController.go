@@ -1,0 +1,62 @@
+package orderControllers
+
+import (
+	"net/http"
+
+	model "github.com/E-Furqan/Food-Delivery-System/Models"
+	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
+	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
+	"github.com/gin-gonic/gin"
+)
+
+// Controller struct that holds a reference to the repository
+type OrderController struct {
+	Repo *database.Repository
+}
+
+// NewController initializes the controller with the repository dependency
+func NewController(repo *database.Repository) *OrderController {
+	return &OrderController{Repo: repo}
+}
+
+func (orderCtrl *OrderController) CheckOut(c *gin.Context) {
+	var OrderDetails model.OrderItem
+	if err := c.ShouldBindJSON(&OrderDetails); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+
+	// total_bill := OrderDetails.ItemPrice * OrderDetails.Quantity
+
+}
+
+func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
+
+	var OrderStatus payload.Order
+	if err := c.ShouldBindJSON(&OrderStatus); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+
+	var order model.Order
+	if err := orderCtrl.Repo.Update(&order, OrderStatus); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+
+	c.JSON(http.StatusOK, order)
+}
+
+func (orderCtrl *OrderController) GetOrdersOfUser(c *gin.Context) {
+
+	var OrderPayLoad payload.Order
+	if err := c.ShouldBindJSON(&OrderPayLoad); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+
+	var order []model.Order
+	if err := orderCtrl.Repo.GetOrders(&order, int(OrderPayLoad.UserId)); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, order)
+
+}
