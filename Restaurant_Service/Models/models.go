@@ -1,22 +1,24 @@
 package model
 
 type Restaurant struct {
-	RestaurantId          uint   `gorm:"primaryKey;autoIncrement" json:"RestaurantId"`
-	RestaurantName        string `gorm:"size:255" json:"RestaurantName"`
-	RestaurantAddress     string `gorm:"size:255" json:"RestaurantAddress"`
-	RestaurantPhoneNumber string `gorm:"size:100" json:"RestaurantPhoneNumber"`
-	RestaurantEmail       string `gorm:"size:100" json:"RestaurantEmail"`
-	RestaurantStatus      string `gorm:"size:50" json:"RestaurantStatus"`
-	Items                 []Item `gorm:"many2many:restaurant_items;" json:"Items"`
+	RestaurantId          uint   `gorm:"primaryKey;autoIncrement" json:"restaurant_id"`
+	RestaurantName        string `gorm:"size:255" json:"restaurant_name"`
+	RestaurantAddress     string `gorm:"size:255" json:"restaurant_address"`
+	RestaurantPhoneNumber string `gorm:"uniqueIndex;size:100" json:"restaurant_phone_number"`
+	RestaurantEmail       string `gorm:"uniqueIndex;size:100" json:"restaurant_email"`
+	Password              string `gorm:"size:100" json:"password"`
+	RestaurantStatus      string `gorm:"size:50" json:"restaurant_status"`
+	Items                 []Item `gorm:"many2many:restaurant_items;" json:"items"`
 }
 
 type Item struct {
-	ItemId   uint   `gorm:"primaryKey;autoIncrement" json:"ItemId"`
-	ItemName string `gorm:"size:100" json:"ItemName"`
-	RoleType string `gorm:"size:100" json:"RoleType"`
+	ItemId          uint   `gorm:"primaryKey;autoIncrement" json:"item_id"`
+	ItemName        string `gorm:"size:100" json:"item_name"`
+	ItemDescription string `gorm:"size:100" json:"item_description"`
+	ItemPrice       uint   `gorm:"size:100" json:"item_price"`
 }
 
 type RestaurantItem struct {
-	RestaurantId uint `gorm:"primaryKey" json:"RestaurantId"`
-	ItemId       uint `gorm:"primaryKey" json:"ItemId"`
+	RestaurantId uint `gorm:"primaryKey" json:"restaurant_id"`
+	ItemId       uint `gorm:"primaryKey" json:"item_id"`
 }
