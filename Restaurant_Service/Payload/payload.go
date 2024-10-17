@@ -1,7 +1,7 @@
 package payload
 
 type Credentials struct {
-	Email    string `json:"email"`
+	Email    string `json:"restaurant_email"`
 	Password string `json:"password"`
 }
 
@@ -14,4 +14,9 @@ type Input struct {
 	ItemId           uint   `json:"item_id"`
 	RestaurantId     uint   `json:"restaurant_id"`
 	RestaurantStatus string `json:"restaurant_status"`
+}
+
+type CombinedInput struct {
+	Order
+	Input
 }

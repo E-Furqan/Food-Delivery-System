@@ -18,6 +18,8 @@ type Environment struct {
 	RefreshTokenKey string
 }
 
+var envVar Environment
+
 // ReadEnv reads environment variables from a .env file and returns an Environment struct
 func ReadEnv() Environment {
 	var envVar Environment
@@ -43,19 +45,20 @@ func ReadEnv() Environment {
 	return envVar
 }
 
-func Get_env(key string) string {
-
-	// Load the .env file
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
-	}
-
-	value := os.Getenv(key)
-	if value == "" {
+func GetEnv(key string) string {
+	switch key {
+	case "HOST":
+		return envVar.HOST
+	case "USER1":
+		return envVar.USER
+	case "PASSWORD":
+		return envVar.PASSWORD
+	case "DB_NAME":
+		return envVar.DB_NAME
+	case "PORT":
+		return strconv.Itoa(envVar.PORT)
+	default:
 		log.Fatalf("environment variable %s is not set", key)
-		return "" // Return an error if the variable is not found
+		return ""
 	}
-
-	return value
 }

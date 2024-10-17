@@ -32,17 +32,17 @@ func (repo *Repository) CreateRestaurant(Restaurant *model.Restaurant) error {
 	return tx.Commit().Error
 }
 
-func (repo *Repository) GetRestaurant(columnName string, findParameter interface{}, user *model.Restaurant) error {
+func (repo *Repository) GetRestaurant(columnName string, findParameter interface{}, Restaurant *model.Restaurant) error {
 	tx := repo.DB.Begin()
 
-	err := repo.DB.Where(columnName+" = ?", findParameter).First(user).Error
+	err := repo.DB.Where(columnName+" = ?", findParameter).First(Restaurant).Error
 	if err != nil {
 		log.Printf("Error : %s", err)
 		tx.Rollback()
 		return err
 	}
 
-	err = repo.LoadRestaurantWithItems(user)
+	err = repo.LoadRestaurantWithItems(Restaurant)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -67,7 +67,7 @@ func (repo *Repository) LoadRestaurantWithItems(Restaurant *model.Restaurant) er
 
 func (repo *Repository) LoadItemsInOrder(RestaurantID uint, columnName string, order string) ([]model.Item, error) {
 	if columnName == "" {
-		columnName = "user_id"
+		columnName = "restaurant_id"
 	}
 	if order == "" {
 		order = "asc"
@@ -76,7 +76,8 @@ func (repo *Repository) LoadItemsInOrder(RestaurantID uint, columnName string, o
 	var ItemData []model.Item
 	tx := repo.DB.Begin()
 
-	err := tx.Where("RestaurantID = ?", RestaurantID).
+	err := repo.DB.Joins("JOIN restaurant_items ON restaurant_items.item_id = items.item_id").
+		Where("restaurant_items.restaurant_id = ?", RestaurantID).
 		Order(columnName + " " + order).Find(&ItemData).Error
 
 	if err != nil {
@@ -126,23 +127,29 @@ func (repo *Repository) RemoveItemFromRestaurantMenu(restaurantId uint, itemId u
 	return tx.Commit().Error
 }
 
-func (repo *Repository) GetAllRestaurants(restaurant *[]model.Restaurant) error {
-	tx := repo.DB.Begin()
+func (repo *Repository) GetAllRestaurants(restaurants *[]model.Restaurant) error {
+	err := repo.DB.Preload("Items").
+		Where("restaurant_status != ?", "closed").
+		Find(restaurants).Error
 
-	err := tx.Where("restaurant_status != ?", "closed").Find(restaurant).Error
 	if err != nil {
-		tx.Rollback()
 		return err
 	}
 
-	return tx.Commit().Error
+	return nil
 }
 
 func (repo *Repository) UpdateRestaurantStatus(restaurant *model.Restaurant, input payload.Input) error {
 
 	tx := repo.DB.Begin()
 
-	if err := tx.Model(restaurant).Update("RestaurantStatus", input.RestaurantStatus).Error; err != nil {
+	if err := tx.Model(restaurant).Update("restaurant_status", input.RestaurantStatus).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	err := repo.LoadRestaurantWithItems(restaurant)
+	if err != nil {
 		tx.Rollback()
 		return err
 	}
