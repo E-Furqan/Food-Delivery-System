@@ -1,24 +1,25 @@
 package route
 
 import (
-	authenticator "github.com/E-Furqan/Food-Delivery-System/Authentication"
-	controller "github.com/E-Furqan/Food-Delivery-System/Controllers/RestaurantController"
+	Authenticator "github.com/E-Furqan/Food-Delivery-System/Authentication"
+	"github.com/E-Furqan/Food-Delivery-System/Controllers/ItemController"
+	"github.com/E-Furqan/Food-Delivery-System/Controllers/RestaurantController"
 	"github.com/gin-gonic/gin"
 )
 
-func User_routes(ctrl *controller.RestaurantController, server *gin.Engine) {
+func User_routes(RestaurantController *RestaurantController.RestaurantController, ItemController *ItemController.ItemController, server *gin.Engine) {
 
 	restaurantRoute := server.Group("/restaurant")
-	restaurantRoute.POST("/register", ctrl.Register)
-	restaurantRoute.POST("/login", ctrl.Login)
-	restaurantRoute.POST("/refresh/token", authenticator.RefreshToken)
-	restaurantRoute.POST("/view/menu", ctrl.ViewMenu)
-	restaurantRoute.GET("/get/restaurants", ctrl.GetAllRestaurants)
+	restaurantRoute.POST("/register", RestaurantController.Register)
+	restaurantRoute.POST("/login", RestaurantController.Login)
+	restaurantRoute.POST("/refresh/token", Authenticator.RefreshToken)
+	restaurantRoute.POST("/view/menu", ItemController.ViewMenu)
+	restaurantRoute.GET("/get/restaurants", RestaurantController.GetAllRestaurants)
 
-	restaurantRoute.Use(authenticator.AuthMiddleware())
+	restaurantRoute.Use(Authenticator.AuthMiddleware())
 	{
-		restaurantRoute.POST("/add/items", ctrl.AddItemItRestaurantMenu)
-		restaurantRoute.DELETE("/delete/items", ctrl.DeleteItemsOfRestaurantMenu)
-		restaurantRoute.PATCH("/update/status", ctrl.UpdateRestaurantStatus)
+		restaurantRoute.POST("/add/items", ItemController.AddItemItRestaurantMenu)
+		restaurantRoute.DELETE("/delete/items", ItemController.DeleteItemsOfRestaurantMenu)
+		restaurantRoute.PATCH("/update/status", RestaurantController.UpdateRestaurantStatus)
 	}
 }

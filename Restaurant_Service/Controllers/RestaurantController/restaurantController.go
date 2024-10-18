@@ -1,4 +1,4 @@
-package controller
+package RestaurantController
 
 import (
 	"net/http"
@@ -74,93 +74,6 @@ func (ctrl *RestaurantController) Login(c *gin.Context) {
 		"refresh token": refresh_token,
 		"expires at":    time.Now().Add(24 * time.Hour).Unix(),
 	})
-}
-
-func (ctrl *RestaurantController) ViewMenu(c *gin.Context) {
-
-	var Items []model.Item
-	var combinedInput payload.CombinedInput
-
-	if err := c.ShouldBindJSON(&combinedInput); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error binding": err.Error()})
-		return
-	}
-	Items, err := ctrl.Repo.LoadItemsInOrder(combinedInput.RestaurantId, combinedInput.ColumnName, combinedInput.OrderType)
-
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error load item": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, Items)
-}
-
-func (ctrl *RestaurantController) AddItemItRestaurantMenu(c *gin.Context) {
-	email, exists := c.Get("Email")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
-		return
-	}
-	email, ok := email.(string)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid Email address"})
-		return
-	}
-
-	var Restaurant model.Restaurant
-	err := ctrl.Repo.GetRestaurant("restaurant_email", email, &Restaurant)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
-		return
-	}
-
-	var NewItemData model.Item
-
-	if err = c.ShouldBindJSON(&NewItemData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err})
-		return
-	}
-
-	if err = ctrl.Repo.AddItemToRestaurantMenu(Restaurant.RestaurantId, NewItemData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, Restaurant)
-}
-
-func (ctrl *RestaurantController) DeleteItemsOfRestaurantMenu(c *gin.Context) {
-	email, exists := c.Get("Email")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
-		return
-	}
-	email, ok := email.(string)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid Email address"})
-		return
-	}
-
-	var Restaurant model.Restaurant
-	err := ctrl.Repo.GetRestaurant("restaurant_email", email, &Restaurant)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
-		return
-	}
-
-	var DeleteItemId payload.Input
-
-	if err = c.ShouldBindJSON(&DeleteItemId); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err})
-		return
-	}
-
-	if err = ctrl.Repo.RemoveItemFromRestaurantMenu(Restaurant.RestaurantId, DeleteItemId.ItemId); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err})
-		return
-	}
-
-	c.JSON(http.StatusOK, "Item deleted from the restaurant menu")
 }
 
 func (ctrl *RestaurantController) GetAllRestaurants(c *gin.Context) {
