@@ -217,6 +217,12 @@ func (ctrl *RestaurantController) ProcessOrder(c *gin.Context) payload.ProcessOr
 		return order
 	}
 
+	orderTransitions := map[string]string{
+		"ordered":    "Accepted",
+		"Accepted":   "In process",
+		"In process": "In for delivery",
+	}
+
 	if order.OrderStatus == "ordered" {
 		var restaurant model.Restaurant
 		err := ctrl.Repo.GetRestaurant("", order.RestaurantId, &restaurant)
@@ -231,12 +237,10 @@ func (ctrl *RestaurantController) ProcessOrder(c *gin.Context) payload.ProcessOr
 			order.OrderStatus = "Cancelled"
 			return order
 		}
+	}
 
-		order.OrderStatus = "Accepted"
-	} else if order.OrderStatus == "Accepted" {
-		order.OrderStatus = "In process"
-	} else if order.OrderStatus == "In process" {
-		order.OrderStatus = "In for delivery"
+	if newStatus, exists := orderTransitions[order.OrderStatus]; exists {
+		order.OrderStatus = newStatus
 	}
 
 	return order
