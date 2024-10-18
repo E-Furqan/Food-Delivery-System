@@ -25,6 +25,11 @@ func (repo *Repository) GetOrders(order *[]model.Order, UserId int) error {
 	return err
 }
 
+func (repo *Repository) GetOrder(order *model.Order, OrderId int) error {
+	err := repo.DB.Where("order_id = ?", OrderId).First(order).Error
+	return err
+}
+
 func (repo *Repository) Update(Model *model.Order, updateOrder payload.Order) error {
 	// Generate dynamic update query using GORM
 	result := repo.DB.Model(Model).Where("OrderID = ?", updateOrder.OrderID).Updates(updateOrder)
@@ -40,4 +45,53 @@ func (repo *Repository) Update(Model *model.Order, updateOrder payload.Order) er
 	}
 
 	return nil
+}
+
+func (repo *Repository) PutOrder(order *model.Order, CombineOrderItem *payload.CombineOrderItem) error {
+	tx := repo.DB.Begin()
+
+	if err := tx.Create(order).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	totalBill := uint(0)
+
+	for _, item := range CombineOrderItem.Items {
+
+		var existingItem model.Item
+		if err := tx.Where("item_id = ?", item.ItemId).First(&existingItem).Error; err != nil {
+			newItem := model.Item{
+				ItemId:   item.ItemId,
+				ItemName: item.ItemName,
+			}
+			if err := tx.Create(&newItem).Error; err != nil {
+				tx.Rollback()
+				return err
+			}
+		}
+
+		itemTotal := item.ItemPrice * item.Quantity
+		totalBill += itemTotal
+
+		orderItem := model.OrderItem{
+			OrderID:      order.OrderID,
+			ItemId:       item.ItemId,
+			RestaurantID: order.RestaurantID,
+			ItemPrice:    item.ItemPrice,
+			Quantity:     item.Quantity,
+		}
+
+		if err := tx.Create(&orderItem).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	if err := tx.Model(&order).Update("TotalBill", totalBill).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
 }

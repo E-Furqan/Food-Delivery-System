@@ -10,12 +10,14 @@ type Order struct {
 }
 
 type Item struct {
-	ItemId    uint `gorm:"primaryKey;size:100;not null;column:item_id" json:"item_id"`
-	ItemPrice uint `gorm:"column:item_price" json:"item_price"`
+	ItemId   uint   `gorm:"primaryKey;size:100;not null;column:item_id" json:"item_id"`
+	ItemName string `gorm:"size:100;not null;column:item_name" json:"item_name"`
 }
 
 type OrderItem struct {
-	OrderID  uint `gorm:"primaryKey;column:order_id" json:"order_id"`
-	ItemId   uint `gorm:"primaryKey;column:item_id" json:"item_id"`
-	Quantity uint `gorm:"column:quantity" json:"quantity"`
+	OrderID      uint `gorm:"primaryKey;column:order_id" json:"order_id"`
+	ItemId       uint `gorm:"primaryKey;column:item_id" json:"item_id"`
+	RestaurantID uint `gorm:"primaryKey;column:restaurant_id" json:"restaurant_id"`
+	ItemPrice    uint `gorm:"column:item_price" json:"item_price"`
+	Quantity     uint `gorm:"column:quantity" json:"quantity"`
 }

@@ -1,7 +1,21 @@
 package payload
 
+import model "github.com/E-Furqan/Food-Delivery-System/Models"
+
 type Order struct {
 	OrderID     uint   `json:"OrderID"`
 	UserId      uint   `json:"UserId"`
 	OrderStatus string `json:"OrderStatus"`
+}
+
+type CombineOrderItem struct {
+	Order model.Order
+	Items []OrderItemPayload
+}
+
+type OrderItemPayload struct {
+	ItemId    uint   `json:"item_id"`
+	ItemPrice uint   `json:"item_price"`
+	Quantity  uint   `json:"quantity"`
+	ItemName  string `json:"item_name"`
 }

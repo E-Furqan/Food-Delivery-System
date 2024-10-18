@@ -1,4 +1,4 @@
-package orderControllers
+package OrderControllers
 
 import (
 	"net/http"
@@ -37,8 +37,16 @@ func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 	}
 
 	var order model.Order
+
+	err := orderCtrl.Repo.GetOrder(&order, int(OrderStatus.OrderID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, "Order not found")
+		return
+	}
+
 	if err := orderCtrl.Repo.Update(&order, OrderStatus); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	c.JSON(http.StatusOK, order)
@@ -59,4 +67,34 @@ func (orderCtrl *OrderController) GetOrdersOfUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, order)
 
+}
+
+func (orderCtrl *OrderController) PutOrder(c *gin.Context) {
+
+	var CombineOrderItem payload.CombineOrderItem
+	if err := c.ShouldBindJSON(&CombineOrderItem); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+
+	var order model.Order
+
+	order.OrderID = CombineOrderItem.Order.OrderID
+	order.RestaurantID = CombineOrderItem.Order.RestaurantID
+	order.TotalBill = 0
+	order.OrderStatus = CombineOrderItem.Order.OrderStatus
+
+	err := orderCtrl.Repo.PutOrder(&order, &CombineOrderItem)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Error while creating order",
+			"Error":   err,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Order created successfully",
+		"order":   order,
+	})
 }
