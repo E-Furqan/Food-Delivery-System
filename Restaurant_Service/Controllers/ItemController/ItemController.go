@@ -67,7 +67,7 @@ func (ItemController *ItemController) AddItemItRestaurantMenu(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, Restaurant)
+	c.JSON(http.StatusOK, "Item added to menu successfully")
 }
 
 func (ItemController *ItemController) DeleteItemsOfRestaurantMenu(c *gin.Context) {

@@ -26,3 +26,11 @@ type CombinedInput struct {
 	SearchOrder
 	Input
 }
+
+func GetOrderTransitions() map[string]string {
+	return map[string]string{
+		"ordered":    "Accepted",
+		"Accepted":   "In process",
+		"In process": "In for delivery",
+	}
+}
