@@ -8,7 +8,7 @@ type Restaurant struct {
 	RestaurantEmail       string `gorm:"uniqueIndex;size:100" json:"restaurant_email"`
 	Password              string `gorm:"size:100" json:"password"`
 	RestaurantStatus      string `gorm:"size:50" json:"restaurant_status"`
-	Items                 []Item `gorm:"many2many:restaurant_items;" json:"items"`
+	Items                 []Item `gorm:"many2many:restaurant_items;foreignKey:restaurant_id;joinForeignKey:restaurant_id;References:item_id;joinReferences:item_id" json:"items"`
 }
 
 type Item struct {

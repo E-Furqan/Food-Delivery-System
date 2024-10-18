@@ -5,7 +5,7 @@ type Credentials struct {
 	Password string `json:"password"`
 }
 
-type Order struct {
+type SearchOrder struct {
 	ColumnName string `json:"column_name"`
 	OrderType  string `json:"order_type"`
 }
@@ -16,7 +16,13 @@ type Input struct {
 	RestaurantStatus string `json:"restaurant_status"`
 }
 
+type ProcessOrder struct {
+	OrderId      uint   `json:"order_id"`
+	RestaurantId uint   `json:"restaurant_id"`
+	OrderStatus  string `json:"order_status"`
+}
+
 type CombinedInput struct {
-	Order
+	SearchOrder
 	Input
 }

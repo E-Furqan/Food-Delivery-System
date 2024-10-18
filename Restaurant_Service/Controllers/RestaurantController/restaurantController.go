@@ -126,7 +126,7 @@ func (ctrl *RestaurantController) AddItemItRestaurantMenu(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, "Item added to the restaurant menu")
+	c.JSON(http.StatusOK, Restaurant)
 }
 
 func (ctrl *RestaurantController) DeleteItemsOfRestaurantMenu(c *gin.Context) {
@@ -206,6 +206,38 @@ func (ctrl *RestaurantController) UpdateRestaurantStatus(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, "estaurant status updated")
+	c.JSON(http.StatusOK, "Restaurant status updated")
+}
 
+func (ctrl *RestaurantController) ProcessOrder(c *gin.Context) payload.ProcessOrder {
+	var order payload.ProcessOrder
+
+	if err := c.ShouldBindJSON(&order); err != nil {
+		c.JSON(http.StatusBadRequest, "Error while binding order status")
+		return order
+	}
+
+	if order.OrderStatus == "ordered" {
+		var restaurant model.Restaurant
+		err := ctrl.Repo.GetRestaurant("", order.RestaurantId, &restaurant)
+		if err != nil {
+			c.JSON(http.StatusNotFound, "Restaurant not found")
+			order.OrderStatus = "Cancelled"
+			return order
+		}
+
+		if restaurant.RestaurantStatus == "closed" {
+			c.JSON(http.StatusBadRequest, "Restaurant is closed")
+			order.OrderStatus = "Cancelled"
+			return order
+		}
+
+		order.OrderStatus = "Accepted"
+	} else if order.OrderStatus == "Accepted" {
+		order.OrderStatus = "In process"
+	} else if order.OrderStatus == "In process" {
+		order.OrderStatus = "In for delivery"
+	}
+
+	return order
 }
