@@ -29,8 +29,8 @@ type CombinedInput struct {
 
 func GetOrderTransitions() map[string]string {
 	return map[string]string{
-		"ordered":    "Accepted",
-		"Accepted":   "In process",
-		"In process": "In for delivery",
+		"order placed": "Accepted",
+		"Accepted":     "In process",
+		"In process":   "In for delivery",
 	}
 }
