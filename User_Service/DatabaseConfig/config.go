@@ -5,8 +5,8 @@ import (
 	"log"
 	"strconv"
 
-	environmentVariable "github.com/E-Furqan/Food-Delivery-System/enviorment_variable"
-	model "github.com/E-Furqan/Food-Delivery-System/models"
+	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
+	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

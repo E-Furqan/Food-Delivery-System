@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	model "github.com/E-Furqan/Food-Delivery-System/models"
+	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	"gorm.io/gorm"
 )
 

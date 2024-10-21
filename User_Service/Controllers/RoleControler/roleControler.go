@@ -4,9 +4,9 @@ import (
 	"log"
 	"net/http"
 
+	model "github.com/E-Furqan/Food-Delivery-System/Models"
+	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
 	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
-	model "github.com/E-Furqan/Food-Delivery-System/models"
-	"github.com/E-Furqan/Food-Delivery-System/payload"
 	"github.com/gin-gonic/gin"
 )
 

@@ -4,11 +4,11 @@ import (
 	authenticator "github.com/E-Furqan/Food-Delivery-System/Authentication"
 	RoleController "github.com/E-Furqan/Food-Delivery-System/Controllers/RoleControler"
 	UserControllers "github.com/E-Furqan/Food-Delivery-System/Controllers/UserController"
+	config "github.com/E-Furqan/Food-Delivery-System/DatabaseConfig"
+	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
 	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
-	config "github.com/E-Furqan/Food-Delivery-System/database_config"
-	environmentVariable "github.com/E-Furqan/Food-Delivery-System/enviorment_variable"
-	"github.com/E-Furqan/Food-Delivery-System/route"
-	"github.com/E-Furqan/Food-Delivery-System/utils"
+	route "github.com/E-Furqan/Food-Delivery-System/Route"
+	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 	"github.com/gin-gonic/gin"
 )
 

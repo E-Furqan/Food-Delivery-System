@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	environmentVariable "github.com/E-Furqan/Food-Delivery-System/enviorment_variable"
-	"github.com/E-Furqan/Food-Delivery-System/utils"
+	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
+	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )

@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	environmentVariable "github.com/E-Furqan/Food-Delivery-System/enviorment_variable"
+	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
