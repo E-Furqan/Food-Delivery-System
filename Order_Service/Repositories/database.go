@@ -50,11 +50,6 @@ func (repo *Repository) Update(Model *model.Order, updateOrder payload.Order) er
 func (repo *Repository) PutOrder(order *model.Order, CombineOrderItem *payload.CombineOrderItem) error {
 	tx := repo.DB.Begin()
 
-	if err := tx.Create(order).Error; err != nil {
-		tx.Rollback()
-		return err
-	}
-
 	totalBill := uint(0)
 
 	for _, item := range CombineOrderItem.Items {
@@ -75,9 +70,9 @@ func (repo *Repository) PutOrder(order *model.Order, CombineOrderItem *payload.C
 		totalBill += itemTotal
 
 		orderItem := model.OrderItem{
-			OrderID:      order.OrderID,
+			OrderID:      CombineOrderItem.Order.OrderID,
 			ItemId:       item.ItemId,
-			RestaurantID: order.RestaurantID,
+			RestaurantID: CombineOrderItem.Order.RestaurantID,
 			ItemPrice:    item.ItemPrice,
 			Quantity:     item.Quantity,
 		}
@@ -88,7 +83,17 @@ func (repo *Repository) PutOrder(order *model.Order, CombineOrderItem *payload.C
 		}
 	}
 
-	if err := tx.Model(&order).Update("TotalBill", totalBill).Error; err != nil {
+	// if err := tx.Model(&order).Update("TotalBill", totalBill).Error; err != nil {
+	// 	tx.Rollback()
+	// 	return err
+	// }
+
+	order.OrderID = CombineOrderItem.Order.OrderID
+	order.RestaurantID = CombineOrderItem.Order.RestaurantID
+	order.TotalBill = totalBill
+	order.OrderStatus = CombineOrderItem.Order.OrderStatus
+
+	if err := tx.Create(order).Error; err != nil {
 		tx.Rollback()
 		return err
 	}

@@ -20,13 +20,20 @@ func NewController(repo *database.Repository) *OrderController {
 }
 
 func (orderCtrl *OrderController) CheckOut(c *gin.Context) {
-	var OrderDetails model.OrderItem
-	if err := c.ShouldBindJSON(&OrderDetails); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	var inputOrderId payload.Order
+	if err := c.ShouldBindJSON(&inputOrderId); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error While binding ": err.Error()})
+		return
 	}
 
-	// total_bill := OrderDetails.ItemPrice * OrderDetails.Quantity
+	var orderDetail model.Order
 
+	if err := orderCtrl.Repo.GetOrder(&orderDetail, int(inputOrderId.OrderID)); err == nil {
+		c.JSON(http.StatusNotFound, "Order Not found")
+		return
+	}
+
+	c.JSON(http.StatusOK, orderDetail)
 }
 
 func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
@@ -77,11 +84,6 @@ func (orderCtrl *OrderController) PutOrder(c *gin.Context) {
 	}
 
 	var order model.Order
-
-	order.OrderID = CombineOrderItem.Order.OrderID
-	order.RestaurantID = CombineOrderItem.Order.RestaurantID
-	order.TotalBill = 0
-	order.OrderStatus = CombineOrderItem.Order.OrderStatus
 
 	err := orderCtrl.Repo.PutOrder(&order, &CombineOrderItem)
 
