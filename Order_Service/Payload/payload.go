@@ -3,9 +3,9 @@ package payload
 import model "github.com/E-Furqan/Food-Delivery-System/Models"
 
 type Order struct {
-	OrderID     uint   `json:"OrderID"`
-	UserId      uint   `json:"UserId"`
-	OrderStatus string `json:"OrderStatus"`
+	OrderID     uint   `json:"order_id"`
+	UserId      uint   `json:"user_id"`
+	OrderStatus string `json:"order_status"`
 }
 
 type CombineOrderItem struct {

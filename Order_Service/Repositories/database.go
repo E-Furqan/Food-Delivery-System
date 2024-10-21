@@ -21,7 +21,7 @@ func NewRepository(db *gorm.DB) *Repository {
 }
 
 func (repo *Repository) GetOrders(order *[]model.Order, UserId int) error {
-	err := repo.DB.Where("UserId = ?", UserId).Find(order).Error
+	err := repo.DB.Preload("Item").Where("user_id = ?", UserId).Find(order).Error
 	return err
 }
 
@@ -32,7 +32,7 @@ func (repo *Repository) GetOrder(order *model.Order, OrderId int) error {
 
 func (repo *Repository) Update(Model *model.Order, updateOrder payload.Order) error {
 	// Generate dynamic update query using GORM
-	result := repo.DB.Model(Model).Where("OrderID = ?", updateOrder.OrderID).Updates(updateOrder)
+	result := repo.DB.Model(Model).Where("order_id = ?", updateOrder.OrderID).Updates(updateOrder)
 
 	// Check if any rows were affected
 	if result.RowsAffected == 0 {
@@ -50,9 +50,24 @@ func (repo *Repository) Update(Model *model.Order, updateOrder payload.Order) er
 func (repo *Repository) PutOrder(order *model.Order, CombineOrderItem *payload.CombineOrderItem) error {
 	tx := repo.DB.Begin()
 
+	order.UserId = CombineOrderItem.Order.UserId
+	order.RestaurantID = CombineOrderItem.Order.RestaurantID
+	order.TotalBill = 0
+	order.OrderStatus = CombineOrderItem.Order.OrderStatus
+
+	if err := tx.Create(order).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
 	totalBill := uint(0)
 
 	for _, item := range CombineOrderItem.Items {
+
+		if item.ItemId == 0 {
+			tx.Rollback()
+			return fmt.Errorf("Invalid ItemId: ItemId cannot be 0")
+		}
 
 		var existingItem model.Item
 		if err := tx.Where("item_id = ?", item.ItemId).First(&existingItem).Error; err != nil {
@@ -70,9 +85,9 @@ func (repo *Repository) PutOrder(order *model.Order, CombineOrderItem *payload.C
 		totalBill += itemTotal
 
 		orderItem := model.OrderItem{
-			OrderID:      CombineOrderItem.Order.OrderID,
+			OrderID:      order.OrderID,
 			ItemId:       item.ItemId,
-			RestaurantID: CombineOrderItem.Order.RestaurantID,
+			RestaurantID: order.RestaurantID,
 			ItemPrice:    item.ItemPrice,
 			Quantity:     item.Quantity,
 		}
@@ -83,17 +98,7 @@ func (repo *Repository) PutOrder(order *model.Order, CombineOrderItem *payload.C
 		}
 	}
 
-	// if err := tx.Model(&order).Update("TotalBill", totalBill).Error; err != nil {
-	// 	tx.Rollback()
-	// 	return err
-	// }
-
-	order.OrderID = CombineOrderItem.Order.OrderID
-	order.RestaurantID = CombineOrderItem.Order.RestaurantID
-	order.TotalBill = totalBill
-	order.OrderStatus = CombineOrderItem.Order.OrderStatus
-
-	if err := tx.Create(order).Error; err != nil {
+	if err := tx.Model(&order).Update("TotalBill", totalBill).Error; err != nil {
 		tx.Rollback()
 		return err
 	}

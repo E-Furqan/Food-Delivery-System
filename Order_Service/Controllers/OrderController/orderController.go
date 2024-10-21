@@ -86,17 +86,15 @@ func (orderCtrl *OrderController) PutOrder(c *gin.Context) {
 	var order model.Order
 
 	err := orderCtrl.Repo.PutOrder(&order, &CombineOrderItem)
-
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Error while creating order",
-			"Error":   err,
+			"Error":   err.Error(),
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Order created successfully",
-		"order":   order,
 	})
 }
