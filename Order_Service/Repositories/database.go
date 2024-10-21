@@ -47,7 +47,7 @@ func (repo *Repository) Update(Model *model.Order, updateOrder payload.Order) er
 	return nil
 }
 
-func (repo *Repository) PutOrder(order *model.Order, CombineOrderItem *payload.CombineOrderItem) error {
+func (repo *Repository) PlaceOrder(order *model.Order, CombineOrderItem *payload.CombineOrderItem) error {
 	tx := repo.DB.Begin()
 
 	order.UserId = CombineOrderItem.Order.UserId

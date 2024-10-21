@@ -10,7 +10,7 @@ func User_routes(orderController *OrderControllers.OrderController, server *gin.
 	orderRoute := server.Group("/order")
 	orderRoute.PATCH("/update/status", orderController.UpdateOrderStatus)
 	orderRoute.GET("/view/orders", orderController.GetOrdersOfUser)
-	orderRoute.POST("/put/order", orderController.PutOrder)
+	orderRoute.POST("/place/order", orderController.PlaceOrder)
 	orderRoute.POST("/checkout", orderController.CheckOut)
 
 }

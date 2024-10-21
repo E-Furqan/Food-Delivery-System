@@ -76,7 +76,7 @@ func (orderCtrl *OrderController) GetOrdersOfUser(c *gin.Context) {
 
 }
 
-func (orderCtrl *OrderController) PutOrder(c *gin.Context) {
+func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 
 	var CombineOrderItem payload.CombineOrderItem
 	if err := c.ShouldBindJSON(&CombineOrderItem); err != nil {
@@ -85,7 +85,7 @@ func (orderCtrl *OrderController) PutOrder(c *gin.Context) {
 
 	var order model.Order
 
-	err := orderCtrl.Repo.PutOrder(&order, &CombineOrderItem)
+	err := orderCtrl.Repo.PlaceOrder(&order, &CombineOrderItem)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Error while creating order",
