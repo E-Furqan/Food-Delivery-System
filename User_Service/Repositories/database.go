@@ -67,12 +67,6 @@ func (repo *Repository) GetRole(RoleId uint, role *model.Role) error {
 	return err
 }
 
-func (repo *Repository) GetAdminRole(RoleIds []uint) error {
-	var role *model.Role
-	err := repo.DB.Where("role_id IN ? AND role_type = ?", RoleIds, "admin").First(role).Error
-	return err
-}
-
 func (repo *Repository) PreloadInOrder(columnName string, order string) ([]model.User, error) {
 
 	if columnName == "" {
@@ -108,7 +102,7 @@ func (repo *Repository) RoleInOrder(columnName string, order string) ([]model.Ro
 }
 
 func (repo *Repository) Update(user *model.User, update_user *model.User) error {
-	err := repo.DB.Model(user).Updates(update_user).Error
+	err := repo.DB.Model(user).Where("user_id = ?", user.UserId).Updates(update_user).Error
 	_ = repo.LoadUserWithRoles(user)
 	return err
 }
@@ -168,28 +162,31 @@ func (repo *Repository) AddUserRole(userId uint, roleId uint) error {
 }
 
 func (repo *Repository) UpdateUserActiveRole(user *model.User) error {
-	return repo.DB.Model(user).Update("ActiveRole", user.ActiveRole).Error
+	return repo.DB.Model(user).Where("user_id = ?", user.UserId).Update("active_role", user.ActiveRole).Error
 }
 
-func (repo *Repository) GetDeliveryDrivers() (model.User, error) {
+func (repo *Repository) GetDeliveryDrivers(driver *model.User) error {
 
 	tx := repo.DB.Begin()
-	var driver model.User
 
-	err := repo.DB.Where("active_role = ? AND (role_status = ? OR role_status = ?)",
+	err := repo.DB.Where("active_role = ? AND (role_status != ? AND role_status != ?)",
 		"Delivery driver", "not active", "not available").First(&driver).Error
 
 	if err != nil {
 		tx.Rollback()
-		return driver, err
+		return err
 	}
 
-	err = repo.DB.Model(&driver).Update("roleStatus", "not available").Error
-
+	driver.RoleStatus = "not available"
+	err = repo.UpdateRoleStatus(driver)
 	if err != nil {
 		tx.Rollback()
-		return driver, err
+		return err
 	}
 
-	return driver, nil
+	return tx.Commit().Error
+}
+
+func (repo *Repository) UpdateRoleStatus(user *model.User) error {
+	return repo.DB.Model(user).Where("user_id = ?", user.UserId).Update("role_status", user.RoleStatus).Error
 }
