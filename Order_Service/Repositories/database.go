@@ -53,7 +53,7 @@ func (repo *Repository) PutOrder(order *model.Order, CombineOrderItem *payload.C
 	order.UserId = CombineOrderItem.Order.UserId
 	order.RestaurantID = CombineOrderItem.Order.RestaurantID
 	order.TotalBill = 0
-	order.OrderStatus = CombineOrderItem.Order.OrderStatus
+	order.OrderStatus = "order placed"
 
 	if err := tx.Create(order).Error; err != nil {
 		tx.Rollback()
@@ -66,7 +66,7 @@ func (repo *Repository) PutOrder(order *model.Order, CombineOrderItem *payload.C
 
 		if item.ItemId == 0 {
 			tx.Rollback()
-			return fmt.Errorf("Invalid ItemId: ItemId cannot be 0")
+			return fmt.Errorf("invalid ItemId: ItemId cannot be 0")
 		}
 
 		var existingItem model.Item
