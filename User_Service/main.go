@@ -2,6 +2,7 @@ package main
 
 import (
 	authenticator "github.com/E-Furqan/Food-Delivery-System/Authentication"
+	"github.com/E-Furqan/Food-Delivery-System/Controllers/OrderController"
 	RoleController "github.com/E-Furqan/Food-Delivery-System/Controllers/RoleControler"
 	UserControllers "github.com/E-Furqan/Food-Delivery-System/Controllers/UserController"
 	config "github.com/E-Furqan/Food-Delivery-System/DatabaseConfig"
@@ -20,13 +21,13 @@ func main() {
 
 	repo := database.NewRepository(db)
 	ctrl := UserControllers.NewController(repo)
-	rctrl := RoleController.NewController(repo)
+	rCtrl := RoleController.NewController(repo)
+	orderCtrl := OrderController.NewController(repo)
 
 	server := gin.Default()
 
-	// Invoke AddDefaultRoles function to initialize roles
-	rctrl.AddDefaultRoles(&gin.Context{}) // Passing an empty context, can be modified as per requirement
+	rCtrl.AddDefaultRoles(&gin.Context{})
 
-	route.User_routes(ctrl, rctrl, server)
-	server.Run(":8083")
+	route.User_routes(ctrl, rCtrl, orderCtrl, server)
+	server.Run(":8084")
 }

@@ -2,33 +2,35 @@ package route
 
 import (
 	authenticator "github.com/E-Furqan/Food-Delivery-System/Authentication"
+	"github.com/E-Furqan/Food-Delivery-System/Controllers/OrderController"
 	roleController "github.com/E-Furqan/Food-Delivery-System/Controllers/RoleControler"
 	UserControllers "github.com/E-Furqan/Food-Delivery-System/Controllers/UserController"
 
 	"github.com/gin-gonic/gin"
 )
 
-func User_routes(ctrl *UserControllers.Controller, rctrl *roleController.RoleController, server *gin.Engine) {
+func User_routes(ctrl *UserControllers.Controller, rCtrl *roleController.RoleController, orderCtrl *OrderController.OrderController, server *gin.Engine) {
 
-	server.POST("/user/register", ctrl.Register)
-	server.POST("/user/login", ctrl.Login)
-	server.POST("/user/refresh_token", authenticator.RefreshToken)
+	user := server.Group("/user")
+	user.POST("/register", ctrl.Register)
+	user.POST("/login", ctrl.Login)
+	user.POST("/refresh_token", authenticator.RefreshToken)
+	user.POST("/process/order", orderCtrl.ProcessOrder)
 
-	protected := server.Group("/user")
-	protected.Use(authenticator.AuthMiddleware())
+	user.Use(authenticator.AuthMiddleware())
 	{
-		protected.GET("/get_role", rctrl.GetRole)
-		protected.GET("/get_users", ctrl.GetUsers)
-		protected.GET("/profile", ctrl.Profile)
+		user.GET("/get_role", rCtrl.GetRole)
+		user.GET("/get_users", ctrl.GetUsers)
+		user.GET("/profile", ctrl.Profile)
 
 		// protected.PATCH("/add/user_roles", role.AddRoleToUser)
-		protected.PATCH("/update/profile", ctrl.UpdateUser)
-		protected.PATCH("/switch/role", ctrl.SwitchRole)
+		user.PATCH("/update/profile", ctrl.UpdateUser)
+		user.PATCH("/switch/role", ctrl.SwitchRole)
 
-		protected.DELETE("/delete/user", ctrl.DeleteUser)
-		protected.DELETE("/delete/role", rctrl.DeleteRole)
+		user.DELETE("/delete/user", ctrl.DeleteUser)
+		user.DELETE("/delete/role", rCtrl.DeleteRole)
 
-		protected.POST("/add/role", rctrl.AddRolesByAdmin)
-		protected.POST("/search/user", ctrl.SearchForUser)
+		user.POST("/add/role", rCtrl.AddRolesByAdmin)
+		user.POST("/search/user", ctrl.SearchForUser)
 	}
 }

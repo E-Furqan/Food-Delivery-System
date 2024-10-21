@@ -14,7 +14,7 @@ type User struct {
 }
 
 type Role struct {
-	RoleId   uint   `gorm:"primaryKey;column:role_id;autoIncrement" json:"roleId"`
+	RoleId   uint   `gorm:"primaryKey;column:role_id" json:"roleId"`
 	RoleType string `gorm:"size:100;column:role_type" json:"roleType"`
 }
 

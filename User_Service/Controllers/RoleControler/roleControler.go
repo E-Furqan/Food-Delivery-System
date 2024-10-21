@@ -20,29 +20,13 @@ func NewController(repo *database.Repository) *RoleController {
 
 func (rCtrl *RoleController) AddRolesByAdmin(c *gin.Context) {
 
-	roleIdsValue, exists := c.Get("roleId")
+	activeRole, exists := c.Get("activeRole")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
-	roleIds, ok := roleIdsValue.([]uint)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid role id type"})
-		return
-	}
 
-	var isAdmin bool
-	var roleCheck model.Role
-
-	for _, roleId := range roleIds {
-		err := rCtrl.Repo.GetRole(roleId, &roleCheck)
-		if err == nil && roleCheck.RoleType == "Admin" {
-			isAdmin = true
-			break
-		}
-	}
-
-	if !isAdmin {
+	if activeRole != "Admin" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "You do not have the privileges to add new roles."})
 		return
 	}
@@ -69,29 +53,13 @@ func (rCtrl *RoleController) AddRolesByAdmin(c *gin.Context) {
 
 func (rCtrl *RoleController) GetRole(c *gin.Context) {
 
-	roleIdsValue, exists := c.Get("roleId")
+	activeRole, exists := c.Get("activeRole")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
-	roleIds, ok := roleIdsValue.([]uint)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid role id type"})
-		return
-	}
 
-	var isAdmin bool
-	var roleCheck model.Role
-
-	for _, roleId := range roleIds {
-		err := rCtrl.Repo.GetRole(roleId, &roleCheck)
-		if err == nil && roleCheck.RoleType == "Admin" {
-			isAdmin = true
-			break
-		}
-	}
-
-	if !isAdmin {
+	if activeRole != "Admin" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "You do not have the privileges to view roles."})
 		return
 	}
@@ -113,31 +81,14 @@ func (rCtrl *RoleController) GetRole(c *gin.Context) {
 
 func (rCtrl *RoleController) DeleteRole(c *gin.Context) {
 
-	roleIdsValue, exists := c.Get("roleId")
+	activeRole, exists := c.Get("activeRole")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
-	roleIds, ok := roleIdsValue.([]uint)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid role id type"})
-		return
-	}
 
-	var isAdmin bool
-	var roleCheck model.Role
-
-	for _, roleId := range roleIds {
-		// make it database querry to use in clause so that we dont hae to send separate database query
-		err := rCtrl.Repo.GetRole(roleId, &roleCheck)
-		if err == nil && roleCheck.RoleType == "Admin" {
-			isAdmin = true
-			break
-		}
-	}
-
-	if !isAdmin {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "You do not have the privileges to delete roles."})
+	if activeRole != "Admin" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "You do not have the privileges to Delete roles."})
 		return
 	}
 
@@ -218,16 +169,16 @@ func (rCtrl *RoleController) AddDefaultRoles(c *gin.Context) {
 // 	err := rCtrl.Repo.FindUser("username", usernameStr, &user)
 // 	if err != nil {
 // 		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("User not found %v %s", err, usernameStr)})
+// 		retu/ func (rCtrl *RoleController) AddRoleToUser(c *gin.Context) {
+// 	username, exists := c.Get("username")
+// 	if !exists {
+// 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 // 		return
 // 	}
 
-// 	var updateData model.User
-// 	err = c.ShouldBindJSON(&updateData)
-// 	if err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 		return
-// 	}
-
+// 	usernameStr, ok := username.(string)
+// 	if !ok {
+// 		c.JS
 // 	for _, roleid := range updateData.Roles {
 // 		var role model.Role
 // 		if err := rCtrl.Repo.FindRole(roleid.RoleId, &role); err != nil {

@@ -15,12 +15,12 @@ type UserSearch struct {
 }
 
 type Order struct {
-	ColumnName string `json:"columnName"`
-	OrderType  string `json:"OrderType"`
+	ColumnName string `json:"column_name"`
+	OrderType  string `json:"order-type"`
 }
 
 type RoleSwitch struct {
-	NewRoleID uint `json:"SwitchTo"`
+	NewRoleID uint `json:"switch_to"`
 }
 
 var RolesList = []struct {
@@ -30,6 +30,13 @@ var RolesList = []struct {
 	{1, "Customer"},
 	{2, "Delivery driver"},
 	{3, "Admin"},
+}
+
+type ProcessOrder struct {
+	OrderId         uint   `json:"order_id"`
+	UserID          uint   `json:"user_id"`
+	DeliverDriverID uint   `json:"delivery_driver"`
+	OrderStatus     string `json:"order_status"`
 }
 
 func GetOrderTransitions() map[string]string {

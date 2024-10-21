@@ -8,19 +8,16 @@ import (
 	"gorm.io/gorm"
 )
 
-// Repository struct to handle dependency injection
 type Repository struct {
 	DB *gorm.DB
 }
 
-// NewRepository is a constructor function to initialize the repository with a DB connection
 func NewRepository(db *gorm.DB) *Repository {
 	return &Repository{
 		DB: db,
 	}
 }
 
-// CreateRole inserts a new role into the database
 func (repo *Repository) CreateRole(role *model.Role) error {
 	result := repo.DB.Create(role)
 	if result.Error != nil {
@@ -30,7 +27,6 @@ func (repo *Repository) CreateRole(role *model.Role) error {
 	return nil
 }
 
-// CreateUser inserts a new user into the database
 func (repo *Repository) CreateUser(user *model.User) error {
 	result := repo.DB.Create(user)
 	log.Print(user)
@@ -39,9 +35,10 @@ func (repo *Repository) CreateUser(user *model.User) error {
 	return result.Error
 }
 
-// LoadUserWithRole loads a user with its associated role from the database
 func (repo *Repository) LoadUserWithRoles(user *model.User) error {
-	// Load the user with the associated roles
+
+	log.Printf("Successfully loaded user with roles: %v", user.Roles)
+
 	err := repo.DB.Preload("Roles").First(user, user.UserId).Error
 	if err != nil {
 		log.Printf("Error loading user with roles: %v", err)
@@ -52,7 +49,6 @@ func (repo *Repository) LoadUserWithRoles(user *model.User) error {
 	return nil
 }
 
-// FindUser retrieves a user
 func (repo *Repository) GetUser(columnName string, findParameter interface{}, user *model.User) error {
 	query := fmt.Sprintf("%s = ?", columnName)
 	err := repo.DB.Where(query, findParameter).First(user).Error
@@ -60,16 +56,20 @@ func (repo *Repository) GetUser(columnName string, findParameter interface{}, us
 		log.Printf("Error : %s", err)
 		return err
 	}
-	// Load roles for the user
 	err = repo.LoadUserWithRoles(user)
 
 	return err
 }
 
-// WhereRoleID retrieves a role by user role ID
 func (repo *Repository) GetRole(RoleId uint, role *model.Role) error {
 
 	err := repo.DB.Where("role_id = ?", RoleId).First(role).Error
+	return err
+}
+
+func (repo *Repository) GetAdminRole(RoleIds []uint) error {
+	var role *model.Role
+	err := repo.DB.Where("role_id IN ? AND role_type = ?", RoleIds, "admin").First(role).Error
 	return err
 }
 
@@ -146,7 +146,7 @@ func (repo *Repository) BulkCreateRoles(roles []model.Role) error {
 func (repo *Repository) DeleteUserRoleInfo(ID uint, columnName string) error {
 	var UserRole model.UserRole
 	query := fmt.Sprintf("%s = ?", columnName)
-	// Delete all entries in the user_roles table that reference the given roleId
+
 	result := repo.DB.Where(query, ID).Delete(&UserRole)
 
 	return result.Error
@@ -156,7 +156,6 @@ func (repo *Repository) AddUserRole(userId uint, roleId uint) error {
 
 	var existingUserRole model.UserRole
 	if err := repo.DB.Where("user_user_id = ? AND role_role_id = ?", userId, roleId).First(&existingUserRole).Error; err == nil {
-		// Role already exists for this user
 		return nil
 	}
 
@@ -170,4 +169,27 @@ func (repo *Repository) AddUserRole(userId uint, roleId uint) error {
 
 func (repo *Repository) UpdateUserActiveRole(user *model.User) error {
 	return repo.DB.Model(user).Update("ActiveRole", user.ActiveRole).Error
+}
+
+func (repo *Repository) GetDeliveryDrivers() (model.User, error) {
+
+	tx := repo.DB.Begin()
+	var driver model.User
+
+	err := repo.DB.Where("active_role = ? AND (role_status = ? OR role_status = ?)",
+		"Delivery driver", "not active", "not available").First(&driver).Error
+
+	if err != nil {
+		tx.Rollback()
+		return driver, err
+	}
+
+	err = repo.DB.Model(&driver).Update("roleStatus", "not available").Error
+
+	if err != nil {
+		tx.Rollback()
+		return driver, err
+	}
+
+	return driver, nil
 }
