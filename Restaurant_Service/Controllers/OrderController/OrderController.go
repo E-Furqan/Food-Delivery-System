@@ -27,9 +27,9 @@ func (OrderController *OrderController) ProcessOrder(c *gin.Context) {
 
 	orderTransitions := payload.GetOrderTransitions()
 
-	if order.OrderStatus == "ordered" {
+	if order.OrderStatus == "order placed" {
 		var restaurant model.Restaurant
-		err := OrderController.Repo.GetRestaurant("", order.RestaurantId, &restaurant)
+		err := OrderController.Repo.GetRestaurant("restaurant_id", order.RestaurantId, &restaurant)
 		if err != nil {
 			order.OrderStatus = "Cancelled"
 			c.JSON(http.StatusNotFound, "Restaurant not found")
