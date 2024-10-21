@@ -42,8 +42,8 @@ func (ItemController *ItemController) AddItemsInRestaurantMenu(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
-
-	if err = ItemController.Repo.AddItemToRestaurantMenu(Restaurant.RestaurantId, NewItemData); err != nil {
+	NewItemData.RestaurantId = Restaurant.RestaurantId
+	if err = ItemController.Repo.AddItemToRestaurantMenu(NewItemData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}

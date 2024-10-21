@@ -140,3 +140,82 @@ func (ctrl *RestaurantController) ViewMenu(c *gin.Context) {
 
 	c.JSON(http.StatusOK, Items)
 }
+
+func (ctrl *RestaurantController) ProcessOrder(c *gin.Context) {
+	var order payload.ProcessOrder
+
+	if err := c.ShouldBindJSON(&order); err != nil {
+		c.JSON(http.StatusBadRequest, "Error while binding order status")
+		return
+	}
+
+	orderTransitions := payload.GetOrderTransitions()
+
+	if order.OrderStatus == "order placed" {
+		var restaurant model.Restaurant
+		err := ctrl.Repo.GetRestaurant("restaurant_id", order.RestaurantId, &restaurant)
+		if err != nil {
+			order.OrderStatus = "Cancelled"
+			c.JSON(http.StatusNotFound, "Restaurant not found")
+			c.JSON(http.StatusNotFound, order)
+			return
+		}
+
+		if restaurant.RestaurantStatus == "closed" || restaurant.RestaurantStatus == "Closed" {
+			order.OrderStatus = "Cancelled"
+			c.JSON(http.StatusBadRequest, "Restaurant is closed")
+			c.JSON(http.StatusBadRequest, order)
+			return
+		}
+	}
+
+	if newStatus, exists := orderTransitions[order.OrderStatus]; exists {
+		order.OrderStatus = newStatus
+	}
+
+	c.JSON(http.StatusOK, order)
+}
+
+func (ctrl *RestaurantController) CancelOrder(c *gin.Context) {
+	email, exists := c.Get("Email")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Restaurant not authenticated"})
+		return
+	}
+	email, ok := email.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid Email address"})
+		return
+	}
+
+	var Restaurant model.Restaurant
+	err := ctrl.Repo.GetRestaurant("restaurant_email", email, &Restaurant)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		return
+	}
+
+	var input payload.ProcessOrder
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"Message": "Binding input data failed",
+			"Error":   err,
+		})
+		return
+	}
+
+	if input.RestaurantId != Restaurant.RestaurantId {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"Message": "You are not authorized to cancel this order as it belongs to a different restaurant",
+		})
+		return
+	}
+
+	input.OrderStatus = "Cancelled"
+	c.JSON(http.StatusOK, gin.H{
+		"Message":       "Order cancelled successfully",
+		"Order details": input,
+	})
+
+}

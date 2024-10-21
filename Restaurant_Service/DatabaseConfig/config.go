@@ -50,11 +50,6 @@ func Connection() *gorm.DB {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
 
-	err = DB.AutoMigrate(&model.RestaurantItem{})
-	if err != nil {
-		log.Fatalf("Failed to migrate database: %v", err)
-	}
-
 	err = DB.AutoMigrate(&model.Restaurant{})
 	if err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)

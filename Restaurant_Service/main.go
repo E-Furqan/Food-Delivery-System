@@ -3,7 +3,6 @@ package main
 import (
 	Authenticator "github.com/E-Furqan/Food-Delivery-System/Authentication"
 	"github.com/E-Furqan/Food-Delivery-System/Controllers/ItemController"
-	"github.com/E-Furqan/Food-Delivery-System/Controllers/OrderController"
 	"github.com/E-Furqan/Food-Delivery-System/Controllers/RestaurantController"
 	config "github.com/E-Furqan/Food-Delivery-System/DatabaseConfig"
 	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
@@ -23,9 +22,8 @@ func main() {
 	repo := database.NewRepository(db)
 	ctrl := RestaurantController.NewController(repo)
 	ItemController := ItemController.NewController(repo)
-	OrderController := OrderController.NewController(repo)
 
 	server := gin.Default()
-	route.User_routes(ctrl, ItemController, OrderController, server)
+	route.User_routes(ctrl, ItemController, server)
 	server.Run(":8086")
 }

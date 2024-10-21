@@ -88,7 +88,7 @@ func (repo *Repository) LoadItemsInOrder(RestaurantID uint, columnName string, o
 	return ItemData, tx.Commit().Error
 }
 
-func (repo *Repository) AddItemToRestaurantMenu(restaurantId uint, newItem model.Item) error {
+func (repo *Repository) AddItemToRestaurantMenu(newItem model.Item) error {
 
 	tx := repo.DB.Begin()
 
@@ -96,24 +96,13 @@ func (repo *Repository) AddItemToRestaurantMenu(restaurantId uint, newItem model
 		tx.Rollback()
 		return err
 	}
-
-	restaurantItem := model.RestaurantItem{
-		RestaurantId: restaurantId,
-		ItemId:       newItem.ItemId,
-	}
-
-	if err := tx.Create(&restaurantItem).Error; err != nil {
-		tx.Rollback()
-		return err
-	}
-
 	return tx.Commit().Error
 }
 
 func (repo *Repository) RemoveItemFromRestaurantMenu(restaurantId uint, itemId uint) error {
 	tx := repo.DB.Begin()
 
-	err := tx.Where("restaurant_id = ? AND item_id = ?", restaurantId, itemId).Delete(&model.RestaurantItem{}).Error
+	err := tx.Where("restaurant_id = ? AND item_id = ?", restaurantId, itemId).Delete(&model.Item{}).Error
 	if err != nil {
 		tx.Rollback()
 		return err
