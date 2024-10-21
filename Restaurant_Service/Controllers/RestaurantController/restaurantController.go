@@ -121,3 +121,22 @@ func (ctrl *RestaurantController) UpdateRestaurantStatus(c *gin.Context) {
 
 	c.JSON(http.StatusOK, "Restaurant status updated")
 }
+
+func (ctrl *RestaurantController) ViewMenu(c *gin.Context) {
+
+	var Items []model.Item
+	var combinedInput payload.CombinedInput
+
+	if err := c.ShouldBindJSON(&combinedInput); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error binding": err.Error()})
+		return
+	}
+	Items, err := ctrl.Repo.LoadItemsInOrder(combinedInput.RestaurantId, combinedInput.ColumnName, combinedInput.OrderType)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error load item": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, Items)
+}

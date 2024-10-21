@@ -37,7 +37,7 @@ func (OrderController *OrderController) ProcessOrder(c *gin.Context) {
 			return
 		}
 
-		if restaurant.RestaurantStatus == "closed" {
+		if restaurant.RestaurantStatus == "closed" || restaurant.RestaurantStatus == "Closed" {
 			order.OrderStatus = "Cancelled"
 			c.JSON(http.StatusBadRequest, "Restaurant is closed")
 			c.JSON(http.StatusBadRequest, order)
@@ -50,5 +50,4 @@ func (OrderController *OrderController) ProcessOrder(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, order)
-	return
 }

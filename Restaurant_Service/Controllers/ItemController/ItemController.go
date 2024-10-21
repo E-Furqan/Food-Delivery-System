@@ -17,26 +17,7 @@ func NewController(repo *database.Repository) *ItemController {
 	return &ItemController{Repo: repo}
 }
 
-func (ItemController *ItemController) ViewMenu(c *gin.Context) {
-
-	var Items []model.Item
-	var combinedInput payload.CombinedInput
-
-	if err := c.ShouldBindJSON(&combinedInput); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error binding": err.Error()})
-		return
-	}
-	Items, err := ItemController.Repo.LoadItemsInOrder(combinedInput.RestaurantId, combinedInput.ColumnName, combinedInput.OrderType)
-
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error load item": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, Items)
-}
-
-func (ItemController *ItemController) AddItemItRestaurantMenu(c *gin.Context) {
+func (ItemController *ItemController) AddItemsInRestaurantMenu(c *gin.Context) {
 	email, exists := c.Get("Email")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
