@@ -51,3 +51,47 @@ func (OrderController *OrderController) ProcessOrder(c *gin.Context) {
 
 	c.JSON(http.StatusOK, order)
 }
+
+func (OrderController *OrderController) CancelOrder(c *gin.Context) {
+	email, exists := c.Get("Email")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+	email, ok := email.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid Email address"})
+		return
+	}
+
+	var Restaurant model.Restaurant
+	err := OrderController.Repo.GetRestaurant("restaurant_email", email, &Restaurant)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		return
+	}
+
+	var input payload.ProcessOrder
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"Message": "Binding input data failed",
+			"Error":   err,
+		})
+		return
+	}
+
+	if input.RestaurantId != Restaurant.RestaurantId {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"Message": "You are not authorized to cancel this order as it belongs to a different restaurant",
+		})
+		return
+	}
+
+	input.OrderStatus = "Cancelled"
+	c.JSON(http.StatusBadRequest, gin.H{
+		"Message":       "Order cancelled successfully",
+		"Order details": input,
+	})
+
+}

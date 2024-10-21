@@ -21,6 +21,7 @@ func User_routes(RestaurantController *RestaurantController.RestaurantController
 	{
 		restaurantRoute.POST("/add/items", ItemController.AddItemsInRestaurantMenu)
 		restaurantRoute.DELETE("/delete/items", ItemController.DeleteItemsOfRestaurantMenu)
+		restaurantRoute.DELETE("/cancel/order", OrderController.CancelOrder)
 		restaurantRoute.PATCH("/update/status", RestaurantController.UpdateRestaurantStatus)
 	}
 }
