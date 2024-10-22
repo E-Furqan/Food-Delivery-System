@@ -36,3 +36,8 @@ type Items struct {
 	ItemDescription string  `gorm:"size:100" json:"item_description"`
 	ItemPrice       float64 `gorm:"type:decimal(10,2)" json:"item_price"`
 }
+
+type ProcessOrder struct {
+	RestaurantId uint   `json:"restaurant_id"`
+	OrderStatus  string `json:"order_status"`
+}

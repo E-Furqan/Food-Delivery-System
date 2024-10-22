@@ -12,6 +12,6 @@ func User_routes(orderController *OrderControllers.OrderController, server *gin.
 	orderRoute.GET("/view/users/orders", orderController.GetOrdersOfUser)
 	orderRoute.GET("/view/restaurant/orders", orderController.GetOrdersOfRestaurant)
 	orderRoute.POST("/place/order", orderController.PlaceOrder)
-	orderRoute.POST("/checkout", orderController.CheckOut)
+	// orderRoute.POST("/checkout", orderController.CheckOut)
 
 }

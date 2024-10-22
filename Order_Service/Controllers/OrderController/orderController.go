@@ -26,22 +26,22 @@ func NewController(repo *database.Repository, client *ClientPackage.Client) *Ord
 	}
 }
 
-func (orderCtrl *OrderController) CheckOut(c *gin.Context) {
-	var inputOrderId payload.Order
-	if err := c.ShouldBindJSON(&inputOrderId); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"Error While binding ": err.Error()})
-		return
-	}
+// func (orderCtrl *OrderController) CheckOut(c *gin.Context) {
+// 	var inputOrderId payload.Order
+// 	if err := c.ShouldBindJSON(&inputOrderId); err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{"Error While binding ": err.Error()})
+// 		return
+// 	}
 
-	var orderDetail model.Order
+// 	var orderDetail model.Order
 
-	if err := orderCtrl.Repo.GetOrder(&orderDetail, int(inputOrderId.OrderID)); err == nil {
-		c.JSON(http.StatusNotFound, "Order Not found")
-		return
-	}
+// 	if err := orderCtrl.Repo.GetOrder(&orderDetail, int(inputOrderId.OrderID)); err == nil {
+// 		c.JSON(http.StatusNotFound, "Order Not found")
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, orderDetail)
-}
+// 	c.JSON(http.StatusOK, orderDetail)
+// }
 
 func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 
@@ -150,6 +150,18 @@ func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Error while creating order", "Error", err.Error())
 		return
 	}
-
 	utils.GenerateResponse(http.StatusOK, c, "Message", "Order created successfully", "", nil)
+	var processOrder payload.ProcessOrder
+	processOrder.OrderStatus = order.OrderStatus
+	processOrder.RestaurantId = order.RestaurantID
+
+	err = orderCtrl.Client.ProcessOrder(processOrder)
+
+	if err != nil {
+		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Error sending request to restaurant service", "Error", err.Error())
+		return
+	}
+
+	utils.GenerateResponse(http.StatusOK, c, "Message", "Order Accepted by the restaurant successfully", "", nil)
+
 }

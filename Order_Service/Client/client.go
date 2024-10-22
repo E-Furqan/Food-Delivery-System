@@ -11,8 +11,9 @@ import (
 )
 
 type Client struct {
-	BaseUrl  string
-	ItemsURL string
+	BaseUrl         string
+	ItemsURL        string
+	ProcessOrderURL string
 }
 
 func NewClient() *Client {
@@ -56,4 +57,32 @@ func (client *Client) GetItems(restaurantID uint) ([]payload.Items, error) {
 	}
 
 	return items, nil
+}
+
+func (client *Client) ProcessOrder(ProcessOrder payload.ProcessOrder) error {
+
+	jsonData, err := json.Marshal(ProcessOrder)
+	if err != nil {
+		return fmt.Errorf("error marshaling input: %v", err)
+	}
+
+	url := fmt.Sprintf("%s%s", client.BaseUrl, client.ProcessOrderURL)
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return fmt.Errorf("error creating request: %v", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("error sending request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body := (resp.Body)
+		return fmt.Errorf("received non-200 response: %v, body: %s", resp.Status, body)
+	}
+
+	return nil
 }
