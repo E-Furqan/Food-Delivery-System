@@ -11,8 +11,9 @@ type Order struct {
 }
 
 type CombineOrderItem struct {
-	Order model.Order
-	Items []OrderItemPayload
+	RestaurantId uint `json:"restaurant_id"`
+	UserId       uint `json:"user_id"`
+	Items        []OrderItemPayload
 }
 
 type OrderItemPayload struct {
@@ -40,6 +41,7 @@ type Items struct {
 type ProcessOrder struct {
 	RestaurantId uint   `json:"restaurant_id"`
 	OrderStatus  string `json:"order_status"`
+	OrderID      uint   `json:"order_id"`
 }
 
 type GetItems struct {

@@ -2,6 +2,7 @@ package OrderControllers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	ClientPackage "github.com/E-Furqan/Food-Delivery-System/Client"
@@ -44,22 +45,27 @@ func NewController(repo *database.Repository, client *ClientPackage.Client) *Ord
 // }
 
 func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
-
+	log.Print("13111")
 	var OrderStatus payload.Order
+
 	if err := c.ShouldBindJSON(&OrderStatus); err != nil {
+		log.Print("13")
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	var order model.Order
 
 	err := orderCtrl.Repo.GetOrder(&order, int(OrderStatus.OrderID))
 	if err != nil {
+		log.Print("23")
 		c.JSON(http.StatusNotFound, "Order not found")
 		return
 	}
 
 	if err := orderCtrl.Repo.Update(&order, OrderStatus); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Print("33")
 		return
 	}
 
@@ -107,7 +113,7 @@ func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 	}
 
 	var GetItem payload.GetItems
-	GetItem.RestaurantId = CombineOrderItem.Order.RestaurantID
+	GetItem.RestaurantId = CombineOrderItem.RestaurantId
 	GetItem.ColumnName = "restaurant_id"
 	GetItem.OrderType = "asc"
 
@@ -144,8 +150,8 @@ func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 	}
 
 	var order model.Order
-	order.UserId = CombineOrderItem.Order.UserId
-	order.RestaurantID = CombineOrderItem.Order.RestaurantID
+	order.UserId = CombineOrderItem.UserId
+	order.RestaurantID = CombineOrderItem.RestaurantId
 	order.TotalBill = totalBill
 	order.OrderStatus = "order placed"
 
@@ -159,6 +165,7 @@ func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 	var processOrder payload.ProcessOrder
 	processOrder.OrderStatus = order.OrderStatus
 	processOrder.RestaurantId = order.RestaurantID
+	processOrder.OrderID = order.OrderID
 
 	err = orderCtrl.Client.ProcessOrder(processOrder)
 

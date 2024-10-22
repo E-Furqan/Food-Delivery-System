@@ -25,6 +25,7 @@ func (client *Client) SetEnvValue(envVar environmentVariable.Environment) {
 	client.BaseUrl = envVar.BASE_URL
 	client.ItemsURL = envVar.Get_Items_URL
 	client.RESTAURANT_PORT = envVar.RESTAURANT_PORT
+	client.ProcessOrderURL = envVar.Process_Order_URL
 }
 func (client *Client) GetItems(getItems payload.GetItems) ([]payload.Items, error) {
 
@@ -67,6 +68,7 @@ func (client *Client) ProcessOrder(ProcessOrder payload.ProcessOrder) error {
 
 	url := fmt.Sprintf("%s%s%s", client.BaseUrl, client.RESTAURANT_PORT, client.ProcessOrderURL)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+
 	if err != nil {
 		return fmt.Errorf("error creating request: %v", err)
 	}

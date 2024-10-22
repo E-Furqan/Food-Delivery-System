@@ -46,15 +46,12 @@ func (repo *Repository) GetOrder(order *model.Order, OrderId int) error {
 }
 
 func (repo *Repository) Update(Model *model.Order, updateOrder payload.Order) error {
-	// Generate dynamic update query using GORM
 	result := repo.DB.Model(Model).Where("order_id = ?", updateOrder.OrderID).Updates(updateOrder)
 
-	// Check if any rows were affected
 	if result.RowsAffected == 0 {
 		return fmt.Errorf("no rows updated, check if the ID exists")
 	}
 
-	// Check for errors
 	if result.Error != nil {
 		return result.Error
 	}
@@ -64,15 +61,34 @@ func (repo *Repository) Update(Model *model.Order, updateOrder payload.Order) er
 
 func (repo *Repository) PlaceOrder(order *model.Order, CombineOrderItem *payload.CombineOrderItem) error {
 	tx := repo.DB.Begin()
+
 	if err := tx.Create(&order).Error; err != nil {
 		tx.Rollback()
 		return fmt.Errorf("error creating order: %v", err)
 	}
 
 	for _, orderedItem := range CombineOrderItem.Items {
+		var existingItem model.Item
+		if err := tx.Where("item_id = ?", orderedItem.ItemId).First(&existingItem).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				newItem := model.Item{
+					ItemId: orderedItem.ItemId,
+				}
+
+				if err := tx.Create(&newItem).Error; err != nil {
+					tx.Rollback()
+					return fmt.Errorf("error creating item with ID %d: %v", orderedItem.ItemId, err)
+				}
+				existingItem = newItem
+			} else {
+				tx.Rollback()
+				return fmt.Errorf("error checking item existence: %v", err)
+			}
+		}
+
 		orderItem := model.OrderItem{
 			OrderID:  order.OrderID,
-			ItemId:   orderedItem.ItemId,
+			ItemId:   existingItem.ItemId,
 			Quantity: orderedItem.Quantity,
 		}
 
