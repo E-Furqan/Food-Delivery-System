@@ -1,6 +1,7 @@
 package database
 
 import (
+	"fmt"
 	"log"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
@@ -76,9 +77,10 @@ func (repo *Repository) LoadItems(RestaurantID uint, columnName string, order st
 	var ItemData []model.Item
 	tx := repo.DB.Begin()
 
-	err := repo.DB.Joins("JOIN restaurant_items ON restaurant_items.item_id = items.item_id").
-		Where("restaurant_items.restaurant_id = ?", RestaurantID).
-		Order(columnName + " " + order).Find(&ItemData).Error
+	err := repo.DB.
+		Where("restaurant_id = ?", RestaurantID).
+		Order(fmt.Sprintf("%s %s", columnName, order)).
+		Find(&ItemData).Error
 
 	if err != nil {
 		tx.Rollback()
@@ -99,7 +101,7 @@ func (repo *Repository) AddItemToRestaurantMenu(newItem model.Item) error {
 	return tx.Commit().Error
 }
 
-func (repo *Repository) RemoveItemFromRestaurantMenu(restaurantId uint, itemId uint) error {
+func (repo *Repository) RemoveItem(restaurantId uint, itemId uint) error {
 	tx := repo.DB.Begin()
 
 	err := tx.Where("restaurant_id = ? AND item_id = ?", restaurantId, itemId).Delete(&model.Item{}).Error

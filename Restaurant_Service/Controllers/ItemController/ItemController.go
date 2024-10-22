@@ -17,7 +17,7 @@ func NewController(repo *database.Repository) *ItemController {
 	return &ItemController{Repo: repo}
 }
 
-func (ItemController *ItemController) AddItemsInRestaurantMenu(c *gin.Context) {
+func (ItemController *ItemController) AddItemsInMenu(c *gin.Context) {
 	email, exists := c.Get("Email")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
@@ -39,7 +39,7 @@ func (ItemController *ItemController) AddItemsInRestaurantMenu(c *gin.Context) {
 	var NewItemData model.Item
 
 	if err = c.ShouldBindJSON(&NewItemData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	NewItemData.RestaurantId = Restaurant.RestaurantId
@@ -51,7 +51,7 @@ func (ItemController *ItemController) AddItemsInRestaurantMenu(c *gin.Context) {
 	c.JSON(http.StatusOK, "Item added to menu successfully")
 }
 
-func (ItemController *ItemController) DeleteItemsOfRestaurantMenu(c *gin.Context) {
+func (ItemController *ItemController) DeleteItemsFromMenu(c *gin.Context) {
 	email, exists := c.Get("Email")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
@@ -77,7 +77,7 @@ func (ItemController *ItemController) DeleteItemsOfRestaurantMenu(c *gin.Context
 		return
 	}
 
-	if err = ItemController.Repo.RemoveItemFromRestaurantMenu(Restaurant.RestaurantId, DeleteItemId.ItemId); err != nil {
+	if err = ItemController.Repo.RemoveItem(Restaurant.RestaurantId, DeleteItemId.ItemId); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}

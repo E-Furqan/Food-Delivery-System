@@ -18,8 +18,8 @@ func User_routes(RestaurantController *RestaurantController.RestaurantController
 	restaurantRoute.POST("/process/order", RestaurantController.ProcessOrder)
 	restaurantRoute.Use(Authenticator.AuthMiddleware())
 	{
-		restaurantRoute.POST("/add/items", ItemController.AddItemsInRestaurantMenu)
-		restaurantRoute.DELETE("/delete/items", ItemController.DeleteItemsOfRestaurantMenu)
+		restaurantRoute.POST("/add/items", ItemController.AddItemsInMenu)
+		restaurantRoute.DELETE("/delete/items", ItemController.DeleteItemsFromMenu)
 		restaurantRoute.DELETE("/cancel/order", RestaurantController.CancelOrder)
 		restaurantRoute.PATCH("/update/status", RestaurantController.UpdateRestaurantStatus)
 	}
