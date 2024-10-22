@@ -13,6 +13,7 @@ import (
 type Client struct {
 	BaseUrl         string
 	ProcessOrderURL string
+	ORDER_PORT      string
 }
 
 func NewClient() *Client {
@@ -22,6 +23,7 @@ func NewClient() *Client {
 func (client *Client) SetEnvValue(envVar environmentVariable.Environment) {
 	client.BaseUrl = envVar.BASE_URL
 	client.ProcessOrderURL = envVar.PROCESS_ORDER_URL
+	client.ORDER_PORT = envVar.ORDER_PORT
 }
 
 func (client *Client) ProcessOrder(input payload.ProcessOrder) error {
@@ -31,7 +33,7 @@ func (client *Client) ProcessOrder(input payload.ProcessOrder) error {
 		return fmt.Errorf("error marshaling input: %v", err)
 	}
 
-	url := fmt.Sprintf("%s%s", client.ProcessOrderURL, client.BaseUrl)
+	url := fmt.Sprintf("%s%s%s", client.ProcessOrderURL, client.ORDER_PORT, client.BaseUrl)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return fmt.Errorf("error creating request: %v", err)

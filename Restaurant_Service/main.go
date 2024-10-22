@@ -29,5 +29,5 @@ func main() {
 
 	server := gin.Default()
 	route.User_routes(ctrl, ItemController, server)
-	server.Run(":8086")
+	server.Run(":8082")
 }

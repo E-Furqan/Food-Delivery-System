@@ -18,6 +18,7 @@ type Environment struct {
 	RefreshTokenKey   string
 	BASE_URL          string
 	PROCESS_ORDER_URL string
+	ORDER_PORT        string
 }
 
 var envVar Environment
@@ -36,6 +37,7 @@ func ReadEnv() Environment {
 	envVar.DB_NAME = os.Getenv("DB_NAME")
 	envVar.BASE_URL = os.Getenv("BASE_URL")
 	envVar.PROCESS_ORDER_URL = os.Getenv("PROCESS_ORDER_URL")
+	envVar.ORDER_PORT = os.Getenv("ORDER_PORT")
 
 	portStr := os.Getenv("PORT")
 	envVar.PORT, err = strconv.Atoi(portStr)
