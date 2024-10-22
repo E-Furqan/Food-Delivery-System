@@ -59,21 +59,37 @@ func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, order)
 }
 
-func (orderCtrl *OrderController) GetOrdersOfUser(c *gin.Context) {
+func (orderCtrl *OrderController) GetOrders(c *gin.Context, isUser bool) {
 
-	var OrderPayLoad payload.Order
-	if err := c.ShouldBindJSON(&OrderPayLoad); err != nil {
+	var OrderNFilter payload.CombineOrderFilter
+	if err := c.ShouldBindJSON(&OrderNFilter); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	var order []model.Order
-	if err := orderCtrl.Repo.GetOrders(&order, int(OrderPayLoad.UserId)); err != nil {
+	var err error
+
+	if isUser {
+		err = orderCtrl.Repo.GetOrders(&order, int(OrderNFilter.Order.UserId), OrderNFilter.Filter.ColumnName, OrderNFilter.Filter.OrderDirection)
+	} else {
+		err = orderCtrl.Repo.GetOrders(&order, int(OrderNFilter.Order.RestaurantID), OrderNFilter.Filter.ColumnName, OrderNFilter.Filter.OrderDirection)
+	}
+
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, order)
+}
 
+func (orderCtrl *OrderController) GetOrdersOfUser(c *gin.Context) {
+	orderCtrl.GetOrders(c, true)
+}
+
+func (orderCtrl *OrderController) GetOrdersOfRestaurant(c *gin.Context) {
+	orderCtrl.GetOrders(c, false)
 }
 
 func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {

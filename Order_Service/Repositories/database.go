@@ -20,8 +20,23 @@ func NewRepository(db *gorm.DB) *Repository {
 	}
 }
 
-func (repo *Repository) GetOrders(order *[]model.Order, UserId int) error {
-	err := repo.DB.Preload("Item").Where("user_id = ?", UserId).Find(order).Error
+func (repo *Repository) GetOrders(order *[]model.Order, ID int, columnName string, orderDirection string) error {
+	if orderDirection != "asc" && orderDirection != "desc" {
+		orderDirection = "asc"
+	}
+
+	validColumns := map[string]bool{
+		"order_id":      true,
+		"user_id":       true,
+		"restaurant_id": true,
+		"order_status":  true,
+	}
+
+	if !validColumns[columnName] {
+		columnName = "order_id"
+	}
+
+	err := repo.DB.Preload("Item").Where("user_id = ?", ID).Order(fmt.Sprintf("%s %s", columnName, orderDirection)).Find(order).Error
 	return err
 }
 
