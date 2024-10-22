@@ -1,6 +1,7 @@
 package RestaurantController
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -136,6 +137,7 @@ func (ctrl *RestaurantController) ViewMenu(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error binding": err.Error()})
 		return
 	}
+	log.Print("combined Input :", combinedInput)
 	Items, err := ctrl.Repo.LoadItems(combinedInput.RestaurantId, combinedInput.ColumnName, combinedInput.OrderType)
 
 	if err != nil {
@@ -143,6 +145,7 @@ func (ctrl *RestaurantController) ViewMenu(c *gin.Context) {
 		return
 	}
 
+	log.Print("Fetched items:", Items)
 	c.JSON(http.StatusOK, Items)
 }
 
