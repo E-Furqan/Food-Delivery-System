@@ -179,11 +179,11 @@ func (ctrl *RestaurantController) ProcessOrder(c *gin.Context) {
 	}
 
 	if err := ctrl.Client.ProcessOrder(order); err != nil {
-		utils.GenerateResponse(c, "Message", "Post request failed", "Error", err.Error())
+		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Post request failed", "Error", err.Error())
 		return
 	}
 
-	utils.GenerateResponse(c, "Message", "Post request successful", "", "")
+	utils.GenerateResponse(http.StatusOK, c, "Message", "Post request successful", "", "")
 
 }
 
@@ -209,10 +209,7 @@ func (ctrl *RestaurantController) CancelOrder(c *gin.Context) {
 	var input payload.ProcessOrder
 
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"Message": "Binding input data failed",
-			"Error":   err,
-		})
+		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Binding input data failed", "Error", err.Error())
 		return
 	}
 
@@ -224,12 +221,12 @@ func (ctrl *RestaurantController) CancelOrder(c *gin.Context) {
 	}
 
 	input.OrderStatus = "Cancelled"
-	utils.GenerateResponse(c, "Message", "Order cancelled successfully", "Order details", input)
+	utils.GenerateResponse(http.StatusOK, c, "Message", "Order cancelled successfully", "Order details", input)
 
 	if err := ctrl.Client.ProcessOrder(input); err != nil {
-		utils.GenerateResponse(c, "Message", "Post request failed", "Error", err.Error())
+		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Post request failed", "Error", err.Error())
 		return
 	}
 
-	utils.GenerateResponse(c, "Message", "Post request successful", "", "")
+	utils.GenerateResponse(http.StatusOK, c, "Message", "Post request successful", "", nil)
 }

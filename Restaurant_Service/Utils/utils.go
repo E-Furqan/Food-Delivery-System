@@ -87,9 +87,14 @@ func RefreshToken(refreshToken string, c *gin.Context) (string, error) {
 	return accessToken, nil
 }
 
-func GenerateResponse(c *gin.Context, title1 string, Message1 string, title2 string, input interface{}) {
-	c.JSON(http.StatusOK, gin.H{
-		title1: Message1,
-		title2: input,
-	})
+func GenerateResponse(httpStatusCode int, c *gin.Context, title1 string, message1 string, title2 string, input interface{}) {
+	response := gin.H{
+		title1: message1,
+	}
+
+	if title2 != "" && input != nil {
+		response[title2] = input
+	}
+
+	c.JSON(httpStatusCode, response)
 }
