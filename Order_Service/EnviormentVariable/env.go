@@ -17,6 +17,8 @@ type Environment struct {
 	Get_Items_URL     string
 	BASE_URL          string
 	Process_Order_URL string
+	RESTAURANT_PORT   string
+	USER_PORT         string
 }
 
 // ReadEnv reads environment variables from a .env file and returns an Environment struct
@@ -37,6 +39,8 @@ func ReadEnv() Environment {
 	envVar.BASE_URL = os.Getenv("BASE_URL")
 	envVar.Get_Items_URL = os.Getenv("Get_Items_URL")
 	envVar.Process_Order_URL = os.Getenv("Process_Order_URL")
+	envVar.RESTAURANT_PORT = os.Getenv("RESTAURANT_PORT")
+	envVar.USER_PORT = os.Getenv("USER_PORT")
 	portStr := os.Getenv("PORT")
 	envVar.PORT, err = strconv.Atoi(portStr)
 	if err != nil {

@@ -13,6 +13,7 @@ import (
 type Client struct {
 	BaseUrl         string
 	ItemsURL        string
+	RESTAURANT_PORT string
 	ProcessOrderURL string
 }
 
@@ -23,6 +24,7 @@ func NewClient() *Client {
 func (client *Client) SetEnvValue(envVar environmentVariable.Environment) {
 	client.BaseUrl = envVar.BASE_URL
 	client.ItemsURL = envVar.Get_Items_URL
+	client.RESTAURANT_PORT = envVar.RESTAURANT_PORT
 }
 func (client *Client) GetItems(restaurantID uint) ([]payload.Items, error) {
 
@@ -34,7 +36,7 @@ func (client *Client) GetItems(restaurantID uint) ([]payload.Items, error) {
 		return nil, fmt.Errorf("error marshaling request body: %v", err)
 	}
 
-	url := fmt.Sprintf("%s%s", client.BaseUrl, client.ItemsURL)
+	url := fmt.Sprintf("%s%s%s", client.BaseUrl, client.RESTAURANT_PORT, client.ItemsURL)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %v", err)
@@ -66,7 +68,7 @@ func (client *Client) ProcessOrder(ProcessOrder payload.ProcessOrder) error {
 		return fmt.Errorf("error marshaling input: %v", err)
 	}
 
-	url := fmt.Sprintf("%s%s", client.BaseUrl, client.ProcessOrderURL)
+	url := fmt.Sprintf("%s%s%s", client.BaseUrl, client.RESTAURANT_PORT, client.ProcessOrderURL)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return fmt.Errorf("error creating request: %v", err)
