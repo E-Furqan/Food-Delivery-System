@@ -1,22 +1,29 @@
 package OrderControllers
 
 import (
+	"fmt"
 	"net/http"
 
+	ClientPackage "github.com/E-Furqan/Food-Delivery-System/Client"
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
 	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
+	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 	"github.com/gin-gonic/gin"
 )
 
 // Controller struct that holds a reference to the repository
 type OrderController struct {
-	Repo *database.Repository
+	Repo   *database.Repository
+	Client *ClientPackage.Client
 }
 
 // NewController initializes the controller with the repository dependency
-func NewController(repo *database.Repository) *OrderController {
-	return &OrderController{Repo: repo}
+func NewController(repo *database.Repository, client *ClientPackage.Client) *OrderController {
+	return &OrderController{
+		Repo:   repo,
+		Client: client,
+	}
 }
 
 func (orderCtrl *OrderController) CheckOut(c *gin.Context) {
@@ -99,18 +106,50 @@ func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
 
-	var order model.Order
-
-	err := orderCtrl.Repo.PlaceOrder(&order, &CombineOrderItem)
+	items, err := orderCtrl.Client.GetItems(CombineOrderItem.Order.RestaurantID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Error while creating order",
-			"Error":   err.Error(),
-		})
+		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Error while getting items from the restaurant", "Error", err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Order created successfully",
-	})
+	if len(items) == 0 {
+		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "No items found in the restaurant", "", nil)
+		return
+	}
+
+	totalBill := 0.0
+	for _, orderedItem := range CombineOrderItem.Items {
+		var ItemPrice float64
+		ItemFound := false
+
+		for _, item := range items {
+			if item.ItemId == orderedItem.ItemId {
+				ItemPrice = item.ItemPrice
+				ItemFound = true
+				break
+			}
+		}
+
+		if !ItemFound {
+			utils.GenerateResponse(http.StatusBadRequest, c, "Message", fmt.Sprintf("Item with ID %d not found", orderedItem.ItemId), "", nil)
+			return
+		}
+
+		totalBill += ItemPrice * float64(orderedItem.Quantity)
+	}
+
+	var order model.Order
+	order.UserId = CombineOrderItem.Order.UserId
+	order.RestaurantID = CombineOrderItem.Order.RestaurantID
+	order.TotalBill = totalBill
+	order.OrderStatus = "order placed"
+
+	err = orderCtrl.Repo.PlaceOrder(&order, &CombineOrderItem)
+
+	if err != nil {
+		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Error while creating order", "Error", err.Error())
+		return
+	}
+
+	utils.GenerateResponse(http.StatusOK, c, "Message", "Order created successfully", "", nil)
 }

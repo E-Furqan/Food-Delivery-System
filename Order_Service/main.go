@@ -1,6 +1,7 @@
 package main
 
 import (
+	ClientPackage "github.com/E-Furqan/Food-Delivery-System/Client"
 	OrderControllers "github.com/E-Furqan/Food-Delivery-System/Controllers/OrderController"
 	config "github.com/E-Furqan/Food-Delivery-System/DatabaseConfig"
 	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
@@ -14,8 +15,10 @@ func main() {
 	config.SetEnvValue(envVar)
 	db := config.Connection()
 
+	client := ClientPackage.NewClient()
+	client.SetEnvValue(envVar)
 	repo := database.NewRepository(db)
-	OrderController := OrderControllers.NewController(repo)
+	OrderController := OrderControllers.NewController(repo, client)
 
 	server := gin.Default()
 	Routes.User_routes(OrderController, server)

@@ -64,59 +64,27 @@ func (repo *Repository) Update(Model *model.Order, updateOrder payload.Order) er
 
 func (repo *Repository) PlaceOrder(order *model.Order, CombineOrderItem *payload.CombineOrderItem) error {
 	tx := repo.DB.Begin()
-
-	order.UserId = CombineOrderItem.Order.UserId
-	order.RestaurantID = CombineOrderItem.Order.RestaurantID
-	order.TotalBill = 0
-	order.OrderStatus = "order placed"
-
-	if err := tx.Create(order).Error; err != nil {
+	if err := tx.Create(&order).Error; err != nil {
 		tx.Rollback()
-		return err
+		return fmt.Errorf("error creating order: %v", err)
 	}
 
-	totalBill := uint(0)
-
-	for _, item := range CombineOrderItem.Items {
-
-		if item.ItemId == 0 {
-			tx.Rollback()
-			return fmt.Errorf("invalid ItemId: ItemId cannot be 0")
-		}
-
-		var existingItem model.Item
-		if err := tx.Where("item_id = ?", item.ItemId).First(&existingItem).Error; err != nil {
-			newItem := model.Item{
-				ItemId:   item.ItemId,
-				ItemName: item.ItemName,
-			}
-			if err := tx.Create(&newItem).Error; err != nil {
-				tx.Rollback()
-				return err
-			}
-		}
-
-		itemTotal := item.ItemPrice * item.Quantity
-		totalBill += itemTotal
-
+	for _, orderedItem := range CombineOrderItem.Items {
 		orderItem := model.OrderItem{
-			OrderID:      order.OrderID,
-			ItemId:       item.ItemId,
-			RestaurantID: order.RestaurantID,
-			ItemPrice:    item.ItemPrice,
-			Quantity:     item.Quantity,
+			OrderID:  order.OrderID,
+			ItemId:   orderedItem.ItemId,
+			Quantity: orderedItem.Quantity,
 		}
 
 		if err := tx.Create(&orderItem).Error; err != nil {
 			tx.Rollback()
-			return err
+			return fmt.Errorf("error adding order item: %v", err)
 		}
 	}
 
-	if err := tx.Model(&order).Update("TotalBill", totalBill).Error; err != nil {
-		tx.Rollback()
-		return err
+	if err := tx.Commit().Error; err != nil {
+		return fmt.Errorf("error committing transaction: %v", err)
 	}
 
-	return tx.Commit().Error
+	return nil
 }

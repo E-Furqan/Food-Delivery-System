@@ -52,9 +52,8 @@ func (client *Client) GetItems(restaurantID uint) ([]payload.Items, error) {
 
 	var items []payload.Items
 	if err := json.NewDecoder(resp.Body).Decode(&items); err != nil {
-		return nil, fmt.Errorf("error unmarshaling response: %v", err)
+		return nil, fmt.Errorf("error un marshaling response: %v", err)
 	}
 
-	// Return the parsed items
 	return items, nil
 }

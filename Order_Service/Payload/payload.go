@@ -16,10 +16,8 @@ type CombineOrderItem struct {
 }
 
 type OrderItemPayload struct {
-	ItemId    uint   `json:"item_id"`
-	ItemPrice uint   `json:"item_price"`
-	Quantity  uint   `json:"quantity"`
-	ItemName  string `json:"item_name"`
+	ItemId   uint `json:"item_id"`
+	Quantity uint `json:"quantity"`
 }
 
 type CombineOrderFilter struct {
