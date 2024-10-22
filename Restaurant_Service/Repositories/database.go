@@ -65,7 +65,7 @@ func (repo *Repository) LoadRestaurantWithItems(Restaurant *model.Restaurant) er
 	return tx.Commit().Error
 }
 
-func (repo *Repository) LoadItemsInOrder(RestaurantID uint, columnName string, order string) ([]model.Item, error) {
+func (repo *Repository) LoadItems(RestaurantID uint, columnName string, order string) ([]model.Item, error) {
 	if columnName == "" {
 		columnName = "restaurant_id"
 	}
@@ -117,7 +117,7 @@ func (repo *Repository) RemoveItemFromRestaurantMenu(restaurantId uint, itemId u
 }
 
 func (repo *Repository) GetAllRestaurants(restaurants *[]model.Restaurant) error {
-	err := repo.DB.Preload("Items").
+	err := repo.DB.
 		Where("restaurant_status != ?", "closed").
 		Find(restaurants).Error
 

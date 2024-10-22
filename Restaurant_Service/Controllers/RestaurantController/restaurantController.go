@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	ClientPackage "github.com/E-Furqan/Food-Delivery-System/Client"
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
 	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
@@ -13,11 +14,15 @@ import (
 )
 
 type RestaurantController struct {
-	Repo *database.Repository
+	Repo   *database.Repository
+	Client *ClientPackage.Client
 }
 
-func NewController(repo *database.Repository) *RestaurantController {
-	return &RestaurantController{Repo: repo}
+func NewController(repo *database.Repository, client *ClientPackage.Client) *RestaurantController {
+	return &RestaurantController{
+		Repo:   repo,
+		Client: client,
+	}
 }
 
 func (ctrl *RestaurantController) Register(c *gin.Context) {
@@ -131,7 +136,7 @@ func (ctrl *RestaurantController) ViewMenu(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error binding": err.Error()})
 		return
 	}
-	Items, err := ctrl.Repo.LoadItemsInOrder(combinedInput.RestaurantId, combinedInput.ColumnName, combinedInput.OrderType)
+	Items, err := ctrl.Repo.LoadItems(combinedInput.RestaurantId, combinedInput.ColumnName, combinedInput.OrderType)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error load item": err.Error()})
@@ -173,7 +178,13 @@ func (ctrl *RestaurantController) ProcessOrder(c *gin.Context) {
 		order.OrderStatus = newStatus
 	}
 
-	c.JSON(http.StatusOK, order)
+	if err := ctrl.Client.ProcessOrder(order); err != nil {
+		utils.GenerateResponse(c, "Message", "Post request failed", "Error", err.Error())
+		return
+	}
+
+	utils.GenerateResponse(c, "Message", "Post request successful", "", "")
+
 }
 
 func (ctrl *RestaurantController) CancelOrder(c *gin.Context) {
@@ -213,9 +224,12 @@ func (ctrl *RestaurantController) CancelOrder(c *gin.Context) {
 	}
 
 	input.OrderStatus = "Cancelled"
-	c.JSON(http.StatusOK, gin.H{
-		"Message":       "Order cancelled successfully",
-		"Order details": input,
-	})
+	utils.GenerateResponse(c, "Message", "Order cancelled successfully", "Order details", input)
 
+	if err := ctrl.Client.ProcessOrder(input); err != nil {
+		utils.GenerateResponse(c, "Message", "Post request failed", "Error", err.Error())
+		return
+	}
+
+	utils.GenerateResponse(c, "Message", "Post request successful", "", "")
 }
