@@ -26,12 +26,9 @@ func (client *Client) SetEnvValue(envVar environmentVariable.Environment) {
 	client.ItemsURL = envVar.Get_Items_URL
 	client.RESTAURANT_PORT = envVar.RESTAURANT_PORT
 }
-func (client *Client) GetItems(restaurantID uint) ([]payload.Items, error) {
+func (client *Client) GetItems(getItems payload.GetItems) ([]payload.Items, error) {
 
-	requestBody := map[string]interface{}{
-		"restaurant_id": restaurantID,
-	}
-	body, err := json.Marshal(requestBody)
+	body, err := json.Marshal(getItems)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling request body: %v", err)
 	}

@@ -41,3 +41,9 @@ type ProcessOrder struct {
 	RestaurantId uint   `json:"restaurant_id"`
 	OrderStatus  string `json:"order_status"`
 }
+
+type GetItems struct {
+	ColumnName   string `json:"column_name"`
+	OrderType    string `json:"order_type"`
+	RestaurantId uint   `json:"restaurant_id"`
+}

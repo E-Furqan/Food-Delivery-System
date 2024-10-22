@@ -106,7 +106,12 @@ func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
 
-	items, err := orderCtrl.Client.GetItems(CombineOrderItem.Order.RestaurantID)
+	var GetItem payload.GetItems
+	GetItem.RestaurantId = CombineOrderItem.Order.RestaurantID
+	GetItem.ColumnName = "restaurant_id"
+	GetItem.OrderType = "asc"
+
+	items, err := orderCtrl.Client.GetItems(GetItem)
 	if err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Error while getting items from the restaurant", "Error", err.Error())
 		return
