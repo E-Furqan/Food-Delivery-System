@@ -14,6 +14,7 @@ type Client struct {
 	BaseUrl                      string
 	ItemsURL                     string
 	RESTAURANT_PORT              string
+	USER_PORT                    string
 	Process_Order_Restaurant_URL string
 	Process_Order_User_URL       string
 }
@@ -26,6 +27,7 @@ func (client *Client) SetEnvValue(envVar environmentVariable.Environment) {
 	client.BaseUrl = envVar.BASE_URL
 	client.ItemsURL = envVar.Get_Items_URL
 	client.RESTAURANT_PORT = envVar.RESTAURANT_PORT
+	client.USER_PORT = envVar.USER_PORT
 	client.Process_Order_Restaurant_URL = envVar.Process_Order_Restaurant_URL
 	client.Process_Order_User_URL = envVar.Process_Order_User_URL
 }
@@ -71,7 +73,7 @@ func (client *Client) ProcessOrder(ProcessOrder payload.ProcessOrder, forUser bo
 	var url string
 
 	if forUser {
-		url = fmt.Sprintf("%s%s%s", client.BaseUrl, client.RESTAURANT_PORT, client.Process_Order_User_URL)
+		url = fmt.Sprintf("%s%s%s", client.BaseUrl, client.USER_PORT, client.Process_Order_User_URL)
 	} else {
 		url = fmt.Sprintf("%s%s%s", client.BaseUrl, client.RESTAURANT_PORT, client.Process_Order_Restaurant_URL)
 	}
