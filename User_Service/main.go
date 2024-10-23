@@ -23,6 +23,7 @@ func main() {
 
 	repo := database.NewRepository(db)
 	client := ClientPackage.NewClient()
+	client.SetEnvValue(envVar)
 	ctrl := UserControllers.NewController(repo, client)
 	rCtrl := RoleController.NewController(repo)
 
