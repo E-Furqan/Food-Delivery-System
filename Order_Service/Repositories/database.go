@@ -175,5 +175,4 @@ func (repo *Repository) FetchAllOrder(orders *[]model.Order) error {
 	}
 
 	return nil
-
 }
