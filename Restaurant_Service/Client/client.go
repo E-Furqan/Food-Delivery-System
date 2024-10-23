@@ -33,8 +33,8 @@ func (client *Client) ProcessOrder(input payload.ProcessOrder) error {
 		return fmt.Errorf("error marshaling input: %v", err)
 	}
 
-	url := fmt.Sprintf("%s%s%s", client.ProcessOrderURL, client.ORDER_PORT, client.BaseUrl)
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	url := fmt.Sprintf("%s%s%s", client.BaseUrl, client.ORDER_PORT, client.ProcessOrderURL)
+	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return fmt.Errorf("error creating request: %v", err)
 	}
