@@ -11,7 +11,9 @@ func User_routes(orderController *OrderControllers.OrderController, server *gin.
 	orderRoute.PATCH("/update/status", orderController.UpdateOrderStatus)
 	orderRoute.GET("/view/user/orders", orderController.GetOrdersOfUser)
 	orderRoute.GET("/view/restaurant/orders", orderController.GetOrdersOfRestaurant)
+	orderRoute.GET("/generate/invoice", orderController.GenerateInvoice)
 	orderRoute.POST("/place/order", orderController.PlaceOrder)
+
 	// orderRoute.POST("/checkout", orderController.CheckOut)
 
 }

@@ -59,7 +59,7 @@ func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 
 	var order model.Order
 
-	err := orderCtrl.Repo.GetOrder(&order, int(OrderStatus.OrderID))
+	err := orderCtrl.Repo.GetOrder(&order, OrderStatus.OrderID)
 	if err != nil {
 		log.Print("23")
 		c.JSON(http.StatusNotFound, "Order not found")
@@ -121,6 +121,7 @@ func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 	GetItem.ColumnName = "restaurant_id"
 	GetItem.OrderType = "asc"
 
+	var items []payload.Items
 	items, err := orderCtrl.Client.GetItems(GetItem)
 	if err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Error while getting items from the restaurant", "Error", err.Error())
@@ -132,7 +133,117 @@ func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 		return
 	}
 
+	totalBill, err := orderCtrl.calculateBill(CombineOrderItem, items)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	order := orderCtrl.createOrder(CombineOrderItem, totalBill)
+	err = orderCtrl.Repo.PlaceOrder(&order, &CombineOrderItem)
+
+	if err != nil {
+		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Error while creating order", "Error", err.Error())
+		return
+	}
+	utils.GenerateResponse(http.StatusOK, c, "Message", fmt.Sprintf("Order created successfully with total bill: %v", totalBill), "", nil)
+
+	processOrder := orderCtrl.createProcessOrder(order)
+	err = orderCtrl.Client.ProcessOrder(processOrder, false)
+
+	if err != nil {
+		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Error sending request to restaurant service", "Error", err.Error())
+		return
+	}
+
+	utils.GenerateResponse(http.StatusOK, c, "Message", "Order Accepted by the restaurant successfully", "", nil)
+}
+
+func (orderCtrl *OrderController) GenerateInvoice(c *gin.Context) {
+	var orderId payload.ID
+	if err := c.ShouldBindJSON(&orderId); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var order model.Order
+	if err := orderCtrl.Repo.GetOrder(&order, orderId.OrderID); err != nil {
+		utils.GenerateResponse(http.StatusNotFound, c, "Message", "Order not found", "Error", err.Error())
+		return
+	}
+
+	var GetItem payload.GetItems
+	GetItem.RestaurantId = order.RestaurantID
+	GetItem.ColumnName = "restaurant_id"
+	GetItem.OrderType = "asc"
+
+	var items []payload.Items
+	items, err := orderCtrl.Client.GetItems(GetItem)
+	if err != nil {
+		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Error while getting items from the restaurant", "Error", err.Error())
+		return
+	}
+
+	var orderItems []model.OrderItem
+	if err := orderCtrl.Repo.GetOrderItems(&orderItems, orderId.OrderID); err != nil {
+		utils.GenerateResponse(http.StatusInternalServerError, c, "Message", "Error retrieving order items", "Error", err.Error())
+		return
+	}
+
+	invoice := orderCtrl.createInvoice(order, orderItems, items)
+
+	c.JSON(http.StatusOK, gin.H{"invoice": invoice})
+}
+
+func (orderCtrl *OrderController) createInvoice(order model.Order, orderItems []model.OrderItem, items []payload.Items) gin.H {
+	invoiceItems := []gin.H{}
+	totalBill := order.TotalBill
+
+	for _, orderItem := range orderItems {
+		for _, item := range items {
+			if item.ItemId == orderItem.ItemId {
+				invoiceItems = append(invoiceItems, gin.H{
+					"item_id":    item.ItemId,
+					"name":       item.ItemName,
+					"quantity":   orderItem.Quantity,
+					"unit_price": item.ItemPrice,
+					"total":      float64(orderItem.Quantity) * item.ItemPrice,
+				})
+			}
+		}
+
+	}
+
+	return gin.H{
+		"order_id":      order.OrderID,
+		"user_id":       order.UserId,
+		"restaurant_id": order.RestaurantID,
+		"order_status":  order.OrderStatus,
+		"total_bill":    totalBill,
+		"items":         invoiceItems,
+	}
+}
+
+func (orderCtrl *OrderController) StartScheduledOrderTask() {
+	ticker := time.NewTicker(20 * time.Second)
+	go func() {
+		for {
+			<-ticker.C
+			orderCtrl.handleProcessOrderTask()
+		}
+	}()
+}
+
+func (orderCtrl *OrderController) createOrder(order payload.CombineOrderItem, bill float64) model.Order {
+	return model.Order{
+		OrderStatus:  "order placed",
+		UserId:       order.UserId,
+		RestaurantID: order.RestaurantId,
+		TotalBill:    bill,
+	}
+}
+func (orderCtrl *OrderController) calculateBill(CombineOrderItem payload.CombineOrderItem, items []payload.Items) (float64, error) {
 	totalBill := 0.0
+
 	for _, orderedItem := range CombineOrderItem.Items {
 		var ItemPrice float64
 		ItemFound := false
@@ -146,51 +257,16 @@ func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 		}
 
 		if !ItemFound {
-			utils.GenerateResponse(http.StatusBadRequest, c, "Message", fmt.Sprintf("Item with ID %d not found", orderedItem.ItemId), "", nil)
-			return
+			return 0.0, fmt.Errorf("item with ID %d not found", orderedItem.ItemId)
 		}
 
 		totalBill += ItemPrice * float64(orderedItem.Quantity)
 	}
 
-	var order model.Order
-	order.UserId = CombineOrderItem.UserId
-	order.RestaurantID = CombineOrderItem.RestaurantId
-	order.TotalBill = totalBill
-	order.OrderStatus = "order placed"
-
-	err = orderCtrl.Repo.PlaceOrder(&order, &CombineOrderItem)
-
-	if err != nil {
-		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Error while creating order", "Error", err.Error())
-		return
-	}
-	utils.GenerateResponse(http.StatusOK, c, "Message", "Order created successfully", "", nil)
-
-	processOrder := orderCtrl.createProcessOrder(order)
-
-	err = orderCtrl.Client.ProcessOrder(processOrder, false)
-
-	if err != nil {
-		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Error sending request to restaurant service", "Error", err.Error())
-		return
-	}
-
-	utils.GenerateResponse(http.StatusOK, c, "Message", "Order Accepted by the restaurant successfully", "", nil)
-
+	return totalBill, nil
 }
 
-func (orderCtrl *OrderController) StartScheduledOrderTask() {
-	ticker := time.NewTicker(20 * time.Second)
-	go func() {
-		for {
-			<-ticker.C
-			orderCtrl.HandleProcessOrderTask()
-		}
-	}()
-}
-
-func (orderCtrl *OrderController) HandleProcessOrderTask() {
+func (orderCtrl *OrderController) handleProcessOrderTask() {
 	var orders []model.Order
 
 	if err := orderCtrl.Repo.FetchAllOrder(&orders); err != nil {
@@ -202,7 +278,7 @@ func (orderCtrl *OrderController) HandleProcessOrderTask() {
 	for _, order := range orders {
 		if strings.ToLower(order.OrderStatus) != "completed" && currentTime.Sub(order.Time) >= 50*time.Second {
 			processOrder := orderCtrl.createProcessOrder(order)
-			if err := orderCtrl.ProcessOrderBasedOnStatus(processOrder, order.OrderStatus); err != nil {
+			if err := orderCtrl.processOrderBasedOnStatus(processOrder, order.OrderStatus); err != nil {
 				log.Printf("Message: Error sending request to service. Error: %v", err.Error())
 				log.Printf("order id :%v", order.OrderID)
 			}
@@ -223,7 +299,7 @@ func (orderCtrl *OrderController) createProcessOrder(order model.Order) payload.
 	}
 }
 
-func (orderCtrl *OrderController) ProcessOrderBasedOnStatus(processOrder payload.ProcessOrder, status string) error {
+func (orderCtrl *OrderController) processOrderBasedOnStatus(processOrder payload.ProcessOrder, status string) error {
 	if orderCtrl.isRestaurantStatus(status) {
 		return orderCtrl.Client.ProcessOrder(processOrder, false)
 	}

@@ -40,9 +40,16 @@ func (repo *Repository) GetOrders(order *[]model.Order, ID int, columnName strin
 	return err
 }
 
-func (repo *Repository) GetOrder(order *model.Order, OrderId int) error {
+func (repo *Repository) GetOrder(order *model.Order, OrderId uint) error {
 	err := repo.DB.Where("order_id = ?", OrderId).First(order).Error
 	return err
+}
+
+func (repo *Repository) GetOrderItems(orderItems *[]model.OrderItem, orderID uint) error {
+	return repo.DB.Where("order_id = ?", orderID).Find(orderItems).Error
+}
+func (repo *Repository) GetItemByID(itemID uint, item *model.Item) error {
+	return repo.DB.First(item, itemID).Error
 }
 
 func (repo *Repository) Update(Model *model.Order, updateOrder payload.Order) error {
