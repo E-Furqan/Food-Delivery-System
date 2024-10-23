@@ -8,12 +8,10 @@ import (
 	"gorm.io/gorm"
 )
 
-// Repository struct to handle dependency injection
 type Repository struct {
 	DB *gorm.DB
 }
 
-// NewRepository is a constructor function to initialize the repository with a DB connection
 func NewRepository(db *gorm.DB) *Repository {
 	return &Repository{
 		DB: db,
