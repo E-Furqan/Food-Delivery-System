@@ -48,11 +48,9 @@ func NewController(repo *database.Repository, client *ClientPackage.Client) *Ord
 // }
 
 func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
-	log.Print("13111")
 	var OrderStatus payload.Order
 
 	if err := c.ShouldBindJSON(&OrderStatus); err != nil {
-		log.Print("13")
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -61,21 +59,20 @@ func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 
 	err := orderCtrl.Repo.GetOrder(&order, OrderStatus.OrderID)
 	if err != nil {
-		log.Print("23")
 		c.JSON(http.StatusNotFound, "Order not found")
 		return
 	}
 
 	if OrderStatus.DeliveryDriverID != 0 {
-		log.Print("OrderStatus.DeliveryDriverID")
-		log.Print(OrderStatus.DeliveryDriverID)
 		order.DeliveryDriverID = OrderStatus.DeliveryDriverID
-	}
 
+	}
+	log.Printf("time: %v", order.Time)
+	order.Time = time.Now()
+	log.Printf("uptime: %v", order.Time)
 	order.OrderStatus = OrderStatus.OrderStatus
 	if err := orderCtrl.Repo.Update(&order); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		log.Print("33")
 		return
 	}
 
@@ -145,7 +142,7 @@ func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-	order := orderCtrl.createOrder(CombineOrderItem, totalBill)
+	order := orderCtrl.createOrderObj(CombineOrderItem, totalBill)
 	err = orderCtrl.Repo.PlaceOrder(&order, &CombineOrderItem)
 
 	if err != nil {
@@ -240,7 +237,7 @@ func (orderCtrl *OrderController) StartScheduledOrderTask() {
 	}()
 }
 
-func (orderCtrl *OrderController) createOrder(order payload.CombineOrderItem, bill float64) model.Order {
+func (orderCtrl *OrderController) createOrderObj(order payload.CombineOrderItem, bill float64) model.Order {
 	return model.Order{
 		OrderStatus:  "order placed",
 		UserId:       order.UserId,
@@ -284,11 +281,15 @@ func (orderCtrl *OrderController) handleProcessOrderTask() {
 	currentTime := time.Now()
 	for _, order := range orders {
 		if strings.ToLower(order.OrderStatus) != "completed" && currentTime.Sub(order.Time) >= 50*time.Second {
-			processOrder := orderCtrl.createProcessOrder(order)
-			if err := orderCtrl.processOrderBasedOnStatus(processOrder, order.OrderStatus); err != nil {
-				log.Printf("Message: Error sending request to service. Error: %v", err.Error())
-				log.Printf("order id :%v", order.OrderID)
-			}
+			wg.Add(1)
+			go func(o model.Order) {
+				defer wg.Done()
+				processOrder := orderCtrl.createProcessOrder(o)
+				if err := orderCtrl.processOrderBasedOnStatus(processOrder, o.OrderStatus); err != nil {
+					log.Printf("Message: Error sending request to service. Error: %v", err.Error())
+					log.Printf("order id :%v", o.OrderID)
+				}
+			}(order)
 
 		}
 	}
