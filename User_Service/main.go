@@ -29,5 +29,5 @@ func main() {
 	rCtrl.AddDefaultRoles(&gin.Context{})
 
 	route.User_routes(ctrl, rCtrl, server)
-	server.Run(":8085")
+	server.Run(":8083")
 }
