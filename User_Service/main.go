@@ -14,8 +14,10 @@ import (
 )
 
 func main() {
-	db := config.Connection()
 	envVar := environmentVariable.ReadEnv()
+
+	config.SetEnvValue(envVar)
+	db := config.Connection()
 	utils.SetEnvValue(envVar)
 	authenticator.SetEnvValue(envVar)
 
