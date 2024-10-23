@@ -20,7 +20,7 @@ func NewRepository(db *gorm.DB) *Repository {
 	}
 }
 
-func (repo *Repository) GetOrders(order *[]model.Order, ID int, columnName string, orderDirection string) error {
+func (repo *Repository) GetOrders(order *[]model.Order, ID int, columnName string, orderDirection string, searchColumn string) error {
 	if orderDirection != "asc" && orderDirection != "desc" {
 		orderDirection = "asc"
 	}
@@ -36,7 +36,7 @@ func (repo *Repository) GetOrders(order *[]model.Order, ID int, columnName strin
 		columnName = "order_id"
 	}
 
-	err := repo.DB.Preload("Item").Where("user_id = ?", ID).Order(fmt.Sprintf("%s %s", columnName, orderDirection)).Find(order).Error
+	err := repo.DB.Preload("Item").Where((fmt.Sprintf("%s = ?", searchColumn)), ID).Order(fmt.Sprintf("%s %s", columnName, orderDirection)).Find(order).Error
 	return err
 }
 

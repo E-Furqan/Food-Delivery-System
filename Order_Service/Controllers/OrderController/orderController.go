@@ -84,9 +84,12 @@ func (orderCtrl *OrderController) GetOrders(c *gin.Context, isUser bool) {
 	var err error
 
 	if isUser {
-		err = orderCtrl.Repo.GetOrders(&order, int(OrderNFilter.Order.UserId), OrderNFilter.Filter.ColumnName, OrderNFilter.Filter.OrderDirection)
+		log.Print(OrderNFilter.UserId)
+		err = orderCtrl.Repo.GetOrders(&order, int(OrderNFilter.UserId), OrderNFilter.Filter.ColumnName, OrderNFilter.Filter.OrderDirection, "user_id")
 	} else {
-		err = orderCtrl.Repo.GetOrders(&order, int(OrderNFilter.Order.RestaurantID), OrderNFilter.Filter.ColumnName, OrderNFilter.Filter.OrderDirection)
+		log.Print(OrderNFilter.RestaurantId)
+		err = orderCtrl.Repo.GetOrders(&order, int(OrderNFilter.RestaurantId), OrderNFilter.Filter.ColumnName, OrderNFilter.Filter.OrderDirection, "restaurant_id")
+		log.Print(order)
 	}
 
 	if err != nil {

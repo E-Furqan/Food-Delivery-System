@@ -17,8 +17,6 @@ var (
 	host     string
 	db_name  string
 	port     int
-	portStr  int
-	err      error
 )
 
 var DB *gorm.DB
@@ -46,6 +44,11 @@ func Connection() *gorm.DB {
 	}
 
 	err = DB.AutoMigrate(&model.Order{})
+	if err != nil {
+		log.Fatalf("Failed to migrate database: %v", err)
+	}
+
+	err = DB.AutoMigrate(&model.Item{})
 	if err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
