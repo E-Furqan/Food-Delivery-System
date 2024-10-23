@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
+	"sync"
+	"time"
 
 	ClientPackage "github.com/E-Furqan/Food-Delivery-System/Client"
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
@@ -163,12 +166,10 @@ func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 		return
 	}
 	utils.GenerateResponse(http.StatusOK, c, "Message", "Order created successfully", "", nil)
-	var processOrder payload.ProcessOrder
-	processOrder.OrderStatus = order.OrderStatus
-	processOrder.RestaurantId = order.RestaurantID
-	processOrder.OrderID = order.OrderID
 
-	err = orderCtrl.Client.ProcessOrder(processOrder)
+	processOrder := orderCtrl.createProcessOrder(order)
+
+	err = orderCtrl.Client.ProcessOrder(processOrder, false)
 
 	if err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Error sending request to restaurant service", "Error", err.Error())
@@ -177,4 +178,76 @@ func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 
 	utils.GenerateResponse(http.StatusOK, c, "Message", "Order Accepted by the restaurant successfully", "", nil)
 
+}
+
+func (orderCtrl *OrderController) StartScheduledOrderTask() {
+	ticker := time.NewTicker(20 * time.Second)
+	go func() {
+		for {
+			<-ticker.C
+			orderCtrl.HandleProcessOrderTask()
+		}
+	}()
+}
+
+func (orderCtrl *OrderController) HandleProcessOrderTask() {
+	var orders []model.Order
+
+	if err := orderCtrl.Repo.FetchAllOrder(&orders); err != nil {
+		log.Printf("Message: Error while getting all orders from order table. Error: %v", err.Error())
+		return
+	}
+	var wg sync.WaitGroup
+	currentTime := time.Now()
+	for _, order := range orders {
+		if strings.ToLower(order.OrderStatus) != "completed" && currentTime.Sub(order.Time) >= 50*time.Second {
+			processOrder := orderCtrl.createProcessOrder(order)
+			if err := orderCtrl.ProcessOrderBasedOnStatus(processOrder, order.OrderStatus); err != nil {
+				log.Printf("Message: Error sending request to service. Error: %v", err.Error())
+				log.Printf("order id :%v", order.OrderID)
+			}
+
+		}
+	}
+	wg.Wait()
+	log.Print("All orders processed")
+}
+
+func (orderCtrl *OrderController) createProcessOrder(order model.Order) payload.ProcessOrder {
+	return payload.ProcessOrder{
+		OrderStatus: order.OrderStatus,
+		ID: payload.ID{
+			RestaurantId: order.RestaurantID,
+			OrderID:      order.OrderID,
+		},
+	}
+}
+
+func (orderCtrl *OrderController) ProcessOrderBasedOnStatus(processOrder payload.ProcessOrder, status string) error {
+	if orderCtrl.isRestaurantStatus(status) {
+		return orderCtrl.Client.ProcessOrder(processOrder, false)
+	}
+	if orderCtrl.isUserStatus(status) {
+		return orderCtrl.Client.ProcessOrder(processOrder, true)
+	}
+	return fmt.Errorf("status not recognized: %s", status)
+}
+
+func (orderCtrl *OrderController) isRestaurantStatus(status string) bool {
+	for _, restaurantStatus := range payload.RestaurantOrderStatuses {
+		if strings.EqualFold(status, restaurantStatus) {
+			return true
+		}
+	}
+	return false
+}
+
+func (orderCtrl *OrderController) isUserStatus(status string) bool {
+	for _, userStatus := range payload.UserOrderStatuses {
+		if strings.EqualFold(status, userStatus) {
+			log.Print("User")
+			return true
+		}
+	}
+	return false
 }

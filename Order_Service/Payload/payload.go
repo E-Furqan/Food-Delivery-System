@@ -48,3 +48,16 @@ type GetItems struct {
 	OrderType    string `json:"order_type"`
 	RestaurantId uint   `json:"restaurant_id"`
 }
+
+var UserOrderStatuses = []string{
+	"Waiting For Delivery Driver",
+	"In for delivery",
+	"Delivered",
+	"Completed",
+}
+
+var RestaurantOrderStatuses = []string{
+	"Order placed",
+	"Accepted",
+	"In process",
+}

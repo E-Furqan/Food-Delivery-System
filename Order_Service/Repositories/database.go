@@ -104,3 +104,8 @@ func (repo *Repository) PlaceOrder(order *model.Order, CombineOrderItem *payload
 
 	return nil
 }
+
+func (repo *Repository) FetchAllOrder(orders *[]model.Order) error {
+	err := repo.DB.Find(orders).Error
+	return err
+}

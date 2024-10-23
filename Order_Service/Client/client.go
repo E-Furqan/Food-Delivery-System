@@ -11,10 +11,11 @@ import (
 )
 
 type Client struct {
-	BaseUrl         string
-	ItemsURL        string
-	RESTAURANT_PORT string
-	ProcessOrderURL string
+	BaseUrl                      string
+	ItemsURL                     string
+	RESTAURANT_PORT              string
+	Process_Order_Restaurant_URL string
+	Process_Order_User_URL       string
 }
 
 func NewClient() *Client {
@@ -25,7 +26,8 @@ func (client *Client) SetEnvValue(envVar environmentVariable.Environment) {
 	client.BaseUrl = envVar.BASE_URL
 	client.ItemsURL = envVar.Get_Items_URL
 	client.RESTAURANT_PORT = envVar.RESTAURANT_PORT
-	client.ProcessOrderURL = envVar.Process_Order_URL
+	client.Process_Order_Restaurant_URL = envVar.Process_Order_Restaurant_URL
+	client.Process_Order_User_URL = envVar.Process_Order_User_URL
 }
 func (client *Client) GetItems(getItems payload.GetItems) ([]payload.Items, error) {
 
@@ -59,14 +61,21 @@ func (client *Client) GetItems(getItems payload.GetItems) ([]payload.Items, erro
 	return items, nil
 }
 
-func (client *Client) ProcessOrder(ProcessOrder payload.ProcessOrder) error {
+func (client *Client) ProcessOrder(ProcessOrder payload.ProcessOrder, forUser bool) error {
 
 	jsonData, err := json.Marshal(ProcessOrder)
 	if err != nil {
 		return fmt.Errorf("error marshaling input: %v", err)
 	}
 
-	url := fmt.Sprintf("%s%s%s", client.BaseUrl, client.RESTAURANT_PORT, client.ProcessOrderURL)
+	var url string
+
+	if forUser {
+		url = fmt.Sprintf("%s%s%s", client.BaseUrl, client.RESTAURANT_PORT, client.Process_Order_User_URL)
+	} else {
+		url = fmt.Sprintf("%s%s%s", client.BaseUrl, client.RESTAURANT_PORT, client.Process_Order_Restaurant_URL)
+	}
+
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 
 	if err != nil {

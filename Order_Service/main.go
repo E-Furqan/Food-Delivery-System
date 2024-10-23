@@ -11,6 +11,7 @@ import (
 )
 
 func main() {
+
 	envVar := environmentVariable.ReadEnv()
 	config.SetEnvValue(envVar)
 	db := config.Connection()
@@ -19,6 +20,7 @@ func main() {
 	client.SetEnvValue(envVar)
 	repo := database.NewRepository(db)
 	OrderController := OrderControllers.NewController(repo, client)
+	OrderController.StartScheduledOrderTask()
 
 	server := gin.Default()
 	Routes.User_routes(OrderController, server)

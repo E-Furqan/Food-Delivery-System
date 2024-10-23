@@ -9,16 +9,17 @@ import (
 )
 
 type Environment struct {
-	HOST              string
-	USER              string
-	PASSWORD          string
-	DB_NAME           string
-	PORT              int
-	Get_Items_URL     string
-	BASE_URL          string
-	Process_Order_URL string
-	RESTAURANT_PORT   string
-	USER_PORT         string
+	HOST                         string
+	USER                         string
+	PASSWORD                     string
+	DB_NAME                      string
+	PORT                         int
+	Get_Items_URL                string
+	BASE_URL                     string
+	Process_Order_Restaurant_URL string
+	RESTAURANT_PORT              string
+	USER_PORT                    string
+	Process_Order_User_URL       string
 }
 
 // ReadEnv reads environment variables from a .env file and returns an Environment struct
@@ -38,7 +39,8 @@ func ReadEnv() Environment {
 	envVar.DB_NAME = os.Getenv("DB_NAME")
 	envVar.BASE_URL = os.Getenv("BASE_URL")
 	envVar.Get_Items_URL = os.Getenv("Get_Items_URL")
-	envVar.Process_Order_URL = os.Getenv("Process_Order_URL")
+	envVar.Process_Order_Restaurant_URL = os.Getenv("Process_Order_Restaurant_URL")
+	envVar.Process_Order_User_URL = os.Getenv("Process_Order_User_URL")
 	envVar.RESTAURANT_PORT = os.Getenv("RESTAURANT_PORT")
 	envVar.USER_PORT = os.Getenv("USER_PORT")
 	portStr := os.Getenv("PORT")
