@@ -166,7 +166,7 @@ func (ctrl *Controller) UpdateUser(c *gin.Context) {
 	err = ctrl.Repo.Update(&user, &updateUserData)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update student"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
 		return
 	}
 
