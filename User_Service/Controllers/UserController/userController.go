@@ -361,6 +361,11 @@ func (ctrl *Controller) ProcessOrder(c *gin.Context) {
 		}
 		order.DeliverDriverID = driver.UserId
 
+		if err := ctrl.Client.ProcessOrder(order); err != nil {
+			utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Patch request failed", "Error", err.Error())
+			return
+		}
+
 		c.JSON(http.StatusOK, gin.H{
 			"Order":          order,
 			"Deliver Driver": driver.UserId,
