@@ -65,9 +65,10 @@ func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 		c.JSON(http.StatusNotFound, "Order not found")
 		return
 	}
-	log.Print("OrderStatus.DeliveryDriverID")
-	log.Print(OrderStatus.DeliveryDriverID)
+
 	if OrderStatus.DeliveryDriverID != 0 {
+		log.Print("OrderStatus.DeliveryDriverID")
+		log.Print(OrderStatus.DeliveryDriverID)
 		order.DeliveryDriverID = OrderStatus.DeliveryDriverID
 	}
 
