@@ -1,9 +1,10 @@
 package payload
 
 type ID struct {
-	OrderID      uint `json:"order_id"`
-	RestaurantId uint `json:"restaurant_id"`
-	UserId       uint `json:"user_id"`
+	OrderID          uint `json:"order_id"`
+	RestaurantId     uint `json:"restaurant_id"`
+	UserId           uint `json:"user_id"`
+	DeliveryDriverID uint `json:"delivery_driver"`
 }
 
 type Order struct {

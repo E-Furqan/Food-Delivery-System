@@ -65,8 +65,14 @@ func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 		c.JSON(http.StatusNotFound, "Order not found")
 		return
 	}
+	log.Print("OrderStatus.DeliveryDriverID")
+	log.Print(OrderStatus.DeliveryDriverID)
+	if OrderStatus.DeliveryDriverID != 0 {
+		order.DeliveryDriverID = OrderStatus.DeliveryDriverID
+	}
 
-	if err := orderCtrl.Repo.Update(&order, OrderStatus); err != nil {
+	order.OrderStatus = OrderStatus.OrderStatus
+	if err := orderCtrl.Repo.Update(&order); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		log.Print("33")
 		return
@@ -293,8 +299,9 @@ func (orderCtrl *OrderController) createProcessOrder(order model.Order) payload.
 	return payload.ProcessOrder{
 		OrderStatus: order.OrderStatus,
 		ID: payload.ID{
-			RestaurantId: order.RestaurantID,
-			OrderID:      order.OrderID,
+			RestaurantId:     order.RestaurantID,
+			OrderID:          order.OrderID,
+			DeliveryDriverID: order.DeliveryDriverID,
 		},
 	}
 }

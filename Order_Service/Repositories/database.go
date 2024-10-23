@@ -52,8 +52,8 @@ func (repo *Repository) GetItemByID(itemID uint, item *model.Item) error {
 	return repo.DB.First(item, itemID).Error
 }
 
-func (repo *Repository) Update(Model *model.Order, updateOrder payload.Order) error {
-	result := repo.DB.Model(Model).Where("order_id = ?", updateOrder.OrderID).Updates(updateOrder)
+func (repo *Repository) Update(order *model.Order) error {
+	result := repo.DB.Model(order).Where("order_id = ?", order.OrderID).Updates(order)
 
 	if result.RowsAffected == 0 {
 		return fmt.Errorf("no rows updated, check if the ID exists")
