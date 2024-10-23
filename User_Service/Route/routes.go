@@ -2,20 +2,19 @@ package route
 
 import (
 	authenticator "github.com/E-Furqan/Food-Delivery-System/Authentication"
-	"github.com/E-Furqan/Food-Delivery-System/Controllers/OrderController"
 	roleController "github.com/E-Furqan/Food-Delivery-System/Controllers/RoleControler"
 	UserControllers "github.com/E-Furqan/Food-Delivery-System/Controllers/UserController"
 
 	"github.com/gin-gonic/gin"
 )
 
-func User_routes(ctrl *UserControllers.Controller, rCtrl *roleController.RoleController, orderCtrl *OrderController.OrderController, server *gin.Engine) {
+func User_routes(ctrl *UserControllers.Controller, rCtrl *roleController.RoleController, server *gin.Engine) {
 
 	user := server.Group("/user")
 	user.POST("/register", ctrl.Register)
 	user.POST("/login", ctrl.Login)
 	user.POST("/refresh_token", authenticator.RefreshToken)
-	user.POST("/process/order", orderCtrl.ProcessOrder)
+	user.POST("/process/order", ctrl.ProcessOrder)
 
 	user.Use(authenticator.AuthMiddleware())
 	{

@@ -2,7 +2,7 @@ package main
 
 import (
 	authenticator "github.com/E-Furqan/Food-Delivery-System/Authentication"
-	"github.com/E-Furqan/Food-Delivery-System/Controllers/OrderController"
+	ClientPackage "github.com/E-Furqan/Food-Delivery-System/Client"
 	RoleController "github.com/E-Furqan/Food-Delivery-System/Controllers/RoleControler"
 	UserControllers "github.com/E-Furqan/Food-Delivery-System/Controllers/UserController"
 	config "github.com/E-Furqan/Food-Delivery-System/DatabaseConfig"
@@ -20,14 +20,14 @@ func main() {
 	authenticator.SetEnvValue(envVar)
 
 	repo := database.NewRepository(db)
-	ctrl := UserControllers.NewController(repo)
+	client := ClientPackage.NewClient()
+	ctrl := UserControllers.NewController(repo, client)
 	rCtrl := RoleController.NewController(repo)
-	orderCtrl := OrderController.NewController(repo)
 
 	server := gin.Default()
 
 	rCtrl.AddDefaultRoles(&gin.Context{})
 
-	route.User_routes(ctrl, rCtrl, orderCtrl, server)
+	route.User_routes(ctrl, rCtrl, server)
 	server.Run(":8085")
 }

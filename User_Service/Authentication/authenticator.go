@@ -19,7 +19,6 @@ func SetEnvValue(envVar environmentVariable.Environment) {
 	jwtKey = []byte(envVar.JWT_SECRET)
 }
 
-// AuthMiddleware is used to protect routes
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString := c.GetHeader("Authorization")

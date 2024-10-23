@@ -9,30 +9,34 @@ import (
 )
 
 type Environment struct {
-	HOST            string
-	USER            string
-	PASSWORD        string
-	DB_NAME         string
-	PORT            int
-	JWT_SECRET      string
-	RefreshTokenKey string
+	HOST              string
+	USER              string
+	PASSWORD          string
+	DB_NAME           string
+	PORT              int
+	JWT_SECRET        string
+	RefreshTokenKey   string
+	BASE_URL          string
+	PROCESS_ORDER_URL string
+	ORDER_PORT        string
 }
 
-// ReadEnv reads environment variables from a .env file and returns an Environment struct
 func ReadEnv() Environment {
 	var envVar Environment
 
-	// Load the .env file
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
 
-	// Read environment variables
 	envVar.HOST = os.Getenv("HOST")
 	envVar.USER = os.Getenv("USER1")
 	envVar.PASSWORD = os.Getenv("PASSWORD")
 	envVar.DB_NAME = os.Getenv("DB_NAME")
+	envVar.BASE_URL = os.Getenv("BASE_URL")
+	envVar.PROCESS_ORDER_URL = os.Getenv("PROCESS_ORDER_URL")
+	envVar.ORDER_PORT = os.Getenv("ORDER_PORT")
+
 	portStr := os.Getenv("PORT")
 	envVar.PORT, err = strconv.Atoi(portStr)
 	if err != nil {
@@ -43,19 +47,18 @@ func ReadEnv() Environment {
 	return envVar
 }
 
-func Get_env(key string) string {
+// func Get_env(key string) string {
 
-	// Load the .env file
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
-	}
+// 	err := godotenv.Load()
+// 	if err != nil {
+// 		log.Fatalf("Error loading .env file: %v", err)
+// 	}
 
-	value := os.Getenv(key)
-	if value == "" {
-		log.Fatalf("environment variable %s is not set", key)
-		return "" // Return an error if the variable is not found
-	}
+// 	value := os.Getenv(key)
+// 	if value == "" {
+// 		log.Fatalf("environment variable %s is not set", key)
+// 		return "" // Return an error if the variable is not found
+// 	}
 
-	return value
-}
+// 	return value
+// }

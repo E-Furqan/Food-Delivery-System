@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	ClientPackage "github.com/E-Furqan/Food-Delivery-System/Client"
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
 	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
@@ -14,11 +15,15 @@ import (
 )
 
 type Controller struct {
-	Repo *database.Repository
+	Repo   *database.Repository
+	Client *ClientPackage.Client
 }
 
-func NewController(repo *database.Repository) *Controller {
-	return &Controller{Repo: repo}
+func NewController(repo *database.Repository, client *ClientPackage.Client) *Controller {
+	return &Controller{
+		Repo:   repo,
+		Client: client,
+	}
 }
 
 func (ctrl *Controller) Register(c *gin.Context) {
@@ -326,4 +331,65 @@ func (ctrl *Controller) SwitchRole(c *gin.Context) {
 		"expires at":        time.Now().Add(24 * time.Hour).Unix(),
 	})
 
+}
+
+func (ctrl *Controller) ProcessOrder(c *gin.Context) {
+	var order payload.ProcessOrder
+
+	if err := c.ShouldBindJSON(&order); err != nil {
+		c.JSON(http.StatusBadRequest, "Error while binding order status")
+		return
+	}
+
+	orderTransitions := payload.GetOrderTransitions()
+
+	if order.OrderStatus == "Cancelled" {
+		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Order Cancelled", "order", order)
+		return
+	}
+
+	if order.OrderStatus == "Waiting For Delivery Driver" {
+		var driver model.User
+		err := ctrl.Repo.GetDeliveryDrivers(&driver)
+		if err != nil {
+			utils.GenerateResponse(http.StatusNotFound, c, "Message", "Delivery driver not found", "Error", err.Error())
+			return
+		}
+
+		if newStatus, exists := orderTransitions[order.OrderStatus]; exists {
+			order.OrderStatus = newStatus
+		}
+		order.DeliverDriverID = driver.UserId
+
+		c.JSON(http.StatusOK, gin.H{
+			"Order":          order,
+			"Deliver Driver": driver.UserId,
+		})
+		return
+
+	} else if order.OrderStatus == "Delivered" {
+		var driver model.User
+		log.Print(order.DeliverDriverID)
+		err := ctrl.Repo.GetUser("user_id", order.DeliverDriverID, &driver)
+		if err != nil {
+			utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Delivery driver not found", "Error", err.Error())
+			return
+		}
+
+		driver.RoleStatus = "available"
+		ctrl.Repo.UpdateRoleStatus(&driver)
+	}
+
+	if newStatus, exists := orderTransitions[order.OrderStatus]; exists {
+		log.Print(newStatus)
+		order.OrderStatus = newStatus
+	}
+	if err := ctrl.Client.ProcessOrder(order); err != nil {
+		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Patch request failed", "Error", err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"Order": order,
+	})
 }
