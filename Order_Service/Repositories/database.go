@@ -21,6 +21,7 @@ func NewRepository(db *gorm.DB) *Repository {
 }
 
 func (repo *Repository) GetOrders(order *[]model.Order, ID int, columnName string, orderDirection string, searchColumn string) error {
+
 	if orderDirection != "asc" && orderDirection != "desc" {
 		orderDirection = "asc"
 	}
@@ -36,31 +37,80 @@ func (repo *Repository) GetOrders(order *[]model.Order, ID int, columnName strin
 		columnName = "order_id"
 	}
 
+	tx := repo.DB.Begin()
 	err := repo.DB.Preload("Item").Where((fmt.Sprintf("%s = ?", searchColumn)), ID).Order(fmt.Sprintf("%s %s", columnName, orderDirection)).Find(order).Error
-	return err
+	if err != nil {
+		tx.Rollback()
+		return nil
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return fmt.Errorf("error committing transaction: %v", err)
+	}
+
+	return nil
 }
 
 func (repo *Repository) GetOrder(order *model.Order, OrderId uint) error {
+	tx := repo.DB.Begin()
 	err := repo.DB.Where("order_id = ?", OrderId).First(order).Error
-	return err
+	if err != nil {
+		tx.Rollback()
+		return nil
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return fmt.Errorf("error committing transaction: %v", err)
+	}
+
+	return nil
 }
 
 func (repo *Repository) GetOrderItems(orderItems *[]model.OrderItem, orderID uint) error {
-	return repo.DB.Where("order_id = ?", orderID).Find(orderItems).Error
+	tx := repo.DB.Begin()
+	err := repo.DB.Where("order_id = ?", orderID).Find(orderItems).Error
+	if err != nil {
+		tx.Rollback()
+		return nil
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return fmt.Errorf("error committing transaction: %v", err)
+	}
+
+	return nil
 }
 func (repo *Repository) GetItemByID(itemID uint, item *model.Item) error {
-	return repo.DB.First(item, itemID).Error
+	tx := repo.DB.Begin()
+	err := repo.DB.First(item, itemID).Error
+	if err != nil {
+		tx.Rollback()
+		return nil
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return fmt.Errorf("error committing transaction: %v", err)
+	}
+
+	return nil
 }
 
 func (repo *Repository) Update(order *model.Order) error {
+	tx := repo.DB.Begin()
 	result := repo.DB.Model(order).Where("order_id = ?", order.OrderID).Updates(order)
 
 	if result.RowsAffected == 0 {
+		tx.Rollback()
 		return fmt.Errorf("no rows updated, check if the ID exists")
 	}
 
 	if result.Error != nil {
+		tx.Rollback()
 		return result.Error
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return fmt.Errorf("error committing transaction: %v", err)
 	}
 
 	return nil
@@ -113,6 +163,17 @@ func (repo *Repository) PlaceOrder(order *model.Order, CombineOrderItem *payload
 }
 
 func (repo *Repository) FetchAllOrder(orders *[]model.Order) error {
+	tx := repo.DB.Begin()
 	err := repo.DB.Find(orders).Error
-	return err
+	if err != nil {
+		tx.Rollback()
+		return nil
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return fmt.Errorf("error committing transaction: %v", err)
+	}
+
+	return nil
+
 }
