@@ -69,7 +69,7 @@ func (ctrl *RestaurantController) Login(c *gin.Context) {
 		return
 	}
 
-	access_token, refresh_token, err := utils.GenerateTokens(Restaurant.RestaurantEmail)
+	access_token, refresh_token, err := utils.GenerateTokens(Restaurant.RestaurantId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
 		return
@@ -95,19 +95,19 @@ func (ctrl *RestaurantController) GetAllRestaurants(c *gin.Context) {
 
 func (ctrl *RestaurantController) UpdateRestaurantStatus(c *gin.Context) {
 
-	email, exists := c.Get("Email")
+	RestaurantID, exists := c.Get("RestaurantID")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
-	email, ok := email.(string)
+	RestaurantID, ok := RestaurantID.(uint)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid Email address"})
 		return
 	}
 
 	var Restaurant model.Restaurant
-	err := ctrl.Repo.GetRestaurant("restaurant_email", email, &Restaurant)
+	err := ctrl.Repo.GetRestaurant("restaurant_id", RestaurantID, &Restaurant)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
@@ -191,19 +191,19 @@ func (ctrl *RestaurantController) ProcessOrder(c *gin.Context) {
 }
 
 func (ctrl *RestaurantController) CancelOrder(c *gin.Context) {
-	email, exists := c.Get("Email")
+	RestaurantID, exists := c.Get("RestaurantID")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Restaurant not authenticated"})
 		return
 	}
-	email, ok := email.(string)
+	RestaurantID, ok := RestaurantID.(uint)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid Email address"})
 		return
 	}
 
 	var Restaurant model.Restaurant
-	err := ctrl.Repo.GetRestaurant("restaurant_email", email, &Restaurant)
+	err := ctrl.Repo.GetRestaurant("restaurant_id", RestaurantID, &Restaurant)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return

@@ -18,19 +18,19 @@ func NewController(repo *database.Repository) *ItemController {
 }
 
 func (ItemController *ItemController) AddItemsInMenu(c *gin.Context) {
-	email, exists := c.Get("Email")
+	RestaurantID, exists := c.Get("RestaurantID")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
-	email, ok := email.(string)
+	RestaurantID, ok := RestaurantID.(uint)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid Email address"})
 		return
 	}
 
 	var Restaurant model.Restaurant
-	err := ItemController.Repo.GetRestaurant("restaurant_email", email, &Restaurant)
+	err := ItemController.Repo.GetRestaurant("restaurant_id", RestaurantID, &Restaurant)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
@@ -52,19 +52,19 @@ func (ItemController *ItemController) AddItemsInMenu(c *gin.Context) {
 }
 
 func (ItemController *ItemController) DeleteItemsFromMenu(c *gin.Context) {
-	email, exists := c.Get("Email")
+	RestaurantID, exists := c.Get("RestaurantID")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
-	email, ok := email.(string)
+	RestaurantID, ok := RestaurantID.(uint)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid Email address"})
 		return
 	}
 
 	var Restaurant model.Restaurant
-	err := ItemController.Repo.GetRestaurant("restaurant_email", email, &Restaurant)
+	err := ItemController.Repo.GetRestaurant("restaurant_id", RestaurantID, &Restaurant)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return

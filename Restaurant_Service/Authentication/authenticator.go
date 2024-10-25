@@ -42,7 +42,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		c.Set("Email", claims.Email)
+		c.Set("RestaurantID", claims.RestaurantID)
 		c.Next()
 	}
 }
