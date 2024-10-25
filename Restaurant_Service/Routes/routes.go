@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func User_routes(RestaurantController *RestaurantController.RestaurantController, ItemController *ItemController.ItemController, server *gin.Engine) {
+func Restaurant_routes(RestaurantController *RestaurantController.RestaurantController, ItemController *ItemController.ItemController, server *gin.Engine) {
 
 	restaurantRoute := server.Group("/restaurant")
 	restaurantRoute.POST("/register", RestaurantController.Register)

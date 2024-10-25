@@ -28,6 +28,6 @@ func main() {
 	ItemController := ItemController.NewController(repo)
 
 	server := gin.Default()
-	route.User_routes(ctrl, ItemController, server)
+	route.Restaurant_routes(ctrl, ItemController, server)
 	server.Run(":8082")
 }
