@@ -23,6 +23,6 @@ func main() {
 	OrderController.StartScheduledOrderTask()
 
 	server := gin.Default()
-	Routes.User_routes(OrderController, server)
+	Routes.Order_routes(OrderController, server)
 	server.Run(":8081")
 }
