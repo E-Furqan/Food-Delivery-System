@@ -38,13 +38,13 @@ func TestRepository_GetOrders(t *testing.T) {
 	repo := database.NewRepository(db)
 
 	var orders []model.Order
-	ID := 1
+	ID := 101
 	columnName := "order_id"
 	orderDirection := "asc"
 	searchColumn := "user_id"
 
 	mock.ExpectBegin()
-	mock.ExpectQuery("SELECT \\* FROM \"orders\" WHERE \"user_id\" = \\$1").
+	mock.ExpectQuery("SELECT \\* FROM \"orders\" WHERE \"user_id\" = \\$101").
 		WithArgs(ID).
 		WillReturnRows(sqlmock.NewRows([]string{"order_id", "user_id", "restaurant_id", "order_status"}).
 			AddRow(1, 1, 1, "pending"))
