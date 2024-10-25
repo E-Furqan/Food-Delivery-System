@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func User_routes(orderController *OrderControllers.OrderController, server *gin.Engine) {
+func Order_routes(orderController *OrderControllers.OrderController, server *gin.Engine) {
 
 	orderRoute := server.Group("/order")
 	orderRoute.PATCH("/update/status", orderController.UpdateOrderStatus)
