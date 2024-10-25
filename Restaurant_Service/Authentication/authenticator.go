@@ -8,6 +8,7 @@ import (
 	"time"
 
 	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
+	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -47,9 +48,7 @@ func AuthMiddleware() gin.HandlerFunc {
 }
 
 func RefreshToken(c *gin.Context) {
-	var input struct {
-		RefreshToken string `json:"refresh_token" binding:"required"`
-	}
+	var input payload.RefreshToken
 
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

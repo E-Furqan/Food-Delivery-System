@@ -27,6 +27,10 @@ type CombinedInput struct {
 	Input
 }
 
+type RefreshToken struct {
+	RefreshToken string `json:"refresh_token" binding:"required"`
+}
+
 func GetOrderTransitions() map[string]string {
 	return map[string]string{
 		"order placed": "Accepted",
