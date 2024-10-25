@@ -1,11 +1,10 @@
-package authenticator
+package Middleware
 
 import (
 	"fmt"
 	"log"
 	"net/http"
 	"strings"
-	"time"
 
 	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
@@ -34,37 +33,17 @@ func AuthMiddleware() gin.HandlerFunc {
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 			return jwtKey, nil
 		})
-
+		log.Print(claims.Username)
+		log.Print(claims.ActiveRole)
 		if err != nil || !token.Valid {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": fmt.Sprintf("Invalid token %v %s", err, jwtKey)})
+
+			c.JSON(http.StatusUnauthorized, gin.H{"Error": fmt.Sprintf("Invalid token %v %s", err, jwtKey)})
 			c.Abort()
 			return
 		}
+
 		c.Set("username", claims.Username)
 		c.Set("activeRole", claims.ActiveRole)
 		c.Next()
 	}
-}
-
-// middle ware
-func RefreshToken(c *gin.Context) {
-	var input struct {
-		RefreshToken string `json:"refresh_token" binding:"required"`
-	}
-
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	accessToken, err := utils.RefreshToken(input.RefreshToken, c)
-
-	if err != nil {
-		log.Fatal("Error while refreshing token; ", err)
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"access_token": accessToken,
-		"expires_at":   time.Now().Add(15 * time.Minute).Unix(), // Adjust based on your access token expiration
-	})
 }

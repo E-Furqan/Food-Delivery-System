@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
 	ClientPackage "github.com/E-Furqan/Food-Delivery-System/Client"
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
@@ -73,16 +72,19 @@ func (ctrl *Controller) Login(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid password"})
 		return
 	}
-
-	access_token, refresh_token, err := utils.GenerateTokens(user.Username, user.ActiveRole)
+	var UserClaim payload.UserClaim
+	UserClaim.Username = user.Username
+	UserClaim.ActiveRole = user.ActiveRole
+	UserClaim.ServiceType = "User"
+	token, err := ctrl.Client.GenerateResponse(UserClaim)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"access token":  access_token,
-		"refresh token": refresh_token,
-		"expires at":    time.Now().Add(24 * time.Hour).Unix(),
+		"access token":  token.AccessToken,
+		"refresh token": token.RefreshToken,
+		"expires at":    token.Expiration,
 	})
 
 }
@@ -318,17 +320,19 @@ func (ctrl *Controller) SwitchRole(c *gin.Context) {
 		return
 	}
 
-	access_token, refresh_token, err := utils.GenerateTokens(user.Username, user.ActiveRole)
+	var UserClaim payload.UserClaim
+	UserClaim.Username = user.Username
+	UserClaim.ActiveRole = user.ActiveRole
+	UserClaim.ServiceType = "User"
+	token, err := ctrl.Client.GenerateResponse(UserClaim)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
 		return
 	}
-
 	c.JSON(http.StatusOK, gin.H{
-		"user":              user,
-		"new access token":  access_token,
-		"new refresh token": refresh_token,
-		"expires at":        time.Now().Add(24 * time.Hour).Unix(),
+		"access token":  token.AccessToken,
+		"refresh token": token.RefreshToken,
+		"expires at":    token.Expiration,
 	})
 
 }
@@ -396,5 +400,30 @@ func (ctrl *Controller) ProcessOrder(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"Order": order,
+	})
+}
+
+func (ctrl *Controller) RefreshToken(c *gin.Context) {
+
+	var input payload.RefreshToken
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var refreshClaim payload.RefreshToken
+	refreshClaim.RefreshToken = input.RefreshToken
+	refreshClaim.ServiceType = "Restaurant"
+	tokens, err := ctrl.Client.RefreshToken(refreshClaim)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"access token":  tokens.AccessToken,
+		"refresh token": tokens.RefreshToken,
+		"expires at":    tokens.Expiration,
 	})
 }

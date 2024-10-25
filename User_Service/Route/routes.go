@@ -1,9 +1,9 @@
 package route
 
 import (
-	authenticator "github.com/E-Furqan/Food-Delivery-System/Authentication"
 	roleController "github.com/E-Furqan/Food-Delivery-System/Controllers/RoleControler"
 	UserControllers "github.com/E-Furqan/Food-Delivery-System/Controllers/UserController"
+	"github.com/E-Furqan/Food-Delivery-System/Middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,10 +13,10 @@ func User_routes(ctrl *UserControllers.Controller, rCtrl *roleController.RoleCon
 	user := server.Group("/user")
 	user.POST("/register", ctrl.Register)
 	user.POST("/login", ctrl.Login)
-	user.POST("/refresh_token", authenticator.RefreshToken)
+	user.POST("/refresh_token", ctrl.RefreshToken)
 	user.POST("/process/order", ctrl.ProcessOrder)
 
-	user.Use(authenticator.AuthMiddleware())
+	user.Use(Middleware.AuthMiddleware())
 	{
 		user.GET("/get_role", rCtrl.GetRole)
 		user.GET("/get_users", ctrl.GetUsers)

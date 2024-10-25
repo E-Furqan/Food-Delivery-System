@@ -9,16 +9,19 @@ import (
 )
 
 type Environment struct {
-	HOST              string
-	USER              string
-	PASSWORD          string
-	DB_NAME           string
-	PORT              int
-	JWT_SECRET        string
-	RefreshTokenKey   string
-	BASE_URL          string
-	PROCESS_ORDER_URL string
-	ORDER_PORT        string
+	HOST               string
+	USER               string
+	PASSWORD           string
+	DB_NAME            string
+	PORT               int
+	JWT_SECRET         string
+	RefreshTokenKey    string
+	BASE_URL           string
+	PROCESS_ORDER_URL  string
+	GENERATE_TOKEN_URL string
+	REFRESH_TOKEN_URL  string
+	ORDER_PORT         string
+	AUTH_PORT          string
 }
 
 func ReadEnv() Environment {
@@ -36,6 +39,9 @@ func ReadEnv() Environment {
 	envVar.BASE_URL = os.Getenv("BASE_URL")
 	envVar.PROCESS_ORDER_URL = os.Getenv("PROCESS_ORDER_URL")
 	envVar.ORDER_PORT = os.Getenv("ORDER_PORT")
+	envVar.AUTH_PORT = os.Getenv("AUTH_PORT")
+	envVar.GENERATE_TOKEN_URL = os.Getenv("GENERATE_TOKEN_URL")
+	envVar.REFRESH_TOKEN_URL = os.Getenv("REFRESH_TOKEN_URL")
 
 	portStr := os.Getenv("PORT")
 	envVar.PORT, err = strconv.Atoi(portStr)

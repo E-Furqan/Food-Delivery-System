@@ -1,12 +1,12 @@
 package main
 
 import (
-	authenticator "github.com/E-Furqan/Food-Delivery-System/Authentication"
 	ClientPackage "github.com/E-Furqan/Food-Delivery-System/Client"
 	RoleController "github.com/E-Furqan/Food-Delivery-System/Controllers/RoleControler"
 	UserControllers "github.com/E-Furqan/Food-Delivery-System/Controllers/UserController"
 	config "github.com/E-Furqan/Food-Delivery-System/DatabaseConfig"
 	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
+	"github.com/E-Furqan/Food-Delivery-System/Middleware"
 	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
 	route "github.com/E-Furqan/Food-Delivery-System/Route"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
@@ -19,7 +19,7 @@ func main() {
 	config.SetEnvValue(envVar)
 	db := config.Connection()
 	utils.SetEnvValue(envVar)
-	authenticator.SetEnvValue(envVar)
+	Middleware.SetEnvValue(envVar)
 
 	repo := database.NewRepository(db)
 	client := ClientPackage.NewClient()
