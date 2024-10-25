@@ -33,7 +33,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 			return jwtKey, nil
 		})
-		log.Print(claims.RestaurantID)
+		log.Print(claims.ClaimId)
 		log.Print(claims.ServiceType)
 		if err != nil || !token.Valid {
 
@@ -42,9 +42,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		log.Print("claims.RestaurantId")
-		log.Print(claims.RestaurantID)
-		c.Set("RestaurantID", claims.RestaurantID)
+		c.Set("RestaurantID", claims.ClaimId)
 		c.Next()
 	}
 }

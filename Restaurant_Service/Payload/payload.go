@@ -32,8 +32,8 @@ type RefreshToken struct {
 	ServiceType  string `json:"service_type"`
 }
 type RestaurantClaim struct {
-	RestaurantID uint   `json:"restaurant_id"`
-	ServiceType  string `json:"service_type"`
+	ClaimId     uint   `json:"claim_id"`
+	ServiceType string `json:"service_type"`
 }
 
 type Tokens struct {

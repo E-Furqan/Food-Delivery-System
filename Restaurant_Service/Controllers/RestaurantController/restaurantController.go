@@ -1,7 +1,6 @@
 package RestaurantController
 
 import (
-	"log"
 	"net/http"
 
 	ClientPackage "github.com/E-Furqan/Food-Delivery-System/Client"
@@ -69,9 +68,9 @@ func (ctrl *RestaurantController) Login(c *gin.Context) {
 	}
 
 	var RestaurantClaim payload.RestaurantClaim
-	RestaurantClaim.RestaurantID = Restaurant.RestaurantId
+	RestaurantClaim.ClaimId = Restaurant.RestaurantId
 	RestaurantClaim.ServiceType = "Restaurant"
-	log.Printf("id %v", RestaurantClaim.RestaurantID)
+
 	tokens, err := ctrl.Client.GenerateResponse(RestaurantClaim)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
@@ -140,15 +139,24 @@ func (ctrl *RestaurantController) ViewMenu(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error binding": err.Error()})
 		return
 	}
-	log.Print("combined Input :", combinedInput)
-	Items, err := ctrl.Repo.LoadItems(combinedInput.RestaurantId, combinedInput.ColumnName, combinedInput.OrderType)
+	var Restaurant model.Restaurant
+	err := ctrl.Repo.GetRestaurant("restaurant_id", combinedInput.RestaurantId, &Restaurant)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Restaurant does not exist"})
+		return
+	}
 
+	Items, err = ctrl.Repo.LoadItems(combinedInput.RestaurantId, combinedInput.ColumnName, combinedInput.OrderType)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error load item": err.Error()})
 		return
 	}
 
-	log.Print("Fetched items:", Items)
+	if len(Items) <= 0 {
+		c.JSON(http.StatusInternalServerError, "No items present in the restaurant")
+		return
+	}
+
 	c.JSON(http.StatusOK, Items)
 }
 
@@ -220,8 +228,7 @@ func (ctrl *RestaurantController) CancelOrder(c *gin.Context) {
 	}
 
 	if input.RestaurantId != Restaurant.RestaurantId {
-		log.Print(input.RestaurantId)
-		log.Print(Restaurant.RestaurantId)
+
 		c.JSON(http.StatusBadRequest, gin.H{
 			"Message": "You are not authorized to cancel this order as it belongs to a different restaurant",
 		})
