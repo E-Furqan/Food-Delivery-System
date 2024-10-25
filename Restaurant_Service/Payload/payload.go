@@ -30,6 +30,9 @@ type CombinedInput struct {
 type RefreshToken struct {
 	RefreshToken string `json:"refresh_token" binding:"required"`
 }
+type GenerateToken struct {
+	RestaurantId uint `json:"ID"`
+}
 
 func GetOrderTransitions() map[string]string {
 	return map[string]string{
