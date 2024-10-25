@@ -13,7 +13,6 @@ import (
 var jwtKey []byte
 var refreshTokenKey []byte
 
-// add active token and when user switch role generate a new jwt token
 type Claims struct {
 	Username   string `json:"username"`
 	ActiveRole string `json:"activeRole"`
@@ -43,7 +42,7 @@ func GenerateTokens(username string, activeRole string) (string, string, error) 
 		return "", "", err
 	}
 
-	refreshExpirationTime := time.Now().Add(7 * 24 * time.Hour) // 7 days
+	refreshExpirationTime := time.Now().Add(7 * 24 * time.Hour)
 	refreshClaims := &Claims{
 		Username:   username,
 		ActiveRole: activeRole,
