@@ -13,7 +13,7 @@ func Order_routes(orderController *OrderControllers.OrderController, server *gin
 	orderRoute.GET("/view/restaurant/orders", orderController.GetOrdersOfRestaurant)
 	orderRoute.GET("/generate/invoice", orderController.GenerateInvoice)
 	orderRoute.POST("/place/order", orderController.PlaceOrder)
-
+	orderRoute.GET("/view/order", orderController.ViewOrderDetails)
 	// orderRoute.POST("/checkout", orderController.CheckOut)
 
 }

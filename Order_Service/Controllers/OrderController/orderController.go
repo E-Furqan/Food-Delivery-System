@@ -145,6 +145,24 @@ func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 	utils.GenerateResponse(http.StatusOK, c, "Message", "Order Accepted by the restaurant successfully", "", nil)
 }
 
+func (orderCtrl *OrderController) ViewOrderDetails(c *gin.Context) {
+	var orderId payload.ID
+
+	if err := c.ShouldBindJSON(&orderId); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	var order model.Order
+	err := orderCtrl.Repo.GetOrder(&order, order.OrderID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, "Order not found")
+		return
+	}
+
+	c.JSON(http.StatusOK, order)
+
+}
+
 func (orderCtrl *OrderController) GenerateInvoice(c *gin.Context) {
 	var orderId payload.ID
 	if err := c.ShouldBindJSON(&orderId); err != nil {
