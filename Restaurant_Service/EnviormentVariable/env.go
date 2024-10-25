@@ -47,20 +47,20 @@ func ReadEnv() Environment {
 	return envVar
 }
 
-func GetEnv(key string) string {
-	switch key {
-	case "HOST":
-		return envVar.HOST
-	case "USER1":
-		return envVar.USER
-	case "PASSWORD":
-		return envVar.PASSWORD
-	case "DB_NAME":
-		return envVar.DB_NAME
-	case "PORT":
-		return strconv.Itoa(envVar.PORT)
-	default:
-		log.Fatalf("environment variable %s is not set", key)
-		return ""
-	}
-}
+// func GetEnv(key string) string {
+// 	switch key {
+// 	case "HOST":
+// 		return envVar.HOST
+// 	case "USER1":
+// 		return envVar.USER
+// 	case "PASSWORD":
+// 		return envVar.PASSWORD
+// 	case "DB_NAME":
+// 		return envVar.DB_NAME
+// 	case "PORT":
+// 		return strconv.Itoa(envVar.PORT)
+// 	default:
+// 		log.Fatalf("environment variable %s is not set", key)
+// 		return ""
+// 	}
+// }

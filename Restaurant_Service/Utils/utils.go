@@ -15,7 +15,7 @@ var refreshTokenKey []byte
 
 // add active token and when user switch role generate a new jwt token
 type Claims struct {
-	Email string `json:"Email"`
+	RestaurantId uint `json:"restaurant_id"`
 	jwt.StandardClaims
 }
 
@@ -24,11 +24,11 @@ func SetEnvValue(envVar environmentVariable.Environment) {
 	refreshTokenKey = []byte(envVar.RefreshTokenKey)
 }
 
-func GenerateTokens(Email string) (string, string, error) {
+func GenerateTokens(RestaurantID uint) (string, string, error) {
 
 	accessExpirationTime := time.Now().Add(15 * time.Minute)
 	accessClaims := &Claims{
-		Email: Email,
+		RestaurantId: RestaurantID,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: accessExpirationTime.Unix(),
 		},
@@ -43,7 +43,7 @@ func GenerateTokens(Email string) (string, string, error) {
 
 	refreshExpirationTime := time.Now().Add(7 * 24 * time.Hour) // 7 days
 	refreshClaims := &Claims{
-		Email: Email,
+		RestaurantId: RestaurantID,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: refreshExpirationTime.Unix(),
 		},
@@ -78,7 +78,7 @@ func RefreshToken(refreshToken string, c *gin.Context) (string, error) {
 		return "", nil
 	}
 
-	accessToken, _, err := GenerateTokens(claims.Email)
+	accessToken, _, err := GenerateTokens(claims.RestaurantId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate new access token"})
 		return "", err
