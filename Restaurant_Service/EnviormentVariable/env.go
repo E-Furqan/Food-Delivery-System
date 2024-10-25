@@ -43,7 +43,7 @@ func ReadEnv() Environment {
 	envVar.AUTH_PORT = os.Getenv("AUTH_PORT")
 	envVar.GENERATE_TOKEN_URL = os.Getenv("GENERATE_TOKEN_URL")
 	envVar.REFRESH_TOKEN_URL = os.Getenv("REFRESH_TOKEN_URL")
-
+	envVar.JWT_SECRET = os.Getenv("JWT_SECRET")
 	portStr := os.Getenv("PORT")
 	envVar.PORT, err = strconv.Atoi(portStr)
 	if err != nil {

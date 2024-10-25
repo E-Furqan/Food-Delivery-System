@@ -60,56 +60,64 @@ func (client *Client) ProcessOrder(input payload.ProcessOrder) error {
 	return nil
 }
 
-func (client *Client) GenerateResponse(input payload.GenerateToken) error {
+func (client *Client) GenerateResponse(input payload.GenerateToken) (*payload.Tokens, error) {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
-		return fmt.Errorf("error marshaling input: %v", err)
+		return nil, fmt.Errorf("error marshaling input: %v", err)
 	}
-
 	url := fmt.Sprintf("%s%s%s", client.BaseUrl, client.AuthPort, client.GenerateResponseUrl)
-	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
-		return fmt.Errorf("error creating request: %v", err)
+		return nil, fmt.Errorf("error creating request: %v", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("error sending request: %v", err)
+		return nil, fmt.Errorf("error sending request: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("received non-200 response: %v", resp.Status)
+		return nil, fmt.Errorf("received non-200 response: %v", resp.Status)
 	}
 
-	return nil
+	var tokens payload.Tokens
+	if err := json.NewDecoder(resp.Body).Decode(&tokens); err != nil {
+		return nil, fmt.Errorf("error decoding response: %v", err)
+	}
+
+	return &tokens, nil
 }
 
-func (client *Client) RefreshToken(input payload.RefreshToken) error {
+func (client *Client) RefreshToken(input payload.RefreshToken) (*payload.Tokens, error) {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
-		return fmt.Errorf("error marshaling input: %v", err)
+		return nil, fmt.Errorf("error marshaling input: %v", err)
 	}
-
 	url := fmt.Sprintf("%s%s%s", client.BaseUrl, client.AuthPort, client.RefreshTokenUrl)
-	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
-		return fmt.Errorf("error creating request: %v", err)
+		return nil, fmt.Errorf("error creating request: %v", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("error sending request: %v", err)
+		return nil, fmt.Errorf("error sending request: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("received non-200 response: %v", resp.Status)
+		return nil, fmt.Errorf("received non-200 response: %v", resp.Status)
 	}
 
-	return nil
+	var tokens payload.Tokens
+	if err := json.NewDecoder(resp.Body).Decode(&tokens); err != nil {
+		return nil, fmt.Errorf("error decoding response: %v", err)
+	}
+
+	return &tokens, nil
 }

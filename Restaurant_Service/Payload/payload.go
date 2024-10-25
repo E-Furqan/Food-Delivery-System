@@ -28,10 +28,24 @@ type CombinedInput struct {
 }
 
 type RefreshToken struct {
-	RefreshToken string `json:"refresh_token" binding:"required"`
+	RefreshToken string `json:"refresh_token"`
+	ServiceType  string `json:"service_type"`
 }
 type GenerateToken struct {
-	RestaurantId uint `json:"ID"`
+	RestaurantID uint   `json:"restaurant_id"`
+	ServiceType  string `json:"service_type"`
+}
+
+//	type Claims struct {
+//		RestaurantID uint   `json:"restaurant_id"`
+//		ServiceType  string `json:"service_type"`
+//		jwt.StandardClaims
+//	}
+
+type Tokens struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+	Expiration   int64  `json:"expires_at"`
 }
 
 func GetOrderTransitions() map[string]string {
