@@ -30,23 +30,6 @@ func NewController(repo *database.Repository, client *ClientPackage.Client) *Ord
 	}
 }
 
-// func (orderCtrl *OrderController) CheckOut(c *gin.Context) {
-// 	var inputOrderId payload.Order
-// 	if err := c.ShouldBindJSON(&inputOrderId); err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"Error While binding ": err.Error()})
-// 		return
-// 	}
-
-// 	var orderDetail model.Order
-
-// 	if err := orderCtrl.Repo.GetOrder(&orderDetail, int(inputOrderId.OrderID)); err == nil {
-// 		c.JSON(http.StatusNotFound, "Order Not found")
-// 		return
-// 	}
-
-// 	c.JSON(http.StatusOK, orderDetail)
-// }
-
 func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 	var OrderStatus payload.Order
 
