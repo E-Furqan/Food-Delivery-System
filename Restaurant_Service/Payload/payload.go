@@ -31,16 +31,10 @@ type RefreshToken struct {
 	RefreshToken string `json:"refresh_token"`
 	ServiceType  string `json:"service_type"`
 }
-type GenerateToken struct {
+type RestaurantClaim struct {
 	RestaurantID uint   `json:"restaurant_id"`
 	ServiceType  string `json:"service_type"`
 }
-
-//	type Claims struct {
-//		RestaurantID uint   `json:"restaurant_id"`
-//		ServiceType  string `json:"service_type"`
-//		jwt.StandardClaims
-//	}
 
 type Tokens struct {
 	AccessToken  string `json:"access_token"`

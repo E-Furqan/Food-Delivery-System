@@ -60,7 +60,7 @@ func (client *Client) ProcessOrder(input payload.ProcessOrder) error {
 	return nil
 }
 
-func (client *Client) GenerateResponse(input payload.GenerateToken) (*payload.Tokens, error) {
+func (client *Client) GenerateResponse(input payload.RestaurantClaim) (*payload.Tokens, error) {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {

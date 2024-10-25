@@ -68,7 +68,7 @@ func (ctrl *RestaurantController) Login(c *gin.Context) {
 		return
 	}
 
-	var RestaurantClaim payload.GenerateToken
+	var RestaurantClaim payload.RestaurantClaim
 	RestaurantClaim.RestaurantID = Restaurant.RestaurantId
 	RestaurantClaim.ServiceType = "Restaurant"
 	log.Printf("id %v", RestaurantClaim.RestaurantID)
@@ -220,6 +220,8 @@ func (ctrl *RestaurantController) CancelOrder(c *gin.Context) {
 	}
 
 	if input.RestaurantId != Restaurant.RestaurantId {
+		log.Print(input.RestaurantId)
+		log.Print(Restaurant.RestaurantId)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"Message": "You are not authorized to cancel this order as it belongs to a different restaurant",
 		})

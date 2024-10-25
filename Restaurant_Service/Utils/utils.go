@@ -1,13 +1,13 @@
 package utils
 
 import (
+	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
 
 type Claims struct {
-	RestaurantID uint   `json:"restaurant_id"`
-	ServiceType  string `json:"service_type"`
+	payload.RestaurantClaim
 	jwt.StandardClaims
 }
 
