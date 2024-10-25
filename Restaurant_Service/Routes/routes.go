@@ -22,5 +22,6 @@ func Restaurant_routes(RestaurantController *RestaurantController.RestaurantCont
 		restaurantRoute.DELETE("/delete/items", ItemController.DeleteItemsFromMenu)
 		restaurantRoute.DELETE("/cancel/order", RestaurantController.CancelOrder)
 		restaurantRoute.PATCH("/update/status", RestaurantController.UpdateRestaurantStatus)
+		restaurantRoute.GET("/view/restaurant/orders", RestaurantController.ViewRestaurantOrders)
 	}
 }

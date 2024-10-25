@@ -42,6 +42,11 @@ type Tokens struct {
 	Expiration   int64  `json:"expires_at"`
 }
 
+type OrderDetails struct {
+	OrderID     uint   `json:"order_id"`
+	OrderStatus string `json:"order_status"`
+}
+
 func GetOrderTransitions() map[string]string {
 	return map[string]string{
 		"order placed": "Accepted",

@@ -270,3 +270,35 @@ func (ctrl *RestaurantController) RefreshToken(c *gin.Context) {
 		"expires at":    tokens.Expiration,
 	})
 }
+
+func (ctrl *RestaurantController) ViewRestaurantOrders(c *gin.Context) {
+	RestaurantID, exists := c.Get("RestaurantID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+	RestaurantID, ok := RestaurantID.(uint)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid Email address"})
+		return
+	}
+
+	var Restaurant model.Restaurant
+	err := ctrl.Repo.GetRestaurant("restaurant_id", RestaurantID, &Restaurant)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		return
+	}
+	var restaurantId payload.Input
+
+	restaurantId.RestaurantId = Restaurant.RestaurantId
+	Orders, err := ctrl.Client.ViewRestaurantOrders(restaurantId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error order": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"Restaurant orders: ": Orders,
+	})
+}
