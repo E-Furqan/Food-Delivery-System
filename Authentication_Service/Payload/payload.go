@@ -10,11 +10,10 @@ type Environment struct {
 }
 
 type Input struct {
-	RestaurantID uint   `json:"restaurant_id"`
-	OrderId      uint   `json:"order_id"`
-	Username     string `json:"username"`
-	ActiveRole   string `json:"activeRole"`
-	ServiceType  string `json:"service_type"`
+	ClaimId     uint   `json:"claim_id"`
+	Username    string `json:"username"`
+	ActiveRole  string `json:"activeRole"`
+	ServiceType string `json:"service_type"`
 	jwt.StandardClaims
 }
 
@@ -35,8 +34,8 @@ func (u *UserClaims) SetExpirationTime(expiration int64) {
 }
 
 type RestaurantClaims struct {
-	RestaurantID uint   `json:"restaurant_id"`
-	ServiceType  string `json:"service_type"`
+	ClaimId     uint   `json:"claim_id"`
+	ServiceType string `json:"service_type"`
 	jwt.StandardClaims
 }
 
@@ -45,7 +44,7 @@ func (r *RestaurantClaims) SetExpirationTime(expiration int64) {
 }
 
 type OrderClaims struct {
-	OrderId     uint   `json:"order_id"`
+	ClaimId     uint   `json:"claim_id"`
 	ServiceType string `json:"service_type"`
 	jwt.StandardClaims
 }

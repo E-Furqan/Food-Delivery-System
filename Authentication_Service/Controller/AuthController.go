@@ -21,10 +21,8 @@ func Login(c *gin.Context) {
 
 	if input.ServiceType == "User" {
 		accessClaims, refreshClaims = utils.CreateUserClaim(input)
-	} else if input.ServiceType == "Order" {
-		accessClaims, refreshClaims = utils.CreateOrderClaim(input)
-	} else if input.ServiceType == "Restaurant" {
-		accessClaims, refreshClaims = utils.CreateRestaurantClaim(input)
+	} else {
+		accessClaims, refreshClaims = utils.CreateClaim(input)
 	}
 
 	accessTokenString, refreshTokenString, err := utils.GenerateTokens(accessClaims, refreshClaims)

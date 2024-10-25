@@ -38,11 +38,12 @@ func GenerateTokens(accessClaims payload.Claims, refreshClaims payload.Claims) (
 }
 
 type Claims struct {
-	RestaurantID uint   `json:"restaurant_id"`
-	OrderId      uint   `json:"order_id"`
-	Username     string `json:"username"`
-	ActiveRole   string `json:"activeRole"`
-	ServiceType  string `json:"service_type"`
+	// RestaurantID uint   `json:"restaurant_id"`
+	// OrderId      uint   `json:"order_id"`
+	ClaimId     uint   `json:"claim_id"`
+	Username    string `json:"username"`
+	ActiveRole  string `json:"activeRole"`
+	ServiceType string `json:"service_type"`
 	jwt.StandardClaims
 }
 
@@ -66,8 +67,9 @@ func RefreshToken(refreshToken string, c *gin.Context) (string, error) {
 	}
 	var accessClaims payload.Claims
 	var refreshClaims payload.Claims
+
 	log.Print("claims.RestaurantID")
-	log.Print(claims.RestaurantID)
+	log.Print(claims.ClaimId)
 	log.Print("claims.ServiceType")
 	log.Print(claims.ServiceType)
 
@@ -77,12 +79,9 @@ func RefreshToken(refreshToken string, c *gin.Context) (string, error) {
 		input.Username = claims.Username
 		input.ActiveRole = claims.ActiveRole
 		accessClaims, refreshClaims = CreateUserClaim(input)
-	} else if claims.ServiceType == "Order" {
-		input.OrderId = claims.OrderId
-		accessClaims, refreshClaims = CreateOrderClaim(input)
-	} else if claims.ServiceType == "Restaurant" {
-		input.RestaurantID = claims.RestaurantID
-		accessClaims, refreshClaims = CreateRestaurantClaim(input)
+	} else {
+		input.ClaimId = claims.ClaimId
+		accessClaims, refreshClaims = CreateClaim(input)
 	}
 
 	accessToken, _, err := GenerateTokens(accessClaims, refreshClaims)
@@ -115,38 +114,19 @@ func CreateUserClaim(input payload.Input) (payload.Claims, payload.Claims) {
 	return accessClaims, refreshClaims
 }
 
-func CreateOrderClaim(input payload.Input) (payload.Claims, payload.Claims) {
-	var accessClaims payload.Claims
-	var refreshClaims payload.Claims
-
-	accessClaims = &payload.OrderClaims{
-		OrderId:     input.OrderId,
-		ServiceType: input.ServiceType,
-	}
-	accessClaims.SetExpirationTime(time.Now().Add(15 * time.Minute).Unix())
-
-	refreshClaims = &payload.OrderClaims{
-		OrderId:     input.OrderId,
-		ServiceType: input.ServiceType,
-	}
-	refreshClaims.SetExpirationTime(time.Now().Add(7 * 24 * time.Hour).Unix())
-
-	return accessClaims, refreshClaims
-}
-
-func CreateRestaurantClaim(input payload.Input) (payload.Claims, payload.Claims) {
+func CreateClaim(input payload.Input) (payload.Claims, payload.Claims) {
 	var accessClaims payload.Claims
 	var refreshClaims payload.Claims
 
 	accessClaims = &payload.RestaurantClaims{
-		RestaurantID: input.RestaurantID,
-		ServiceType:  input.ServiceType,
+		ClaimId:     input.ClaimId,
+		ServiceType: input.ServiceType,
 	}
 	accessClaims.SetExpirationTime(time.Now().Add(15 * time.Minute).Unix())
 
 	refreshClaims = &payload.RestaurantClaims{
-		RestaurantID: input.RestaurantID,
-		ServiceType:  input.ServiceType,
+		ClaimId:     input.ClaimId,
+		ServiceType: input.ServiceType,
 	}
 
 	refreshClaims.SetExpirationTime(time.Now().Add(7 * 24 * time.Hour).Unix())
