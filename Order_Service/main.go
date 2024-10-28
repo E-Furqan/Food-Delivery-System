@@ -20,8 +20,6 @@ func main() {
 	client.SetEnvValue(envVar)
 	repo := database.NewRepository(db)
 	OrderController := OrderControllers.NewController(repo, client)
-	OrderController.StartScheduledOrderTask()
-
 	server := gin.Default()
 	Routes.Order_routes(OrderController, server)
 	server.Run(":8081")
