@@ -520,11 +520,17 @@ func (ctrl *Controller) ProcessOrderDriver(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, "Error while binding order status")
 		return
 	}
+
 	OrderDetails, err := ctrl.Client.ViewOrdersDetails(order)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	if OrderDetails.DeliverDriverID == 0 {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Order have no delivery driver"})
+		return
+	}
+
 	if OrderDetails.DeliverDriverID != user.UserId {
 		log.Printf("order %s res %v", OrderDetails.OrderStatus, user.UserId)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Order is not of this driver"})
@@ -556,6 +562,133 @@ func (ctrl *Controller) ProcessOrderDriver(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"Order": order,
+		"Order": OrderDetails,
+	})
+}
+
+func (ctrl *Controller) ViewDriverOrders(c *gin.Context) {
+	username, err := utils.VerificationUsername(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
+		return
+	}
+
+	activeRole, exists := c.Get("activeRole")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	if activeRole != "Delivery driver" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "insufficient permission"})
+		return
+	}
+
+	var User model.User
+	err = ctrl.Repo.GetUser("username", username, &User)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Restaurant does not exists"})
+		return
+	}
+	var userId payload.ProcessOrder
+
+	userId.UserID = User.UserId
+	Orders, err := ctrl.Client.ViewDriverOrders(userId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error order": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"Driver orders: ": Orders,
+	})
+}
+
+func (ctrl *Controller) ViewOrdersWithoutDriver(c *gin.Context) {
+	username, err := utils.VerificationUsername(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
+		return
+	}
+
+	activeRole, exists := c.Get("activeRole")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	if activeRole != "Delivery driver" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "insufficient permission"})
+		return
+	}
+
+	var User model.User
+	err = ctrl.Repo.GetUser("username", username, &User)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Restaurant does not exists"})
+		return
+	}
+	var userId payload.ProcessOrder
+	Orders, err := ctrl.Client.ViewOrdersWithoutRider(userId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error order": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"Driver orders: ": Orders,
+	})
+}
+
+func (ctrl *Controller) AssignDriver(c *gin.Context) {
+	username, err := utils.VerificationUsername(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
+		return
+	}
+
+	activeRole, exists := c.Get("activeRole")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	if activeRole != "Delivery driver" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "insufficient permission"})
+		return
+	}
+
+	var driver model.User
+	err = ctrl.Repo.GetUser("username", username, &driver)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Restaurant does not exists"})
+		return
+	}
+	var orderId payload.ProcessOrder
+
+	if err := c.ShouldBindJSON(&orderId); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	OrderDetails, err := ctrl.Client.ViewOrdersDetails(orderId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error order": err.Error()})
+		return
+	}
+
+	if OrderDetails.DeliverDriverID != 0 {
+		c.JSON(http.StatusInternalServerError, "Order already have a delivery driver")
+		return
+	}
+	OrderDetails.DeliverDriverID = driver.UserId
+
+	if err := ctrl.Client.ProcessOrder(*OrderDetails); err != nil {
+		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Patch request failed", "Error", err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"Order": OrderDetails,
 	})
 }

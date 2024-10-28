@@ -23,6 +23,9 @@ func User_routes(ctrl *UserControllers.Controller, rCtrl *roleController.RoleCon
 		user.GET("/get/role", rCtrl.GetRole)
 		user.GET("/get/users", ctrl.GetUsers)
 		user.GET("/profile", ctrl.Profile)
+		user.GET("/view/user/orders", ctrl.ViewUserOrders)
+		user.GET("/view/driver/orders", ctrl.ViewDriverOrders)
+		user.GET("/view/orders/without/driver", ctrl.ViewOrdersWithoutDriver)
 
 		// protected.PATCH("/add/user_roles", role.AddRoleToUser)
 		user.PATCH("/update/profile", ctrl.UpdateUser)
@@ -33,5 +36,6 @@ func User_routes(ctrl *UserControllers.Controller, rCtrl *roleController.RoleCon
 
 		user.POST("/add/role", rCtrl.AddRolesByAdmin)
 		user.POST("/search/user", ctrl.SearchForUser)
+
 	}
 }
