@@ -19,6 +19,7 @@ func User_routes(ctrl *UserControllers.Controller, rCtrl *roleController.RoleCon
 	{
 		user.POST("/process/user/order", ctrl.ProcessOrderUser)
 		user.POST("/process/driver/order", ctrl.ProcessOrderDriver)
+		user.POST("/assign/driver", ctrl.AssignDriver)
 
 		user.GET("/get/role", rCtrl.GetRole)
 		user.GET("/get/users", ctrl.GetUsers)
