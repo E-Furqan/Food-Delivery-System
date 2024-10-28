@@ -26,11 +26,11 @@ func main() {
 	client.SetEnvValue(envVar)
 	ctrl := UserControllers.NewController(repo, client)
 	rCtrl := RoleController.NewController(repo)
+	middle := Middleware.NewMiddleware(client)
 
 	server := gin.Default()
-
 	rCtrl.AddDefaultRoles(&gin.Context{})
 
-	route.User_routes(ctrl, rCtrl, server)
+	route.User_routes(ctrl, rCtrl, middle, server)
 	server.Run(":8083")
 }

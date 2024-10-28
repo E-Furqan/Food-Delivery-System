@@ -8,12 +8,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func User_routes(ctrl *UserControllers.Controller, rCtrl *roleController.RoleController, server *gin.Engine) {
+func User_routes(ctrl *UserControllers.Controller, rCtrl *roleController.RoleController, middleware *Middleware.Middleware, server *gin.Engine) {
 
 	user := server.Group("/user")
 	user.POST("/register", ctrl.Register)
 	user.POST("/login", ctrl.Login)
-	user.POST("/refresh_token", ctrl.RefreshToken)
+	user.POST("/refresh_token", middleware.RefreshToken)
 
 	user.Use(Middleware.AuthMiddleware())
 	{
