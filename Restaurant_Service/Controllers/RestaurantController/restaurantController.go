@@ -338,7 +338,7 @@ func (ctrl *RestaurantController) ViewRestaurantOrders(c *gin.Context) {
 
 	// Filter the orders based on OrderStatus
 	for _, order := range *Orders {
-		if filter.Filter == "all" || filter.Filter == "" || order.OrderStatus == filter.Filter {
+		if filter.Filter == "all" || filter.Filter == "" || strings.EqualFold(order.OrderStatus, filter.Filter) {
 			filteredOrders = append(filteredOrders, order)
 		}
 	}
