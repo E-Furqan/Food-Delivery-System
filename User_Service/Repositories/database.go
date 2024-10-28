@@ -165,7 +165,7 @@ func (repo *Repository) UpdateUserActiveRole(user *model.User) error {
 	return repo.DB.Model(user).Where("user_id = ?", user.UserId).Update("active_role", user.ActiveRole).Error
 }
 
-func (repo *Repository) GetDeliveryDrivers(driver *model.User) error {
+func (repo *Repository) GetDeliveryDriver(driver *model.User) error {
 
 	tx := repo.DB.Begin()
 

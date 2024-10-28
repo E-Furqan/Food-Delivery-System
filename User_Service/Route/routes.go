@@ -14,10 +14,12 @@ func User_routes(ctrl *UserControllers.Controller, rCtrl *roleController.RoleCon
 	user.POST("/register", ctrl.Register)
 	user.POST("/login", ctrl.Login)
 	user.POST("/refresh_token", ctrl.RefreshToken)
-	user.POST("/process/order", ctrl.ProcessOrder)
 
 	user.Use(Middleware.AuthMiddleware())
 	{
+		user.POST("/process/user/order", ctrl.ProcessOrderUser)
+		user.POST("/process/driver/order", ctrl.ProcessOrderDriver)
+
 		user.GET("/get_role", rCtrl.GetRole)
 		user.GET("/get_users", ctrl.GetUsers)
 		user.GET("/profile", ctrl.Profile)
