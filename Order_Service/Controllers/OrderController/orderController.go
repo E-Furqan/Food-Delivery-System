@@ -153,6 +153,18 @@ func (orderCtrl *OrderController) ViewOrderDetails(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, order)
+}
+
+func (orderCtrl *OrderController) ViewOrdersWithoutRider(c *gin.Context) {
+
+	var order []model.Order
+	err := orderCtrl.Repo.GetOrderWithoutRider(&order)
+	if err != nil {
+		c.JSON(http.StatusNotFound, "Order not found")
+		return
+	}
+
+	c.JSON(http.StatusOK, order)
 
 }
 
@@ -262,69 +274,3 @@ func (orderCtrl *OrderController) createProcessOrder(order model.Order) payload.
 		},
 	}
 }
-
-// func (orderCtrl *OrderController) StartScheduledOrderTask() {
-// 	ticker := time.NewTicker(20 * time.Second)
-// 	go func() {
-// 		for {
-// 			<-ticker.C
-// 			orderCtrl.handleProcessOrderTask()
-// 		}
-// 	}()
-// }
-
-// func (orderCtrl *OrderController) handleProcessOrderTask() {
-// 	var orders []model.Order
-
-// 	if err := orderCtrl.Repo.FetchAllOrder(&orders); err != nil {
-// 		log.Printf("Message: Error while getting all orders from order table. Error: %v", err.Error())
-// 		return
-// 	}
-// 	var wg sync.WaitGroup
-// 	currentTime := time.Now()
-// 	for _, order := range orders {
-// 		if strings.ToLower(order.OrderStatus) != "completed" && currentTime.Sub(order.Time) >= 50*time.Second {
-// 			wg.Add(1)
-// 			go func(o model.Order) {
-// 				defer wg.Done()
-// 				processOrder := orderCtrl.createProcessOrder(o)
-// 				if err := orderCtrl.processOrderBasedOnStatus(processOrder, o.OrderStatus); err != nil {
-// 					log.Printf("Message: Error sending request to service. Error: %v", err.Error())
-// 					log.Printf("order id :%v", o.OrderID)
-// 				}
-// 			}(order)
-
-// 		}
-// 	}
-// 	wg.Wait()
-// 	log.Print("All orders processed")
-// }
-
-// func (orderCtrl *OrderController) processOrderBasedOnStatus(processOrder payload.ProcessOrder, status string) error {
-// 	if orderCtrl.isRestaurantStatus(status) {
-// 		return orderCtrl.Client.ProcessOrder(processOrder, false)
-// 	}
-// 	if orderCtrl.isUserStatus(status) {
-// 		return orderCtrl.Client.ProcessOrder(processOrder, true)
-// 	}
-// 	return fmt.Errorf("status not recognized: %s", status)
-// }
-
-// func (orderCtrl *OrderController) isRestaurantStatus(status string) bool {
-// 	for _, restaurantStatus := range payload.RestaurantOrderStatuses {
-// 		if strings.EqualFold(status, restaurantStatus) {
-// 			return true
-// 		}
-// 	}
-// 	return false
-// }
-
-// func (orderCtrl *OrderController) isUserStatus(status string) bool {
-// 	for _, userStatus := range payload.UserOrderStatuses {
-// 		if strings.EqualFold(status, userStatus) {
-// 			log.Print("User")
-// 			return true
-// 		}
-// 	}
-// 	return false
-// }

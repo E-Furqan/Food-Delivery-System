@@ -64,6 +64,21 @@ func (repo *Repository) GetOrder(order *model.Order, OrderId uint) error {
 	return nil
 }
 
+func (repo *Repository) GetOrderWithoutRider(order *[]model.Order) error {
+	tx := repo.DB.Begin()
+	err := repo.DB.Where("delivery_driver = ?", 0).First(order).Error
+	if err != nil {
+		tx.Rollback()
+		return nil
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return fmt.Errorf("error committing transaction: %v", err)
+	}
+
+	return nil
+}
+
 func (repo *Repository) GetOrderItems(orderItems *[]model.OrderItem, orderID uint) error {
 	tx := repo.DB.Begin()
 	err := repo.DB.Where("order_id = ?", orderID).Find(orderItems).Error
