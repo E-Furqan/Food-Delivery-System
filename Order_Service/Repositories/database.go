@@ -66,7 +66,7 @@ func (repo *Repository) GetOrder(order *model.Order, OrderId uint) error {
 
 func (repo *Repository) GetOrderWithoutRider(order *[]model.Order) error {
 	tx := repo.DB.Begin()
-	err := repo.DB.Where("delivery_driver = ?", 0).First(order).Error
+	err := repo.DB.Where("delivery_driver = ?", 0).Find(order).Error
 	if err != nil {
 		tx.Rollback()
 		return nil
