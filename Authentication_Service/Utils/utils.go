@@ -41,7 +41,7 @@ type Claims struct {
 	// RestaurantID uint   `json:"restaurant_id"`
 	// OrderId      uint   `json:"order_id"`
 	ClaimId     uint   `json:"claim_id"`
-	Username    string `json:"username"`
+	UserID      uint   `json:"user_id"`
 	ActiveRole  string `json:"activeRole"`
 	ServiceType string `json:"service_type"`
 	jwt.StandardClaims
@@ -76,7 +76,7 @@ func RefreshToken(refreshToken string, c *gin.Context) (string, error) {
 	var input payload.Input
 
 	if claims.ServiceType == "User" {
-		input.Username = claims.Username
+		input.UserId = claims.UserID
 		input.ActiveRole = claims.ActiveRole
 		accessClaims, refreshClaims = CreateUserClaim(input)
 	} else {
@@ -98,14 +98,14 @@ func CreateUserClaim(input payload.Input) (payload.Claims, payload.Claims) {
 	var refreshClaims payload.Claims
 
 	accessClaims = &payload.UserClaims{
-		Username:    input.Username,
+		UserId:      input.UserId,
 		ActiveRole:  input.ActiveRole,
 		ServiceType: input.ServiceType,
 	}
 	accessClaims.SetExpirationTime(time.Now().Add(30 * time.Minute).Unix())
 
 	refreshClaims = &payload.UserClaims{
-		Username:    input.Username,
+		UserId:      input.UserId,
 		ActiveRole:  input.ActiveRole,
 		ServiceType: "User",
 	}
@@ -118,13 +118,13 @@ func CreateClaim(input payload.Input) (payload.Claims, payload.Claims) {
 	var accessClaims payload.Claims
 	var refreshClaims payload.Claims
 
-	accessClaims = &payload.RestaurantClaims{
+	accessClaims = &payload.IDClaims{
 		ClaimId:     input.ClaimId,
 		ServiceType: input.ServiceType,
 	}
 	accessClaims.SetExpirationTime(time.Now().Add(15 * time.Minute).Unix())
 
-	refreshClaims = &payload.RestaurantClaims{
+	refreshClaims = &payload.IDClaims{
 		ClaimId:     input.ClaimId,
 		ServiceType: input.ServiceType,
 	}
