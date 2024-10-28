@@ -11,6 +11,7 @@ func Order_routes(orderController *OrderControllers.OrderController, server *gin
 	orderRoute.PATCH("/update/status", orderController.UpdateOrderStatus)
 	orderRoute.GET("/view/user/orders", orderController.GetOrdersOfUser)
 	orderRoute.GET("/view/restaurant/orders", orderController.GetOrdersOfRestaurant)
+	orderRoute.GET("/view/drivers/orders", orderController.GetOrdersOfDeliveryDriver)
 	orderRoute.GET("/generate/invoice", orderController.GenerateInvoice)
 	orderRoute.POST("/place/order", orderController.PlaceOrder)
 	orderRoute.GET("/view/order", orderController.ViewOrderDetails)
