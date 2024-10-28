@@ -2,6 +2,7 @@ package Routes
 
 import (
 	OrderControllers "github.com/E-Furqan/Food-Delivery-System/Controllers/OrderController"
+	"github.com/E-Furqan/Food-Delivery-System/Middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,8 +15,11 @@ func Order_routes(orderController *OrderControllers.OrderController, server *gin
 	orderRoute.GET("/view/drivers/orders", orderController.GetOrdersOfDeliveryDriver)
 	orderRoute.GET("/view/without/drivers/orders", orderController.ViewOrdersWithoutRider)
 	orderRoute.GET("/generate/invoice", orderController.GenerateInvoice)
-	orderRoute.POST("/place/order", orderController.PlaceOrder)
-	orderRoute.GET("/view/order", orderController.ViewOrderDetails)
-	// orderRoute.POST("/checkout", orderController.CheckOut)
 
+	// orderRoute.POST("/checkout", orderController.CheckOut)
+	orderRoute.Use(Middleware.AuthMiddleware())
+	{
+		orderRoute.POST("/place/order", orderController.PlaceOrder)
+		orderRoute.GET("/view/order", orderController.ViewOrderDetails)
+	}
 }
