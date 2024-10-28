@@ -13,15 +13,15 @@ func User_routes(ctrl *UserControllers.Controller, rCtrl *roleController.RoleCon
 	user := server.Group("/user")
 	user.POST("/register", ctrl.Register)
 	user.POST("/login", ctrl.Login)
-	user.POST("/refresh_token", middleware.RefreshToken)
+	user.POST("/refresh/token", middleware.RefreshToken)
 
 	user.Use(Middleware.AuthMiddleware())
 	{
 		user.POST("/process/user/order", ctrl.ProcessOrderUser)
 		user.POST("/process/driver/order", ctrl.ProcessOrderDriver)
 
-		user.GET("/get_role", rCtrl.GetRole)
-		user.GET("/get_users", ctrl.GetUsers)
+		user.GET("/get/role", rCtrl.GetRole)
+		user.GET("/get/users", ctrl.GetUsers)
 		user.GET("/profile", ctrl.Profile)
 
 		// protected.PATCH("/add/user_roles", role.AddRoleToUser)
