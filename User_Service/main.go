@@ -9,7 +9,6 @@ import (
 	"github.com/E-Furqan/Food-Delivery-System/Middleware"
 	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
 	route "github.com/E-Furqan/Food-Delivery-System/Route"
-	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,7 +17,6 @@ func main() {
 
 	config.SetEnvValue(envVar)
 	db := config.Connection()
-	utils.SetEnvValue(envVar)
 	Middleware.SetEnvValue(envVar)
 
 	repo := database.NewRepository(db)

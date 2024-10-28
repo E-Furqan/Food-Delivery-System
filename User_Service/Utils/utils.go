@@ -3,23 +3,14 @@ package utils
 import (
 	"fmt"
 
-	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
 
-var jwtKey []byte
-var refreshTokenKey []byte
-
 type Claims struct {
-	Username   string `json:"username"`
+	UserId     uint   `json:"user_id"`
 	ActiveRole string `json:"activeRole"`
 	jwt.StandardClaims
-}
-
-func SetEnvValue(envVar environmentVariable.Environment) {
-	jwtKey = []byte(envVar.JWT_SECRET)
-	refreshTokenKey = []byte(envVar.RefreshTokenKey)
 }
 
 func GenerateResponse(httpStatusCode int, c *gin.Context, title1 string, message1 string, title2 string, input interface{}) {
@@ -34,16 +25,16 @@ func GenerateResponse(httpStatusCode int, c *gin.Context, title1 string, message
 	c.JSON(httpStatusCode, response)
 }
 
-func VerificationUsername(c *gin.Context) (any, error) {
-	usernameValue, exists := c.Get("username")
+func VerifyUserId(c *gin.Context) (any, error) {
+	userIdValue, exists := c.Get("userId")
 	if !exists {
-		return 0, fmt.Errorf("username does not exist")
+		return 0, fmt.Errorf("userId does not exist")
 	}
-	username, ok := usernameValue.(string)
+	userId, ok := userIdValue.(string)
 	if !ok {
-		return 0, fmt.Errorf("invalid username")
+		return 0, fmt.Errorf("invalid userId")
 	}
-	return username, nil
+	return userId, nil
 }
 func VerificationRole(c *gin.Context) (any, error) {
 	activeRole, exists := c.Get("activeRole")

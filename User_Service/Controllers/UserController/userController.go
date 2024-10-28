@@ -122,14 +122,14 @@ func (ctrl *Controller) GetUsers(c *gin.Context) {
 
 func (ctrl *Controller) UpdateUser(c *gin.Context) {
 
-	username, err := utils.VerificationUsername(c)
+	UserId, err := utils.VerifyUserId(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 
 	user := model.User{}
-	err = ctrl.Repo.GetUser("username", username, &user)
+	err = ctrl.Repo.GetUser("user_id", UserId, &user)
 
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
@@ -180,14 +180,14 @@ func (ctrl *Controller) UpdateUser(c *gin.Context) {
 }
 
 func (ctrl *Controller) DeleteUser(c *gin.Context) {
-	username, err := utils.VerificationUsername(c)
+	UserId, err := utils.VerifyUserId(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 
 	user := model.User{}
-	err = ctrl.Repo.GetUser("username", username, &user)
+	err = ctrl.Repo.GetUser("user_id", UserId, &user)
 
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
@@ -209,23 +209,17 @@ func (ctrl *Controller) DeleteUser(c *gin.Context) {
 
 func (ctrl *Controller) Profile(c *gin.Context) {
 
-	username, exists := c.Get("username")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
-		return
-	}
-
-	usernameStr, ok := username.(string)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid username type"})
+	UserId, err := utils.VerifyUserId(c)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 
 	var user model.User
 
-	err := ctrl.Repo.GetUser("username", usernameStr, &user)
+	err = ctrl.Repo.GetUser("user_id", UserId, &user)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("User not found %v %s", err, usernameStr)})
+		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("User not found %v %s", err, UserId)})
 		return
 	}
 
@@ -262,22 +256,16 @@ func (ctrl *Controller) SearchForUser(c *gin.Context) {
 
 func (ctrl *Controller) SwitchRole(c *gin.Context) {
 
-	username, exists := c.Get("username")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
-		return
-	}
-
-	usernameStr, ok := username.(string)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid username type"})
+	UserId, err := utils.VerifyUserId(c)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 
 	var user model.User
-	err := ctrl.Repo.GetUser("username", usernameStr, &user)
+	err = ctrl.Repo.GetUser("user_id", UserId, &user)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("User not found %v %s", err, usernameStr)})
+		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("User not found %v %s", err, UserId)})
 		return
 	}
 
@@ -392,7 +380,7 @@ func (ctrl *Controller) SwitchRole(c *gin.Context) {
 // }
 
 func (ctrl *Controller) ViewUserOrders(c *gin.Context) {
-	username, err := utils.VerificationUsername(c)
+	UserId, err := utils.VerifyUserId(c)
 
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Restaurant not authenticated"})
@@ -400,7 +388,7 @@ func (ctrl *Controller) ViewUserOrders(c *gin.Context) {
 	}
 
 	var User model.User
-	err = ctrl.Repo.GetUser("username", username, &User)
+	err = ctrl.Repo.GetUser("user_id", UserId, &User)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Restaurant does not exists"})
 		return
@@ -420,7 +408,7 @@ func (ctrl *Controller) ViewUserOrders(c *gin.Context) {
 }
 
 func (ctrl *Controller) ProcessOrderUser(c *gin.Context) {
-	username, err := utils.VerificationUsername(c)
+	UserId, err := utils.VerifyUserId(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -428,7 +416,7 @@ func (ctrl *Controller) ProcessOrderUser(c *gin.Context) {
 
 	user := model.User{}
 
-	err = ctrl.Repo.GetUser("username", username, &user)
+	err = ctrl.Repo.GetUser("user_id", UserId, &user)
 
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
@@ -492,7 +480,7 @@ func (ctrl *Controller) ProcessOrderUser(c *gin.Context) {
 
 func (ctrl *Controller) ProcessOrderDriver(c *gin.Context) {
 
-	username, err := utils.VerificationUsername(c)
+	UserId, err := utils.VerifyUserId(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -509,7 +497,7 @@ func (ctrl *Controller) ProcessOrderDriver(c *gin.Context) {
 	}
 
 	user := model.User{}
-	err = ctrl.Repo.GetUser("username", username, &user)
+	err = ctrl.Repo.GetUser("user_id", UserId, &user)
 
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
@@ -570,7 +558,8 @@ func (ctrl *Controller) ProcessOrderDriver(c *gin.Context) {
 }
 
 func (ctrl *Controller) ViewDriverOrders(c *gin.Context) {
-	username, err := utils.VerificationUsername(c)
+
+	UserId, err := utils.VerifyUserId(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
 		return
@@ -588,7 +577,7 @@ func (ctrl *Controller) ViewDriverOrders(c *gin.Context) {
 	}
 
 	var User model.User
-	err = ctrl.Repo.GetUser("username", username, &User)
+	err = ctrl.Repo.GetUser("user_id", UserId, &User)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Restaurant does not exists"})
 		return
@@ -608,7 +597,7 @@ func (ctrl *Controller) ViewDriverOrders(c *gin.Context) {
 }
 
 func (ctrl *Controller) ViewOrdersWithoutDriver(c *gin.Context) {
-	username, err := utils.VerificationUsername(c)
+	UserId, err := utils.VerifyUserId(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
 		return
@@ -626,7 +615,7 @@ func (ctrl *Controller) ViewOrdersWithoutDriver(c *gin.Context) {
 	}
 
 	var User model.User
-	err = ctrl.Repo.GetUser("username", username, &User)
+	err = ctrl.Repo.GetUser("user_id", UserId, &User)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Restaurant does not exists"})
 		return
@@ -644,7 +633,7 @@ func (ctrl *Controller) ViewOrdersWithoutDriver(c *gin.Context) {
 }
 
 func (ctrl *Controller) AssignDriver(c *gin.Context) {
-	username, err := utils.VerificationUsername(c)
+	UserId, err := utils.VerifyUserId(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
 		return
@@ -662,7 +651,7 @@ func (ctrl *Controller) AssignDriver(c *gin.Context) {
 	}
 
 	var driver model.User
-	err = ctrl.Repo.GetUser("username", username, &driver)
+	err = ctrl.Repo.GetUser("user_id", UserId, &driver)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Restaurant does not exists"})
 		return
