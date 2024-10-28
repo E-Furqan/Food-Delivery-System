@@ -9,17 +9,19 @@ import (
 )
 
 type Environment struct {
+	PORT                         int
 	HOST                         string
 	USER                         string
 	PASSWORD                     string
 	DB_NAME                      string
-	PORT                         int
 	Get_Items_URL                string
 	BASE_URL                     string
 	Process_Order_Restaurant_URL string
 	RESTAURANT_PORT              string
 	USER_PORT                    string
 	Process_Order_User_URL       string
+	JWT_SECRET                   string
+	RefreshTokenKey              string
 }
 
 // ReadEnv reads environment variables from a .env file and returns an Environment struct
@@ -32,7 +34,6 @@ func ReadEnv() Environment {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
 
-	// Read environment variables
 	envVar.HOST = os.Getenv("HOST")
 	envVar.USER = os.Getenv("USER1")
 	envVar.PASSWORD = os.Getenv("PASSWORD")
@@ -48,8 +49,8 @@ func ReadEnv() Environment {
 	if err != nil {
 		log.Fatalf("Error converting PORT to integer: %v", err)
 	}
-	// envVar.JWT_SECRET = os.Getenv("JWT_SECRET")
-	// envVar.RefreshTokenKey = os.Getenv("REFRESH_TOKEN_SECRET")
+	envVar.JWT_SECRET = os.Getenv("JWT_SECRET")
+	envVar.RefreshTokenKey = os.Getenv("REFRESH_TOKEN_SECRET")
 	return envVar
 }
 
