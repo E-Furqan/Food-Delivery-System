@@ -328,8 +328,22 @@ func (ctrl *RestaurantController) ViewRestaurantOrders(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error order": err.Error()})
 		return
 	}
+	var filter payload.OrderFilter
+	if err := c.ShouldBindJSON(filter); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error order": err.Error()})
+		return
+	}
+
+	var filteredOrders []payload.OrderDetails
+
+	// Filter the orders based on OrderStatus
+	for _, order := range *Orders {
+		if filter.Filter == "all" || filter.Filter == "" || order.OrderStatus == filter.Filter {
+			filteredOrders = append(filteredOrders, order)
+		}
+	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"Restaurant orders: ": Orders,
+		"Restaurant orders: ": filteredOrders,
 	})
 }

@@ -41,6 +41,10 @@ type OrderDetails struct {
 	RestaurantId uint   `json:"restaurant_id"`
 }
 
+type OrderFilter struct {
+	Filter string `json:"filter"`
+}
+
 func GetOrderTransitions() map[string]string {
 	return map[string]string{
 		"order placed": "Accepted",
