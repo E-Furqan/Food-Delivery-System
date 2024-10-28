@@ -5,11 +5,23 @@ import (
 	"net/http"
 	"strings"
 
+	ClientPackage "github.com/E-Furqan/Food-Delivery-System/Client"
 	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
+	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
+
+type Middleware struct {
+	Client *ClientPackage.Client
+}
+
+func NewMiddleware(client *ClientPackage.Client) *Middleware {
+	return &Middleware{
+		Client: client,
+	}
+}
 
 var jwtKey []byte
 
@@ -42,4 +54,29 @@ func AuthMiddleware() gin.HandlerFunc {
 		c.Set("RestaurantID", claims.ClaimId)
 		c.Next()
 	}
+}
+
+func (ctrl *Middleware) RefreshToken(c *gin.Context) {
+
+	var input payload.RefreshToken
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var refreshClaim payload.RefreshToken
+	refreshClaim.RefreshToken = input.RefreshToken
+	refreshClaim.ServiceType = "Restaurant"
+	tokens, err := ctrl.Client.RefreshToken(refreshClaim)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"access token":  tokens.AccessToken,
+		"refresh token": tokens.RefreshToken,
+		"expires at":    tokens.Expiration,
+	})
 }

@@ -281,31 +281,6 @@ func (ctrl *RestaurantController) ProcessOrder(c *gin.Context) {
 // 	utils.GenerateResponse(http.StatusOK, c, "Message", "Post request successful", "", nil)
 // }
 
-func (ctrl *RestaurantController) RefreshToken(c *gin.Context) {
-
-	var input payload.RefreshToken
-
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	var refreshClaim payload.RefreshToken
-	refreshClaim.RefreshToken = input.RefreshToken
-	refreshClaim.ServiceType = "Restaurant"
-	tokens, err := ctrl.Client.RefreshToken(refreshClaim)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"access token":  tokens.AccessToken,
-		"refresh token": tokens.RefreshToken,
-		"expires at":    tokens.Expiration,
-	})
-}
-
 func (ctrl *RestaurantController) ViewRestaurantOrders(c *gin.Context) {
 	RestaurantID, err := utils.Verification(c)
 

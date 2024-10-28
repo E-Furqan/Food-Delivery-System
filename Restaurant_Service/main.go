@@ -24,8 +24,9 @@ func main() {
 	repo := database.NewRepository(db)
 	ctrl := RestaurantController.NewController(repo, client)
 	ItemController := ItemController.NewController(repo)
+	middle := Middleware.NewMiddleware(client)
 
 	server := gin.Default()
-	route.Restaurant_routes(ctrl, ItemController, server)
+	route.Restaurant_routes(ctrl, ItemController, middle, server)
 	server.Run(":8082")
 }
