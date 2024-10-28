@@ -200,7 +200,6 @@ func (client *Client) ViewOrdersDetails(input payload.ProcessOrder) (*payload.Pr
 		return nil, fmt.Errorf("error marshaling input: %v", err)
 	}
 	url := fmt.Sprintf("%s%s%s", client.BaseUrl, client.OrderPort, client.ViewOrderDetailsUrl)
-	log.Print(url)
 	req, err := http.NewRequest("GET", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %v", err)

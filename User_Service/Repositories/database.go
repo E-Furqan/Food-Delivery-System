@@ -29,15 +29,11 @@ func (repo *Repository) CreateRole(role *model.Role) error {
 
 func (repo *Repository) CreateUser(user *model.User) error {
 	result := repo.DB.Create(user)
-	log.Print(user)
 	repo.LoadUserWithRoles(user)
-	log.Print(user)
 	return result.Error
 }
 
 func (repo *Repository) LoadUserWithRoles(user *model.User) error {
-
-	log.Printf("Successfully loaded user with roles: %v", user.Roles)
 
 	err := repo.DB.Preload("Roles").First(user, user.UserId).Error
 	if err != nil {
@@ -45,7 +41,6 @@ func (repo *Repository) LoadUserWithRoles(user *model.User) error {
 		return err
 	}
 
-	log.Printf("Successfully loaded user with roles: %v", user.Roles)
 	return nil
 }
 

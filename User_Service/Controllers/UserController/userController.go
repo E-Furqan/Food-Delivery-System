@@ -420,7 +420,6 @@ func (ctrl *Controller) ViewUserOrders(c *gin.Context) {
 }
 
 func (ctrl *Controller) ProcessOrderUser(c *gin.Context) {
-
 	username, err := utils.VerificationUsername(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
@@ -428,6 +427,7 @@ func (ctrl *Controller) ProcessOrderUser(c *gin.Context) {
 	}
 
 	user := model.User{}
+
 	err = ctrl.Repo.GetUser("username", username, &user)
 
 	if err != nil {
@@ -442,6 +442,7 @@ func (ctrl *Controller) ProcessOrderUser(c *gin.Context) {
 		return
 	}
 	OrderDetails, err := ctrl.Client.ViewOrdersDetails(order)
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -475,8 +476,9 @@ func (ctrl *Controller) ProcessOrderUser(c *gin.Context) {
 		ctrl.Repo.UpdateRoleStatus(&driver)
 	}
 
-	if newStatus, exists := orderTransitions[order.OrderStatus]; exists {
+	if newStatus, exists := orderTransitions[OrderDetails.OrderStatus]; exists {
 		OrderDetails.OrderStatus = newStatus
+		log.Print(OrderDetails.OrderStatus)
 	}
 	if err := ctrl.Client.ProcessOrder(*OrderDetails); err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Patch request failed", "Error", err.Error())
@@ -484,7 +486,7 @@ func (ctrl *Controller) ProcessOrderUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"Order": order,
+		"Order": OrderDetails,
 	})
 }
 
@@ -553,8 +555,9 @@ func (ctrl *Controller) ProcessOrderDriver(c *gin.Context) {
 		return
 	}
 
-	if newStatus, exists := orderTransitions[order.OrderStatus]; exists {
+	if newStatus, exists := orderTransitions[OrderDetails.OrderStatus]; exists {
 		OrderDetails.OrderStatus = newStatus
+		log.Printf("order status %s", OrderDetails.OrderStatus)
 	}
 	if err := ctrl.Client.ProcessOrder(*OrderDetails); err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Patch request failed", "Error", err.Error())
@@ -681,12 +684,15 @@ func (ctrl *Controller) AssignDriver(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, "Order already have a delivery driver")
 		return
 	}
-	OrderDetails.DeliverDriverID = driver.UserId
 
+	OrderDetails.DeliverDriverID = driver.UserId
 	if err := ctrl.Client.ProcessOrder(*OrderDetails); err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Patch request failed", "Error", err.Error())
 		return
 	}
+
+	driver.RoleStatus = "not available"
+	ctrl.Repo.UpdateRoleStatus(&driver)
 
 	c.JSON(http.StatusOK, gin.H{
 		"Order": OrderDetails,
