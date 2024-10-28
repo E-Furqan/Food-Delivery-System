@@ -6,6 +6,7 @@ import (
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
 	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
+	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,19 +19,15 @@ func NewController(repo *database.Repository) *ItemController {
 }
 
 func (ItemController *ItemController) AddItemsInMenu(c *gin.Context) {
-	RestaurantID, exists := c.Get("RestaurantID")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
-		return
-	}
-	RestaurantID, ok := RestaurantID.(uint)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid Email address"})
-		return
-	}
 
+	RestaurantID, err := utils.Verification(c)
+
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Restaurant not authenticated"})
+		return
+	}
 	var Restaurant model.Restaurant
-	err := ItemController.Repo.GetRestaurant("restaurant_id", RestaurantID, &Restaurant)
+	err = ItemController.Repo.GetRestaurant("restaurant_id", RestaurantID, &Restaurant)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
@@ -52,19 +49,16 @@ func (ItemController *ItemController) AddItemsInMenu(c *gin.Context) {
 }
 
 func (ItemController *ItemController) DeleteItemsFromMenu(c *gin.Context) {
-	RestaurantID, exists := c.Get("RestaurantID")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
-		return
-	}
-	RestaurantID, ok := RestaurantID.(uint)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid Email address"})
+
+	RestaurantID, err := utils.Verification(c)
+
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Restaurant not authenticated"})
 		return
 	}
 
 	var Restaurant model.Restaurant
-	err := ItemController.Repo.GetRestaurant("restaurant_id", RestaurantID, &Restaurant)
+	err = ItemController.Repo.GetRestaurant("restaurant_id", RestaurantID, &Restaurant)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return

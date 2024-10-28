@@ -15,12 +15,12 @@ func Restaurant_routes(RestaurantController *RestaurantController.RestaurantCont
 	restaurantRoute.POST("/refresh/token", RestaurantController.RefreshToken)
 	restaurantRoute.POST("/view/menu", RestaurantController.ViewMenu)
 	restaurantRoute.GET("/get/restaurants", RestaurantController.GetAllRestaurants)
-	restaurantRoute.POST("/process/order", RestaurantController.ProcessOrder)
 	restaurantRoute.Use(Middleware.AuthMiddleware())
 	{
+		restaurantRoute.POST("/process/order", RestaurantController.ProcessOrder)
 		restaurantRoute.POST("/add/items", ItemController.AddItemsInMenu)
 		restaurantRoute.DELETE("/delete/items", ItemController.DeleteItemsFromMenu)
-		restaurantRoute.DELETE("/cancel/order", RestaurantController.CancelOrder)
+		// restaurantRoute.DELETE("/cancel/order", RestaurantController.CancelOrder)
 		restaurantRoute.PATCH("/update/status", RestaurantController.UpdateRestaurantStatus)
 		restaurantRoute.GET("/view/restaurant/orders", RestaurantController.ViewRestaurantOrders)
 	}

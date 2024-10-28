@@ -15,13 +15,6 @@ type Input struct {
 	RestaurantId     uint   `json:"restaurant_id"`
 	RestaurantStatus string `json:"restaurant_status"`
 }
-
-type ProcessOrder struct {
-	OrderId      uint   `json:"order_id"`
-	RestaurantId uint   `json:"restaurant_id"`
-	OrderStatus  string `json:"order_status"`
-}
-
 type CombinedInput struct {
 	SearchOrder
 	Input
@@ -43,8 +36,9 @@ type Tokens struct {
 }
 
 type OrderDetails struct {
-	OrderID     uint   `json:"order_id"`
-	OrderStatus string `json:"order_status"`
+	OrderID      uint   `json:"order_id"`
+	OrderStatus  string `json:"order_status"`
+	RestaurantId uint   `json:"restaurant_id"`
 }
 
 func GetOrderTransitions() map[string]string {

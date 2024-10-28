@@ -38,33 +38,6 @@ func (client *Client) SetEnvValue(envVar environmentVariable.Environment) {
 
 }
 
-func (client *Client) ProcessOrder(input payload.ProcessOrder) error {
-
-	jsonData, err := json.Marshal(input)
-	if err != nil {
-		return fmt.Errorf("error marshaling input: %v", err)
-	}
-
-	url := fmt.Sprintf("%s%s%s", client.BaseUrl, client.OrderPort, client.ProcessOrderURL)
-	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		return fmt.Errorf("error creating request: %v", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return fmt.Errorf("error sending request: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("received non-200 response: %v", resp.Status)
-	}
-
-	return nil
-}
-
 func (client *Client) GenerateResponse(input payload.RestaurantClaim) (*payload.Tokens, error) {
 
 	jsonData, err := json.Marshal(input)
@@ -127,7 +100,33 @@ func (client *Client) RefreshToken(input payload.RefreshToken) (*payload.Tokens,
 	return &tokens, nil
 }
 
-// working
+func (client *Client) ProcessOrder(input payload.OrderDetails) error {
+
+	jsonData, err := json.Marshal(input)
+	if err != nil {
+		return fmt.Errorf("error marshaling input: %v", err)
+	}
+
+	url := fmt.Sprintf("%s%s%s", client.BaseUrl, client.OrderPort, client.ProcessOrderURL)
+	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return fmt.Errorf("error creating request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("error sending request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("received non-200 response: %v", resp.Status)
+	}
+
+	return nil
+}
+
 func (client *Client) ViewRestaurantOrders(input payload.Input) (*[]payload.OrderDetails, error) {
 
 	jsonData, err := json.Marshal(input)
@@ -153,6 +152,38 @@ func (client *Client) ViewRestaurantOrders(input payload.Input) (*[]payload.Orde
 	}
 
 	var orders []payload.OrderDetails
+	if err := json.NewDecoder(resp.Body).Decode(&orders); err != nil {
+		return nil, fmt.Errorf("error decoding response: %v", err)
+	}
+
+	return &orders, nil
+}
+
+func (client *Client) ViewOrdersDetails(input payload.OrderDetails) (*payload.OrderDetails, error) {
+
+	jsonData, err := json.Marshal(input)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling input: %v", err)
+	}
+	url := fmt.Sprintf("%s%s%s", client.BaseUrl, client.OrderPort, client.VIEW_ORDER_DETAIL_URL)
+	log.Print(url)
+	req, err := http.NewRequest("GET", url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, fmt.Errorf("error creating request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("error sending request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("received non-200 response: %v", resp.Status)
+	}
+
+	var orders payload.OrderDetails
 	if err := json.NewDecoder(resp.Body).Decode(&orders); err != nil {
 		return nil, fmt.Errorf("error decoding response: %v", err)
 	}
