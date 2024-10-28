@@ -1,6 +1,7 @@
 package RestaurantController
 
 import (
+	"log"
 	"net/http"
 	"strings"
 
@@ -185,11 +186,12 @@ func (ctrl *RestaurantController) ProcessOrder(c *gin.Context) {
 	}
 
 	if OrderDetails.RestaurantId != RestaurantID {
+		log.Printf("order %s res %v", OrderDetails.OrderStatus, RestaurantID)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Order is not for your restaurant"})
 		return
 	}
 
-	if strings.ToLower(order.OrderStatus) != "cancelled" {
+	if strings.ToLower(order.OrderStatus) == "cancelled" {
 		OrderDetails.OrderStatus = "Cancelled"
 		if err := ctrl.Client.ProcessOrder(*OrderDetails); err != nil {
 			utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Post request failed", "Error", err.Error())
@@ -208,6 +210,7 @@ func (ctrl *RestaurantController) ProcessOrder(c *gin.Context) {
 			OrderDetails.OrderStatus = "Cancelled"
 			c.JSON(http.StatusNotFound, "Restaurant not found")
 			c.JSON(http.StatusNotFound, OrderDetails)
+			log.Printf("restaurant not found cancel")
 			return
 		}
 
@@ -215,6 +218,7 @@ func (ctrl *RestaurantController) ProcessOrder(c *gin.Context) {
 			OrderDetails.OrderStatus = "Cancelled"
 			c.JSON(http.StatusBadRequest, "Restaurant is closed")
 			c.JSON(http.StatusBadRequest, OrderDetails)
+			log.Printf("restaurant is close")
 			return
 		}
 	}
