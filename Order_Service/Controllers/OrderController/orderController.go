@@ -100,6 +100,16 @@ func (orderCtrl *OrderController) GetOrdersOfDeliveryDriver(c *gin.Context) {
 }
 
 func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
+	ServiceType, exists := c.Get("ServiceType")
+	log.Printf("servie %s", ServiceType)
+	if !exists {
+		c.JSON(http.StatusBadRequest, "userId id does not exist")
+		return
+	}
+	if ServiceType != "User" {
+		c.JSON(http.StatusBadRequest, "Only user can place order")
+		return
+	}
 
 	var CombineOrderItem payload.CombineOrderItem
 	if err := c.ShouldBindJSON(&CombineOrderItem); err != nil {
@@ -264,13 +274,14 @@ func (orderCtrl *OrderController) calculateBill(CombineOrderItem payload.Combine
 
 	return totalBill, nil
 }
-func (orderCtrl *OrderController) createProcessOrder(order model.Order) payload.ProcessOrder {
-	return payload.ProcessOrder{
-		OrderStatus: order.OrderStatus,
-		ID: payload.ID{
-			RestaurantId:     order.RestaurantID,
-			OrderID:          order.OrderID,
-			DeliveryDriverID: order.DeliveryDriverID,
-		},
-	}
-}
+
+// func (orderCtrl *OrderController) createProcessOrder(order model.Order) payload.ProcessOrder {
+// 	return payload.ProcessOrder{
+// 		OrderStatus: order.OrderStatus,
+// 		ID: payload.ID{
+// 			RestaurantId:     order.RestaurantID,
+// 			OrderID:          order.OrderID,
+// 			DeliveryDriverID: order.DeliveryDriverID,
+// 		},
+// 	}
+// }
