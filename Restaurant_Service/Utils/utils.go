@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"os"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	"github.com/dgrijalva/jwt-go"
@@ -36,4 +37,11 @@ func GenerateResponse(httpStatusCode int, c *gin.Context, title1 string, message
 	}
 
 	c.JSON(httpStatusCode, response)
+}
+
+func GetEnv(key string, defaultVal string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultVal
 }
