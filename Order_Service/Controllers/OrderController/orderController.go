@@ -8,13 +8,11 @@ import (
 
 	"github.com/E-Furqan/Food-Delivery-System/Client/RestaurantClient"
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
-	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
 	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 	"github.com/gin-gonic/gin"
 )
 
-// Controller struct that holds a reference to the repository
 type OrderController struct {
 	Repo      *database.Repository
 	ResClient *RestaurantClient.RestaurantClient
@@ -29,7 +27,7 @@ func NewController(repo *database.Repository, ResClient *RestaurantClient.Restau
 }
 
 func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
-	var OrderStatus payload.Order
+	var OrderStatus model.OrderIDS
 
 	if err := c.ShouldBindJSON(&OrderStatus); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -62,7 +60,7 @@ func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 
 func (orderCtrl *OrderController) GetOrders(c *gin.Context, UserType string) {
 
-	var OrderNFilter payload.CombineOrderFilter
+	var OrderNFilter model.CombineOrderFilter
 	if err := c.ShouldBindJSON(&OrderNFilter); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -111,17 +109,17 @@ func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 		return
 	}
 
-	var CombineOrderItem payload.CombineOrderItem
+	var CombineOrderItem model.CombineOrderItem
 	if err := c.ShouldBindJSON(&CombineOrderItem); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
 
-	var GetItem payload.GetItems
+	var GetItem model.GetItems
 	GetItem.RestaurantId = CombineOrderItem.RestaurantId
 	GetItem.ColumnName = "restaurant_id"
 	GetItem.OrderType = "asc"
 
-	var items []payload.Items
+	var items []model.Items
 	items, err := orderCtrl.ResClient.GetItems(GetItem)
 	if err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Error while getting items from the restaurant", "Error", err.Error())
@@ -149,7 +147,7 @@ func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 }
 
 func (orderCtrl *OrderController) ViewOrderDetails(c *gin.Context) {
-	var orderId payload.ID
+	var orderId model.ID
 
 	if err := c.ShouldBindJSON(&orderId); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -179,7 +177,7 @@ func (orderCtrl *OrderController) ViewOrdersWithoutRider(c *gin.Context) {
 }
 
 func (orderCtrl *OrderController) GenerateInvoice(c *gin.Context) {
-	var orderId payload.ID
+	var orderId model.ID
 	if err := c.ShouldBindJSON(&orderId); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -191,12 +189,12 @@ func (orderCtrl *OrderController) GenerateInvoice(c *gin.Context) {
 		return
 	}
 
-	var GetItem payload.GetItems
+	var GetItem model.GetItems
 	GetItem.RestaurantId = order.RestaurantID
 	GetItem.ColumnName = "restaurant_id"
 	GetItem.OrderType = "asc"
 
-	var items []payload.Items
+	var items []model.Items
 	items, err := orderCtrl.ResClient.GetItems(GetItem)
 	if err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Error while getting items from the restaurant", "Error", err.Error())
@@ -214,7 +212,7 @@ func (orderCtrl *OrderController) GenerateInvoice(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"invoice": invoice})
 }
 
-func (orderCtrl *OrderController) createInvoice(order model.Order, orderItems []model.OrderItem, items []payload.Items) gin.H {
+func (orderCtrl *OrderController) createInvoice(order model.Order, orderItems []model.OrderItem, items []model.Items) gin.H {
 	invoiceItems := []gin.H{}
 	totalBill := order.TotalBill
 
@@ -242,7 +240,7 @@ func (orderCtrl *OrderController) createInvoice(order model.Order, orderItems []
 		"items":         invoiceItems,
 	}
 }
-func (orderCtrl *OrderController) createOrderObj(order payload.CombineOrderItem, bill float64) model.Order {
+func (orderCtrl *OrderController) createOrderObj(order model.CombineOrderItem, bill float64) model.Order {
 	return model.Order{
 		OrderStatus:  "order placed",
 		UserId:       order.UserId,
@@ -250,7 +248,7 @@ func (orderCtrl *OrderController) createOrderObj(order payload.CombineOrderItem,
 		TotalBill:    bill,
 	}
 }
-func (orderCtrl *OrderController) calculateBill(CombineOrderItem payload.CombineOrderItem, items []payload.Items) (float64, error) {
+func (orderCtrl *OrderController) calculateBill(CombineOrderItem model.CombineOrderItem, items []model.Items) (float64, error) {
 	totalBill := 0.0
 
 	for _, orderedItem := range CombineOrderItem.Items {

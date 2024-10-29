@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
-	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
+
 	"gorm.io/gorm"
 )
 
@@ -129,7 +129,7 @@ func (repo *Repository) Update(order *model.Order) error {
 	return nil
 }
 
-func (repo *Repository) PlaceOrder(order *model.Order, CombineOrderItem *payload.CombineOrderItem) error {
+func (repo *Repository) PlaceOrder(order *model.Order, CombineOrderItem *model.CombineOrderItem) error {
 	tx := repo.DB.Begin()
 
 	if err := tx.Create(&order).Error; err != nil {

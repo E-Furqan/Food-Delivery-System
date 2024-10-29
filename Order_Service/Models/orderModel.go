@@ -13,12 +13,42 @@ type Order struct {
 	Time             time.Time `gorm:"autoCreateTime" json:"time"`
 }
 
-type Item struct {
-	ItemId uint `gorm:"primaryKey;size:100;not null;column:item_id" json:"item_id"`
-}
-
 type OrderItem struct {
 	OrderID  uint `gorm:"primaryKey;column:order_id" json:"order_id"`
 	ItemId   uint `gorm:"primaryKey;column:item_id" json:"item_id"`
 	Quantity uint `gorm:"column:quantity" json:"quantity"`
+}
+
+type ID struct {
+	OrderID          uint `json:"order_id"`
+	RestaurantId     uint `json:"restaurant_id"`
+	UserId           uint `json:"user_id"`
+	DeliveryDriverID uint `json:"delivery_driver"`
+}
+
+type OrderIDS struct {
+	ID
+	OrderStatus string `json:"order_status"`
+}
+
+type CombineOrderItem struct {
+	ID
+	Items []OrderItemPayload
+}
+
+type CombineOrderFilter struct {
+	ID
+	Filter
+}
+
+type ProcessOrder struct {
+	ID
+	OrderStatus string `json:"order_status"`
+}
+
+var UserOrderStatuses = []string{
+	"Waiting For Delivery Driver",
+	"In for delivery",
+	"Delivered",
+	"Completed",
 }
