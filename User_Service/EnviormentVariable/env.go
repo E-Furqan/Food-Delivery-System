@@ -56,6 +56,7 @@ func ReadEnv() Environment {
 	envVar.PORT, err = strconv.Atoi(portStr)
 	if err != nil {
 		log.Fatalf("Error converting PORT to integer: %v", err)
+		envVar.PORT = 5430
 	}
 	envVar.JWT_SECRET = utils.GetEnv("JWT_SECRET", "Furqan")
 	envVar.RefreshTokenKey = utils.GetEnv("REFRESH_TOKEN_SECRET", "Ali")
