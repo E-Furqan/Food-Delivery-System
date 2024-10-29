@@ -2,9 +2,9 @@ package environmentVariable
 
 import (
 	"log"
-	"os"
 
 	payload "github.com/E-Furqan/Food-Delivery-System/Authentication_Service/Payload"
+	utils "github.com/E-Furqan/Food-Delivery-System/Authentication_Service/Utils"
 	"github.com/joho/godotenv"
 )
 
@@ -15,7 +15,7 @@ func ReadEnv() payload.Environment {
 	if err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
-	envVar.JWT_SECRET = os.Getenv("JWT_SECRET")
-	envVar.RefreshTokenKey = os.Getenv("RefreshTokenKey")
+	envVar.JWT_SECRET = utils.GetEnv("JWT_SECRET", "Furqan")
+	envVar.RefreshTokenKey = utils.GetEnv("RefreshTokenKey", "Ali")
 	return envVar
 }

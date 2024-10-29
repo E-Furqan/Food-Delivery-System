@@ -3,6 +3,7 @@ package utils
 import (
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	payload "github.com/E-Furqan/Food-Delivery-System/Authentication_Service/Payload"
@@ -38,8 +39,6 @@ func GenerateTokens(accessClaims payload.Claims, refreshClaims payload.Claims) (
 }
 
 type Claims struct {
-	// RestaurantID uint   `json:"restaurant_id"`
-	// OrderId      uint   `json:"order_id"`
 	ClaimId     uint   `json:"claim_id"`
 	UserID      uint   `json:"user_id"`
 	ActiveRole  string `json:"activeRole"`
@@ -131,4 +130,11 @@ func CreateClaim(input payload.Input) (payload.Claims, payload.Claims) {
 
 	refreshClaims.SetExpirationTime(time.Now().Add(7 * 24 * time.Hour).Unix())
 	return accessClaims, refreshClaims
+}
+
+func GetEnv(key string, defaultVal string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultVal
 }
