@@ -28,7 +28,6 @@ func User_routes(ctrl *UserControllers.Controller, rCtrl *roleController.RoleCon
 		user.GET("/view/driver/orders", ctrl.ViewDriverOrders)
 		user.GET("/view/orders/without/driver", ctrl.ViewOrdersWithoutDriver)
 
-		// protected.PATCH("/add/user_roles", role.AddRoleToUser)
 		user.PATCH("/update/profile", ctrl.UpdateUser)
 		user.PATCH("/switch/role", rCtrl.SwitchRole)
 
