@@ -35,41 +35,30 @@ func ReadEnv() Environment {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
 
-	envVar.HOST = os.Getenv("HOST")
-	envVar.USER = os.Getenv("USER1")
-	envVar.PASSWORD = os.Getenv("PASSWORD")
-	envVar.DB_NAME = os.Getenv("DB_NAME")
-	envVar.BASE_URL = os.Getenv("BASE_URL")
-	envVar.PROCESS_ORDER_URL = os.Getenv("PROCESS_ORDER_URL")
-	envVar.ORDER_PORT = os.Getenv("ORDER_PORT")
-	envVar.AUTH_PORT = os.Getenv("AUTH_PORT")
-	envVar.GENERATE_TOKEN_URL = os.Getenv("GENERATE_TOKEN_URL")
-	envVar.REFRESH_TOKEN_URL = os.Getenv("REFRESH_TOKEN_URL")
-	envVar.RESTAURANT_ORDERS_URL = os.Getenv("RESTAURANT_ORDERS_URL")
-	envVar.VIEW_ORDER_DETAIL_URL = os.Getenv("VIEW_ORDER_DETAIL_URL")
-	envVar.JWT_SECRET = os.Getenv("JWT_SECRET")
-	portStr := os.Getenv("PORT")
+	envVar.HOST = GetEnv("HOST", "0.0.0.0")
+	envVar.USER = GetEnv("USER1", "furqan")
+	envVar.PASSWORD = GetEnv("PASSWORD", "furqan")
+	envVar.DB_NAME = GetEnv("DB_NAME", "Restaurant")
+	envVar.BASE_URL = GetEnv("BASE_URL", "http://localhost")
+	envVar.PROCESS_ORDER_URL = GetEnv("PROCESS_ORDER_URL", "/order/update/status")
+	envVar.ORDER_PORT = GetEnv("ORDER_PORT", ":8081")
+	envVar.AUTH_PORT = GetEnv("AUTH_PORT", ":8084")
+	envVar.GENERATE_TOKEN_URL = GetEnv("GENERATE_TOKEN_URL", "/auth/login")
+	envVar.REFRESH_TOKEN_URL = GetEnv("REFRESH_TOKEN_URL", "Ali")
+	envVar.RESTAURANT_ORDERS_URL = GetEnv("RESTAURANT_ORDERS_URL", "/order/view/restaurant/orders")
+	envVar.VIEW_ORDER_DETAIL_URL = GetEnv("VIEW_ORDER_DETAIL_URL", "/order/view/order")
+	envVar.JWT_SECRET = GetEnv("JWT_SECRET", "Furqan")
+	portStr := GetEnv("PORT", "5432")
 	envVar.PORT, err = strconv.Atoi(portStr)
 	if err != nil {
 		log.Fatalf("Error converting PORT to integer: %v", err)
+		envVar.PORT = 5432
 	}
 	return envVar
 }
-
-// func GetEnv(key string) string {
-// 	switch key {
-// 	case "HOST":
-// 		return envVar.HOST
-// 	case "USER1":
-// 		return envVar.USER
-// 	case "PASSWORD":
-// 		return envVar.PASSWORD
-// 	case "DB_NAME":
-// 		return envVar.DB_NAME
-// 	case "PORT":
-// 		return strconv.Itoa(envVar.PORT)
-// 	default:
-// 		log.Fatalf("environment variable %s is not set", key)
-// 		return ""
-// 	}
-// }
+func GetEnv(key string, defaultVal string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultVal
+}
