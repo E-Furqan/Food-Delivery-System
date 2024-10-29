@@ -11,10 +11,29 @@ type Restaurant struct {
 	Items                 []Item `gorm:"foreignKey:RestaurantId" json:"items"`
 }
 
-type Item struct {
-	ItemId          uint    `gorm:"primaryKey;autoIncrement" json:"item_id"`
-	ItemName        string  `gorm:"size:100" json:"item_name"`
-	ItemDescription string  `gorm:"size:100" json:"item_description"`
-	ItemPrice       float64 `gorm:"type:decimal(10,2)" json:"item_price"`
-	RestaurantId    uint    `gorm:"foreignKey" json:"restaurant_id"`
+type Credentials struct {
+	Email    string `json:"restaurant_email"`
+	Password string `json:"password"`
+}
+
+type SearchOrder struct {
+	ColumnName string `json:"column_name"`
+	OrderType  string `json:"order_type"`
+}
+
+type Input struct {
+	ItemId           uint   `json:"item_id"`
+	RestaurantId     uint   `json:"restaurant_id"`
+	RestaurantStatus string `json:"restaurant_status"`
+}
+
+type CombinedInput struct {
+	SearchOrder
+	Input
+}
+
+type OrderDetails struct {
+	OrderID      uint   `json:"order_id"`
+	OrderStatus  string `json:"order_status"`
+	RestaurantId uint   `json:"restaurant_id"`
 }

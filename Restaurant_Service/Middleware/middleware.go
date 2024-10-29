@@ -7,7 +7,7 @@ import (
 
 	"github.com/E-Furqan/Food-Delivery-System/Client/AuthClient"
 	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
-	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
+	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -54,14 +54,14 @@ func (middle *Middleware) AuthMiddleware() gin.HandlerFunc {
 
 func (middle *Middleware) RefreshToken(c *gin.Context) {
 
-	var input payload.RefreshToken
+	var input model.RefreshToken
 
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	var refreshClaim payload.RefreshToken
+	var refreshClaim model.RefreshToken
 	refreshClaim.RefreshToken = input.RefreshToken
 	refreshClaim.ServiceType = "Restaurant"
 	tokens, err := middle.AuthClient.RefreshToken(refreshClaim)

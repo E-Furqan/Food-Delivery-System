@@ -5,7 +5,6 @@ import (
 	"log"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
-	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
 	"gorm.io/gorm"
 )
 
@@ -130,7 +129,7 @@ func (repo *Repository) GetAllRestaurants(restaurants *[]model.Restaurant) error
 	return nil
 }
 
-func (repo *Repository) UpdateRestaurantStatus(restaurant *model.Restaurant, input payload.Input) error {
+func (repo *Repository) UpdateRestaurantStatus(restaurant *model.Restaurant, input model.Input) error {
 
 	tx := repo.DB.Begin()
 

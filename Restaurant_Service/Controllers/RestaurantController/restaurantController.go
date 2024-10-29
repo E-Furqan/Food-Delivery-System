@@ -8,7 +8,6 @@ import (
 	"github.com/E-Furqan/Food-Delivery-System/Client/AuthClient"
 	"github.com/E-Furqan/Food-Delivery-System/Client/OrderClient"
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
-	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
 	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 	"github.com/gin-gonic/gin"
@@ -54,7 +53,7 @@ func (ctrl *RestaurantController) Register(c *gin.Context) {
 
 func (ctrl *RestaurantController) Login(c *gin.Context) {
 
-	var input payload.Credentials
+	var input model.Credentials
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error while binding": err.Error()})
 		return
@@ -72,7 +71,7 @@ func (ctrl *RestaurantController) Login(c *gin.Context) {
 		return
 	}
 
-	var RestaurantClaim payload.RestaurantClaim
+	var RestaurantClaim model.RestaurantClaim
 	RestaurantClaim.ClaimId = Restaurant.RestaurantId
 	RestaurantClaim.ServiceType = "Restaurant"
 
@@ -115,7 +114,7 @@ func (ctrl *RestaurantController) UpdateRestaurantStatus(c *gin.Context) {
 		return
 	}
 
-	var input payload.Input
+	var input model.Input
 
 	if err = c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error while binding": err})
@@ -133,7 +132,7 @@ func (ctrl *RestaurantController) UpdateRestaurantStatus(c *gin.Context) {
 func (ctrl *RestaurantController) ViewMenu(c *gin.Context) {
 
 	var Items []model.Item
-	var combinedInput payload.CombinedInput
+	var combinedInput model.CombinedInput
 
 	if err := c.ShouldBindJSON(&combinedInput); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error binding": err.Error()})
@@ -169,7 +168,7 @@ func (ctrl *RestaurantController) ProcessOrder(c *gin.Context) {
 		return
 	}
 
-	var order payload.OrderDetails
+	var order model.OrderDetails
 
 	if err := c.ShouldBindJSON(&order); err != nil {
 		c.JSON(http.StatusBadRequest, "Error while binding order status")
@@ -198,7 +197,7 @@ func (ctrl *RestaurantController) ProcessOrder(c *gin.Context) {
 		return
 	}
 
-	orderTransitions := payload.GetOrderTransitions()
+	orderTransitions := model.GetOrderTransitions()
 
 	if strings.ToLower(OrderDetails.OrderStatus) == "order placed" {
 		var restaurant model.Restaurant
@@ -246,7 +245,7 @@ func (ctrl *RestaurantController) ViewRestaurantOrders(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Restaurant does not exists"})
 		return
 	}
-	var restaurantId payload.Input
+	var restaurantId model.Input
 
 	restaurantId.RestaurantId = Restaurant.RestaurantId
 	Orders, err := ctrl.OrderClient.ViewRestaurantOrders(restaurantId)
@@ -254,13 +253,13 @@ func (ctrl *RestaurantController) ViewRestaurantOrders(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error order": err.Error()})
 		return
 	}
-	var filter payload.OrderFilter
+	var filter model.OrderFilter
 	if err := c.ShouldBindJSON(filter); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error order": err.Error()})
 		return
 	}
 
-	var filteredOrders []payload.OrderDetails
+	var filteredOrders []model.OrderDetails
 
 	// Filter the orders based on OrderStatus
 	for _, order := range *Orders {

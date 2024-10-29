@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
-	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
+	model "github.com/E-Furqan/Food-Delivery-System/Models"
 )
 
 type OrderClient struct {
@@ -20,7 +20,7 @@ func NewClient(env environmentVariable.Environment) *OrderClient {
 	}
 }
 
-func (OrderClient *OrderClient) ProcessOrder(input payload.OrderDetails) error {
+func (OrderClient *OrderClient) ProcessOrder(input model.OrderDetails) error {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
@@ -47,7 +47,7 @@ func (OrderClient *OrderClient) ProcessOrder(input payload.OrderDetails) error {
 	return nil
 }
 
-func (OrderClient *OrderClient) ViewRestaurantOrders(input payload.Input) (*[]payload.OrderDetails, error) {
+func (OrderClient *OrderClient) ViewRestaurantOrders(input model.Input) (*[]model.OrderDetails, error) {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
@@ -70,7 +70,7 @@ func (OrderClient *OrderClient) ViewRestaurantOrders(input payload.Input) (*[]pa
 		return nil, fmt.Errorf("received non-200 response: %v", resp.Status)
 	}
 
-	var orders []payload.OrderDetails
+	var orders []model.OrderDetails
 	if err := json.NewDecoder(resp.Body).Decode(&orders); err != nil {
 		return nil, fmt.Errorf("error decoding response: %v", err)
 	}
@@ -78,7 +78,7 @@ func (OrderClient *OrderClient) ViewRestaurantOrders(input payload.Input) (*[]pa
 	return &orders, nil
 }
 
-func (OrderClient *OrderClient) ViewOrdersDetails(input payload.OrderDetails) (*payload.OrderDetails, error) {
+func (OrderClient *OrderClient) ViewOrdersDetails(input model.OrderDetails) (*model.OrderDetails, error) {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
@@ -101,7 +101,7 @@ func (OrderClient *OrderClient) ViewOrdersDetails(input payload.OrderDetails) (*
 		return nil, fmt.Errorf("received non-200 response: %v", resp.Status)
 	}
 
-	var orders payload.OrderDetails
+	var orders model.OrderDetails
 	if err := json.NewDecoder(resp.Body).Decode(&orders); err != nil {
 		return nil, fmt.Errorf("error decoding response: %v", err)
 	}

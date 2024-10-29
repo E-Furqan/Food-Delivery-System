@@ -3,13 +3,13 @@ package utils
 import (
 	"fmt"
 
-	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
+	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
 
 type Claims struct {
-	payload.RestaurantClaim
+	model.RestaurantClaim
 	jwt.StandardClaims
 }
 

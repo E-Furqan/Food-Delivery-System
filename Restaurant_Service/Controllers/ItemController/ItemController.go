@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
-	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
 	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 	"github.com/gin-gonic/gin"
@@ -64,7 +63,7 @@ func (ItemController *ItemController) DeleteItemsFromMenu(c *gin.Context) {
 		return
 	}
 
-	var DeleteItemId payload.Input
+	var DeleteItemId model.Input
 
 	if err = c.ShouldBindJSON(&DeleteItemId); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
