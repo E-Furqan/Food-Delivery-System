@@ -1,7 +1,6 @@
 package Middleware
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -11,13 +10,17 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-var jwtKey []byte
-
-func SetEnvValue(envVar environmentVariable.Environment) {
-	jwtKey = []byte(envVar.JWT_SECRET)
+type Middleware struct {
+	envVar *environmentVariable.Environment
 }
 
-func AuthMiddleware() gin.HandlerFunc {
+func NewMiddleware(envVar *environmentVariable.Environment) *Middleware {
+	return &Middleware{
+		envVar: envVar,
+	}
+}
+
+func (middle *Middleware) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString := c.GetHeader("Authorization")
 		if tokenString == "" || !strings.HasPrefix(tokenString, "Bearer ") {
@@ -30,11 +33,11 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		claims := &utils.Claims{}
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-			return jwtKey, nil
+			return []byte(middle.envVar.JWT_SECRET), nil
 		})
 		if err != nil || !token.Valid {
 
-			c.JSON(http.StatusUnauthorized, gin.H{"Error": fmt.Sprintf("Invalid token %v %s", err, jwtKey)})
+			utils.GenerateResponse(http.StatusUnauthorized, c, "Error", err.Error(), "", nil)
 			c.Abort()
 			return
 		}

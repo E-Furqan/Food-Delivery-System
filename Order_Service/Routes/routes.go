@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Order_routes(orderController *OrderControllers.OrderController, server *gin.Engine) {
+func Order_routes(orderController *OrderControllers.OrderController, middle *Middleware.Middleware, server *gin.Engine) {
 
 	orderRoute := server.Group("/order")
 	orderRoute.PATCH("/update/status", orderController.UpdateOrderStatus)
@@ -16,8 +16,7 @@ func Order_routes(orderController *OrderControllers.OrderController, server *gin
 	orderRoute.GET("/view/without/drivers/orders", orderController.ViewOrdersWithoutRider)
 	orderRoute.GET("/generate/invoice", orderController.GenerateInvoice)
 
-	// orderRoute.POST("/checkout", orderController.CheckOut)
-	orderRoute.Use(Middleware.AuthMiddleware())
+	orderRoute.Use(middle.AuthMiddleware())
 	{
 		orderRoute.POST("/place/order", orderController.PlaceOrder)
 		orderRoute.GET("/view/order", orderController.ViewOrderDetails)

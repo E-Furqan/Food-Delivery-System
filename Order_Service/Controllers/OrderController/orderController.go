@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	ClientPackage "github.com/E-Furqan/Food-Delivery-System/Client"
+	RestaurantClient "github.com/E-Furqan/Food-Delivery-System/Client"
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
 	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
@@ -16,15 +16,15 @@ import (
 
 // Controller struct that holds a reference to the repository
 type OrderController struct {
-	Repo   *database.Repository
-	Client *ClientPackage.Client
+	Repo      *database.Repository
+	ResClient *RestaurantClient.RestaurantClient
 }
 
 // NewController initializes the controller with the repository dependency
-func NewController(repo *database.Repository, client *ClientPackage.Client) *OrderController {
+func NewController(repo *database.Repository, ResClient *RestaurantClient.RestaurantClient) *OrderController {
 	return &OrderController{
-		Repo:   repo,
-		Client: client,
+		Repo:      repo,
+		ResClient: ResClient,
 	}
 }
 
@@ -122,7 +122,7 @@ func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 	GetItem.OrderType = "asc"
 
 	var items []payload.Items
-	items, err := orderCtrl.Client.GetItems(GetItem)
+	items, err := orderCtrl.ResClient.GetItems(GetItem)
 	if err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Error while getting items from the restaurant", "Error", err.Error())
 		return
@@ -197,7 +197,7 @@ func (orderCtrl *OrderController) GenerateInvoice(c *gin.Context) {
 	GetItem.OrderType = "asc"
 
 	var items []payload.Items
-	items, err := orderCtrl.Client.GetItems(GetItem)
+	items, err := orderCtrl.ResClient.GetItems(GetItem)
 	if err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Error while getting items from the restaurant", "Error", err.Error())
 		return
@@ -274,14 +274,3 @@ func (orderCtrl *OrderController) calculateBill(CombineOrderItem payload.Combine
 
 	return totalBill, nil
 }
-
-// func (orderCtrl *OrderController) createProcessOrder(order model.Order) payload.ProcessOrder {
-// 	return payload.ProcessOrder{
-// 		OrderStatus: order.OrderStatus,
-// 		ID: payload.ID{
-// 			RestaurantId:     order.RestaurantID,
-// 			OrderID:          order.OrderID,
-// 			DeliveryDriverID: order.DeliveryDriverID,
-// 		},
-// 	}
-// }

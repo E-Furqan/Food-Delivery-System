@@ -1,4 +1,4 @@
-package ClientPackage
+package RestaurantClient
 
 import (
 	"bytes"
@@ -10,35 +10,24 @@ import (
 	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
 )
 
-type Client struct {
-	BaseUrl                      string
-	ItemsURL                     string
-	RESTAURANT_PORT              string
-	USER_PORT                    string
-	Process_Order_Restaurant_URL string
-	Process_Order_User_URL       string
+type RestaurantClient struct {
+	envVar *environmentVariable.Environment
 }
 
-func NewClient() *Client {
-	return &Client{}
+func NewClient(envVar *environmentVariable.Environment) *RestaurantClient {
+	return &RestaurantClient{
+		envVar: envVar,
+	}
 }
 
-func (client *Client) SetEnvValue(envVar environmentVariable.Environment) {
-	client.BaseUrl = envVar.BASE_URL
-	client.ItemsURL = envVar.Get_Items_URL
-	client.RESTAURANT_PORT = envVar.RESTAURANT_PORT
-	client.USER_PORT = envVar.USER_PORT
-	client.Process_Order_Restaurant_URL = envVar.Process_Order_Restaurant_URL
-	client.Process_Order_User_URL = envVar.Process_Order_User_URL
-}
-func (client *Client) GetItems(getItems payload.GetItems) ([]payload.Items, error) {
+func (client *RestaurantClient) GetItems(getItems payload.GetItems) ([]payload.Items, error) {
 
 	body, err := json.Marshal(getItems)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling request body: %v", err)
 	}
 
-	url := fmt.Sprintf("%s%s%s", client.BaseUrl, client.RESTAURANT_PORT, client.ItemsURL)
+	url := fmt.Sprintf("%s%s%s", client.envVar.BASE_URL, client.envVar.RESTAURANT_PORT, client.envVar.Get_Items_URL)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %v", err)
@@ -63,38 +52,38 @@ func (client *Client) GetItems(getItems payload.GetItems) ([]payload.Items, erro
 	return items, nil
 }
 
-func (client *Client) ProcessOrder(ProcessOrder payload.ProcessOrder, forUser bool) error {
+// func (client *Client) ProcessOrder(ProcessOrder payload.ProcessOrder, forUser bool) error {
 
-	jsonData, err := json.Marshal(ProcessOrder)
-	if err != nil {
-		return fmt.Errorf("error marshaling input: %v", err)
-	}
+// 	jsonData, err := json.Marshal(ProcessOrder)
+// 	if err != nil {
+// 		return fmt.Errorf("error marshaling input: %v", err)
+// 	}
 
-	var url string
+// 	var url string
 
-	if forUser {
-		url = fmt.Sprintf("%s%s%s", client.BaseUrl, client.USER_PORT, client.Process_Order_User_URL)
-	} else {
-		url = fmt.Sprintf("%s%s%s", client.BaseUrl, client.RESTAURANT_PORT, client.Process_Order_Restaurant_URL)
-	}
+// 	if forUser {
+// 		url = fmt.Sprintf("%s%s%s", client.BaseUrl, client.USER_PORT, client.Process_Order_User_URL)
+// 	} else {
+// 		url = fmt.Sprintf("%s%s%s", client.BaseUrl, client.RESTAURANT_PORT, client.Process_Order_Restaurant_URL)
+// 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+// 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 
-	if err != nil {
-		return fmt.Errorf("error creating request: %v", err)
-	}
+// 	if err != nil {
+// 		return fmt.Errorf("error creating request: %v", err)
+// 	}
 
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return fmt.Errorf("error sending request: %v", err)
-	}
-	defer resp.Body.Close()
+// 	req.Header.Set("Content-Type", "application/json")
+// 	resp, err := http.DefaultClient.Do(req)
+// 	if err != nil {
+// 		return fmt.Errorf("error sending request: %v", err)
+// 	}
+// 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		body := (resp.Body)
-		return fmt.Errorf("received non-200 response: %v, body: %s", resp.Status, body)
-	}
+// 	if resp.StatusCode != http.StatusOK {
+// 		body := (resp.Body)
+// 		return fmt.Errorf("received non-200 response: %v, body: %s", resp.Status, body)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
