@@ -2,9 +2,9 @@ package environmentVariable
 
 import (
 	"log"
-	"os"
 	"strconv"
 
+	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 	"github.com/joho/godotenv"
 )
 
@@ -34,39 +34,23 @@ func ReadEnv() Environment {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
 
-	envVar.HOST = os.Getenv("HOST")
-	envVar.USER = os.Getenv("USER1")
-	envVar.PASSWORD = os.Getenv("PASSWORD")
-	envVar.DB_NAME = os.Getenv("DB_NAME")
-	envVar.BASE_URL = os.Getenv("BASE_URL")
-	envVar.Get_Items_URL = os.Getenv("Get_Items_URL")
-	envVar.Process_Order_Restaurant_URL = os.Getenv("Process_Order_Restaurant_URL")
-	envVar.Process_Order_User_URL = os.Getenv("Process_Order_User_URL")
-	envVar.RESTAURANT_PORT = os.Getenv("RESTAURANT_PORT")
-	envVar.USER_PORT = os.Getenv("USER_PORT")
-	portStr := os.Getenv("PORT")
+	envVar.HOST = utils.GetEnv("HOST", "0.0.0.0")
+	envVar.USER = utils.GetEnv("USER1", "furqan")
+	envVar.PASSWORD = utils.GetEnv("PASSWORD", "furqan")
+	envVar.DB_NAME = utils.GetEnv("DB_NAME", "order")
+	envVar.BASE_URL = utils.GetEnv("BASE_URL", "http://localhost")
+	envVar.Get_Items_URL = utils.GetEnv("Get_Items_URL", "/restaurant/view/menu")
+	envVar.Process_Order_Restaurant_URL = utils.GetEnv("Process_Order_Restaurant_URL", "/restaurant/process/order")
+	envVar.Process_Order_User_URL = utils.GetEnv("Process_Order_User_URL", "/user/process/order")
+	envVar.RESTAURANT_PORT = utils.GetEnv("RESTAURANT_PORT", ":8082")
+	envVar.USER_PORT = utils.GetEnv("USER_PORT", ":8083")
+	portStr := utils.GetEnv("PORT", "5431")
 	envVar.PORT, err = strconv.Atoi(portStr)
 	if err != nil {
 		log.Fatalf("Error converting PORT to integer: %v", err)
+		envVar.PORT = 5432
 	}
-	envVar.JWT_SECRET = os.Getenv("JWT_SECRET")
-	envVar.RefreshTokenKey = os.Getenv("REFRESH_TOKEN_SECRET")
+	envVar.JWT_SECRET = utils.GetEnv("JWT_SECRET", "Furqan")
+	envVar.RefreshTokenKey = utils.GetEnv("REFRESH_TOKEN_SECRET", "Ali")
 	return envVar
-}
-
-func Get_env(key string) string {
-
-	// Load the .env file
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
-	}
-
-	value := os.Getenv(key)
-	if value == "" {
-		log.Fatalf("environment variable %s is not set", key)
-		return "" // Return an error if the variable is not found
-	}
-
-	return value
 }

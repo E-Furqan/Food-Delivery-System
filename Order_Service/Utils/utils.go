@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"os"
+
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 )
@@ -23,4 +25,11 @@ type Claims struct {
 	ClaimId     uint   `json:"claim_id"`
 	ServiceType string `json:"service_type"`
 	jwt.StandardClaims
+}
+
+func GetEnv(key string, defaultVal string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultVal
 }
