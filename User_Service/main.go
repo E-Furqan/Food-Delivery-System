@@ -1,7 +1,8 @@
 package main
 
 import (
-	ClientPackage "github.com/E-Furqan/Food-Delivery-System/Client"
+	"github.com/E-Furqan/Food-Delivery-System/Client/AuthClient"
+	"github.com/E-Furqan/Food-Delivery-System/Client/OrderClient"
 	RoleController "github.com/E-Furqan/Food-Delivery-System/Controllers/RoleControler"
 	UserControllers "github.com/E-Furqan/Food-Delivery-System/Controllers/UserController"
 	config "github.com/E-Furqan/Food-Delivery-System/DatabaseConfig"
@@ -14,17 +15,17 @@ import (
 
 func main() {
 	envVar := environmentVariable.ReadEnv()
+	databaseConfig := config.NewDatabase(envVar)
 
-	config.SetEnvValue(envVar)
-	db := config.Connection()
-	Middleware.SetEnvValue(envVar)
+	db := databaseConfig.Connection()
 
 	repo := database.NewRepository(db)
-	client := ClientPackage.NewClient()
-	client.SetEnvValue(envVar)
-	ctrl := UserControllers.NewController(repo, client)
+	OrdClient := OrderClient.NewClient(envVar)
+	AuthClient := AuthClient.NewClient(envVar)
+
+	ctrl := UserControllers.NewController(repo, OrdClient, AuthClient)
 	rCtrl := RoleController.NewController(repo)
-	middle := Middleware.NewMiddleware(client)
+	middle := Middleware.NewMiddleware(AuthClient, &envVar)
 
 	server := gin.Default()
 	rCtrl.AddDefaultRoles(&gin.Context{})

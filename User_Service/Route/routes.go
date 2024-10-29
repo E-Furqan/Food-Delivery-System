@@ -15,7 +15,7 @@ func User_routes(ctrl *UserControllers.Controller, rCtrl *roleController.RoleCon
 	user.POST("/login", ctrl.Login)
 	user.POST("/refresh/token", middleware.RefreshToken)
 
-	user.Use(Middleware.AuthMiddleware())
+	user.Use(middleware.AuthMiddleware())
 	{
 		user.POST("/process/user/order", ctrl.ProcessOrderUser)
 		user.POST("/process/driver/order", ctrl.ProcessOrderDriver)

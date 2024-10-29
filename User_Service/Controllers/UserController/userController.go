@@ -1,12 +1,12 @@
 package UserControllers
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
 
-	ClientPackage "github.com/E-Furqan/Food-Delivery-System/Client"
+	"github.com/E-Furqan/Food-Delivery-System/Client/AuthClient"
+	"github.com/E-Furqan/Food-Delivery-System/Client/OrderClient"
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
 	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
@@ -15,14 +15,16 @@ import (
 )
 
 type Controller struct {
-	Repo   *database.Repository
-	Client *ClientPackage.Client
+	Repo        *database.Repository
+	OrderClient *OrderClient.OrderClient
+	AuthClient  *AuthClient.AuthClient
 }
 
-func NewController(repo *database.Repository, client *ClientPackage.Client) *Controller {
+func NewController(repo *database.Repository, OrderClient *OrderClient.OrderClient, AuthClient *AuthClient.AuthClient) *Controller {
 	return &Controller{
-		Repo:   repo,
-		Client: client,
+		Repo:        repo,
+		OrderClient: OrderClient,
+		AuthClient:  AuthClient,
 	}
 }
 
@@ -31,14 +33,14 @@ func (ctrl *Controller) Register(c *gin.Context) {
 	var registrationData model.User
 
 	if err := c.ShouldBindJSON(&registrationData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.GenerateResponse(http.StatusBadRequest, c, "Error", err.Error(), "", nil)
 		return
 	}
 
 	if len(registrationData.Roles) > 0 && registrationData.ActiveRole == "" {
 		var role model.Role
 		if err := ctrl.Repo.GetRole(registrationData.Roles[0].RoleId, &role); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Role not found"})
+			utils.GenerateResponse(http.StatusInternalServerError, c, "Error", "Role not found", "", nil)
 			return
 		}
 		registrationData.ActiveRole = role.RoleType
@@ -47,7 +49,7 @@ func (ctrl *Controller) Register(c *gin.Context) {
 
 	err := ctrl.Repo.CreateUser(&registrationData)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.GenerateResponse(http.StatusInternalServerError, c, "Error", err.Error(), "", nil)
 		return
 	}
 
@@ -58,28 +60,28 @@ func (ctrl *Controller) Login(c *gin.Context) {
 
 	var input payload.Credentials
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.GenerateResponse(http.StatusBadRequest, c, "Error", err.Error(), "", nil)
 		return
 	}
 
 	var user model.User
 	err := ctrl.Repo.GetUser("username", input.Username, &user)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Error", "Invalid credentials", "", nil)
 		return
 	}
 
 	if user.Password != input.Password {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid password"})
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Error", "Invalid password", "", nil)
 		return
 	}
 	var UserClaim payload.UserClaim
 	UserClaim.Username = user.Username
 	UserClaim.ActiveRole = user.ActiveRole
 	UserClaim.ServiceType = "User"
-	token, err := ctrl.Client.GenerateResponse(UserClaim)
+	token, err := ctrl.AuthClient.GenerateToken(UserClaim)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
+		utils.GenerateResponse(http.StatusInternalServerError, c, "Error", "Could not generate token", "", nil)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -93,12 +95,12 @@ func (ctrl *Controller) GetUsers(c *gin.Context) {
 
 	activeRole, exists := c.Get("activeRole")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Error", "User not authenticated", "", nil)
 		return
 	}
 
 	if activeRole != "Admin" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "You do not have the privileges to view users."})
+		utils.GenerateResponse(http.StatusBadRequest, c, "Error", "You do not have the privileges to view users.", "", nil)
 		return
 	}
 
@@ -106,14 +108,15 @@ func (ctrl *Controller) GetUsers(c *gin.Context) {
 	var OrderInfo payload.Order
 
 	if err := c.ShouldBindJSON(&OrderInfo); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Print("binding error")
+		utils.GenerateResponse(http.StatusBadRequest, c, "Error", err.Error(), "", nil)
 		return
 	}
 
 	userData, err := ctrl.Repo.PreloadInOrder(OrderInfo.ColumnName, OrderInfo.OrderType)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.GenerateResponse(http.StatusInternalServerError, c, "Error", err.Error(), "", nil)
 		return
 	}
 
@@ -124,7 +127,7 @@ func (ctrl *Controller) UpdateUser(c *gin.Context) {
 
 	UserId, err := utils.VerifyUserId(c)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		utils.GenerateResponse(http.StatusNotFound, c, "Error", err.Error(), "", nil)
 		return
 	}
 
@@ -132,19 +135,19 @@ func (ctrl *Controller) UpdateUser(c *gin.Context) {
 	err = ctrl.Repo.GetUser("user_id", UserId, &user)
 
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		utils.GenerateResponse(http.StatusNotFound, c, "Error", err.Error(), "", nil)
 		return
 	}
 
 	var updateUserData model.User
 	err = c.ShouldBindJSON(&updateUserData)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.GenerateResponse(http.StatusBadRequest, c, "Error", err.Error(), "", nil)
 		return
 	}
 
 	if err := ctrl.Repo.DeleteUserRoleInfo(user.UserId, "user_user_id"); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.GenerateResponse(http.StatusInternalServerError, c, "Error", err.Error(), "", nil)
 		return
 	}
 
@@ -163,26 +166,23 @@ func (ctrl *Controller) UpdateUser(c *gin.Context) {
 	err = ctrl.Repo.Update(&user, &updateUserData)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
+		utils.GenerateResponse(http.StatusInternalServerError, c, "Error", err.Error(), "", nil)
 		return
 	}
 
 	for _, role := range updateUserData.Roles {
 		if err := ctrl.Repo.AddUserRole(user.UserId, role.RoleId); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add roles to user"})
+			utils.GenerateResponse(http.StatusInternalServerError, c, "Error", err.Error(), "", nil)
 			return
 		}
 	}
-	log.Print(updateUserData.Roles)
-	log.Print(user.Roles)
-
 	c.JSON(http.StatusCreated, user)
 }
 
 func (ctrl *Controller) DeleteUser(c *gin.Context) {
 	UserId, err := utils.VerifyUserId(c)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		utils.GenerateResponse(http.StatusNotFound, c, "Error", err.Error(), "", nil)
 		return
 	}
 
@@ -190,17 +190,17 @@ func (ctrl *Controller) DeleteUser(c *gin.Context) {
 	err = ctrl.Repo.GetUser("user_id", UserId, &user)
 
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		utils.GenerateResponse(http.StatusNotFound, c, "Error", err.Error(), "", nil)
 		return
 	}
 
 	if err := ctrl.Repo.DeleteUserRoleInfo(user.UserId, "user_user_id"); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.GenerateResponse(http.StatusInternalServerError, c, "Error", err.Error(), "", nil)
 		return
 	}
 
 	if err := ctrl.Repo.DeleteUser(&user); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user"})
+		utils.GenerateResponse(http.StatusInternalServerError, c, "Error", err.Error(), "", nil)
 		return
 	}
 
@@ -211,7 +211,7 @@ func (ctrl *Controller) Profile(c *gin.Context) {
 
 	UserId, err := utils.VerifyUserId(c)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		utils.GenerateResponse(http.StatusNotFound, c, "Error", err.Error(), "", nil)
 		return
 	}
 
@@ -219,7 +219,7 @@ func (ctrl *Controller) Profile(c *gin.Context) {
 
 	err = ctrl.Repo.GetUser("user_id", UserId, &user)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("User not found %v %s", err, UserId)})
+		utils.GenerateResponse(http.StatusNotFound, c, "Error", err.Error(), "", nil)
 		return
 	}
 
@@ -229,25 +229,25 @@ func (ctrl *Controller) Profile(c *gin.Context) {
 func (ctrl *Controller) SearchForUser(c *gin.Context) {
 	role, exists := c.Get("activeRole")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Error", "User not authenticated", "", nil)
 		return
 	}
 	if role != "Admin" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "You do not have the privileges to Search for users."})
+		utils.GenerateResponse(http.StatusBadRequest, c, "Error", "You do not have the privileges to Search for users.", "", nil)
 		return
 	}
 
 	var input payload.UserSearch
 	err := c.ShouldBindJSON(&input)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.GenerateResponse(http.StatusBadRequest, c, "Error", err.Error(), "", nil)
 		return
 	}
 
 	var user model.User
 	err = ctrl.Repo.GetUser(input.ColumnName, input.SearchParameter, &user)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("Error: %v \nUser not found: %s", err, input.SearchParameter)})
+		utils.GenerateResponse(http.StatusNotFound, c, "Error", err.Error(), "", nil)
 		return
 	}
 
@@ -258,21 +258,21 @@ func (ctrl *Controller) SwitchRole(c *gin.Context) {
 
 	UserId, err := utils.VerifyUserId(c)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		utils.GenerateResponse(http.StatusNotFound, c, "Error", err.Error(), "", nil)
 		return
 	}
 
 	var user model.User
 	err = ctrl.Repo.GetUser("user_id", UserId, &user)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("User not found %v %s", err, UserId)})
+		utils.GenerateResponse(http.StatusNotFound, c, "Error", err.Error(), "", nil)
 		return
 	}
 
 	var RoleSwitch payload.RoleSwitch
 	err = c.ShouldBindJSON(&RoleSwitch)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.GenerateResponse(http.StatusBadRequest, c, "Error", err.Error(), "", nil)
 		return
 	}
 
@@ -287,14 +287,14 @@ func (ctrl *Controller) SwitchRole(c *gin.Context) {
 	}
 
 	if !roleExists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Role not found in user's roles"})
+		utils.GenerateResponse(http.StatusNotFound, c, "Error", "Role not found in user's roles", "", nil)
 		return
 	}
 
 	user.ActiveRole = newRole.RoleType
 
 	if err := ctrl.Repo.UpdateUserActiveRole(&user); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user active role"})
+		utils.GenerateResponse(http.StatusInternalServerError, c, "Error", "Failed to update user active role", "", nil)
 		return
 	}
 
@@ -302,7 +302,7 @@ func (ctrl *Controller) SwitchRole(c *gin.Context) {
 	UserClaim.Username = user.Username
 	UserClaim.ActiveRole = user.ActiveRole
 	UserClaim.ServiceType = "User"
-	token, err := ctrl.Client.GenerateResponse(UserClaim)
+	token, err := ctrl.AuthClient.GenerateToken(UserClaim)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
 		return
@@ -314,91 +314,26 @@ func (ctrl *Controller) SwitchRole(c *gin.Context) {
 	})
 }
 
-// func (ctrl *Controller) ProcessOrder(c *gin.Context) {
-// 	var order payload.ProcessOrder
-
-// 	if err := c.ShouldBindJSON(&order); err != nil {
-// 		c.JSON(http.StatusBadRequest, "Error while binding order status")
-// 		return
-// 	}
-
-// 	if order.OrderStatus == "Cancelled" {
-// 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Order Cancelled", "order", order)
-// 		return
-// 	}
-
-// 	orderTransitions := payload.GetOrderTransitions()
-// 	if order.OrderStatus == "Waiting For Delivery Driver" {
-// 		var driver model.User
-// 		err := ctrl.Repo.GetDeliveryDriver(&driver)
-// 		if err != nil {
-// 			utils.GenerateResponse(http.StatusNotFound, c, "Message", "Delivery driver not found", "Error", err.Error())
-// 			return
-// 		}
-
-// 		if newStatus, exists := orderTransitions[order.OrderStatus]; exists {
-// 			order.OrderStatus = newStatus
-// 		}
-// 		order.DeliverDriverID = driver.UserId
-
-// 		if err := ctrl.Client.ProcessOrder(order); err != nil {
-// 			utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Patch request failed", "Error", err.Error())
-// 			return
-// 		}
-
-// 		c.JSON(http.StatusOK, gin.H{
-// 			"Order":          order,
-// 			"Deliver Driver": driver.UserId,
-// 		})
-// 		return
-
-// 	} else if order.OrderStatus == "Delivered" {
-// 		var driver model.User
-// 		log.Print(order.DeliverDriverID)
-// 		err := ctrl.Repo.GetUser("user_id", order.DeliverDriverID, &driver)
-// 		if err != nil {
-// 			utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Delivery driver not found", "Error", err.Error())
-// 			return
-// 		}
-
-// 		driver.RoleStatus = "available"
-// 		ctrl.Repo.UpdateRoleStatus(&driver)
-// 	}
-
-// 	if newStatus, exists := orderTransitions[order.OrderStatus]; exists {
-// 		log.Print(newStatus)
-// 		order.OrderStatus = newStatus
-// 	}
-// 	if err := ctrl.Client.ProcessOrder(order); err != nil {
-// 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Patch request failed", "Error", err.Error())
-// 		return
-// 	}
-
-// 	c.JSON(http.StatusOK, gin.H{
-// 		"Order": order,
-// 	})
-// }
-
 func (ctrl *Controller) ViewUserOrders(c *gin.Context) {
 	UserId, err := utils.VerifyUserId(c)
 
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Restaurant not authenticated"})
+		utils.GenerateResponse(http.StatusBadRequest, c, "Error", err.Error(), "", nil)
 		return
 	}
 
 	var User model.User
 	err = ctrl.Repo.GetUser("user_id", UserId, &User)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Restaurant does not exists"})
+		utils.GenerateResponse(http.StatusNotFound, c, "Error", err.Error(), "", nil)
 		return
 	}
 	var userId payload.ProcessOrder
 
 	userId.UserID = User.UserId
-	Orders, err := ctrl.Client.ViewUserOrders(userId)
+	Orders, err := ctrl.OrderClient.ViewUserOrders(userId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error order": err.Error()})
+		utils.GenerateResponse(http.StatusInternalServerError, c, "Error", err.Error(), "", nil)
 		return
 	}
 
@@ -410,7 +345,7 @@ func (ctrl *Controller) ViewUserOrders(c *gin.Context) {
 func (ctrl *Controller) ProcessOrderUser(c *gin.Context) {
 	UserId, err := utils.VerifyUserId(c)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		utils.GenerateResponse(http.StatusNotFound, c, "Error", err.Error(), "", nil)
 		return
 	}
 
@@ -419,31 +354,30 @@ func (ctrl *Controller) ProcessOrderUser(c *gin.Context) {
 	err = ctrl.Repo.GetUser("user_id", UserId, &user)
 
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		utils.GenerateResponse(http.StatusNotFound, c, "Error", "User not found", "", nil)
 		return
 	}
 
 	var order payload.ProcessOrder
 
 	if err := c.ShouldBindJSON(&order); err != nil {
-		c.JSON(http.StatusBadRequest, "Error while binding order status")
+		utils.GenerateResponse(http.StatusBadRequest, c, "Error", err.Error(), "", nil)
 		return
 	}
-	OrderDetails, err := ctrl.Client.ViewOrdersDetails(order)
+	OrderDetails, err := ctrl.OrderClient.ViewOrdersDetails(order)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.GenerateResponse(http.StatusInternalServerError, c, "Error", err.Error(), "", nil)
 		return
 	}
 	if OrderDetails.UserID != user.UserId {
-		log.Printf("order %s res %v", OrderDetails.OrderStatus, user.UserId)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Order is not of this user"})
+		utils.GenerateResponse(http.StatusInternalServerError, c, "Error", "Order is not of this user", "", nil)
 		return
 	}
 
 	if strings.ToLower(order.OrderStatus) == "cancelled" {
 		OrderDetails.OrderStatus = "cancelled"
-		if err := ctrl.Client.ProcessOrder(*OrderDetails); err != nil {
+		if err := ctrl.OrderClient.ProcessOrder(*OrderDetails); err != nil {
 			utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Post request failed", "Error", err.Error())
 			return
 		}
@@ -466,9 +400,8 @@ func (ctrl *Controller) ProcessOrderUser(c *gin.Context) {
 
 	if newStatus, exists := orderTransitions[OrderDetails.OrderStatus]; exists {
 		OrderDetails.OrderStatus = newStatus
-		log.Print(OrderDetails.OrderStatus)
 	}
-	if err := ctrl.Client.ProcessOrder(*OrderDetails); err != nil {
+	if err := ctrl.OrderClient.ProcessOrder(*OrderDetails); err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Patch request failed", "Error", err.Error())
 		return
 	}
@@ -482,17 +415,17 @@ func (ctrl *Controller) ProcessOrderDriver(c *gin.Context) {
 
 	UserId, err := utils.VerifyUserId(c)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		utils.GenerateResponse(http.StatusBadRequest, c, "Error", err.Error(), "", nil)
 		return
 	}
 	activeRole, exists := c.Get("activeRole")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Error", "User not authenticated", "", nil)
 		return
 	}
 
 	if activeRole != "Delivery driver" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "insufficient permission"})
+		utils.GenerateResponse(http.StatusBadRequest, c, "Error", "insufficient permission", "", nil)
 		return
 	}
 
@@ -500,36 +433,36 @@ func (ctrl *Controller) ProcessOrderDriver(c *gin.Context) {
 	err = ctrl.Repo.GetUser("user_id", UserId, &user)
 
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+
+		utils.GenerateResponse(http.StatusNotFound, c, "Error", "User not found", "", nil)
 		return
 	}
 
 	var order payload.ProcessOrder
 
 	if err := c.ShouldBindJSON(&order); err != nil {
-		c.JSON(http.StatusBadRequest, "Error while binding order status")
+		utils.GenerateResponse(http.StatusBadRequest, c, "Error", err.Error(), "", nil)
 		return
 	}
 
-	OrderDetails, err := ctrl.Client.ViewOrdersDetails(order)
+	OrderDetails, err := ctrl.OrderClient.ViewOrdersDetails(order)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.GenerateResponse(http.StatusInternalServerError, c, "Error", err.Error(), "", nil)
 		return
 	}
 	if OrderDetails.DeliverDriverID == 0 {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Order have no delivery driver"})
+		utils.GenerateResponse(http.StatusInternalServerError, c, "Error", "Order have no delivery driver", "", nil)
 		return
 	}
 
 	if OrderDetails.DeliverDriverID != user.UserId {
-		log.Printf("order %s res %v", OrderDetails.OrderStatus, user.UserId)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Order is not of this driver"})
+		utils.GenerateResponse(http.StatusInternalServerError, c, "Error", "Order is not of this driver", "", nil)
 		return
 	}
 
 	if strings.ToLower(order.OrderStatus) == "cancelled" {
 		OrderDetails.OrderStatus = "cancelled"
-		if err := ctrl.Client.ProcessOrder(*OrderDetails); err != nil {
+		if err := ctrl.OrderClient.ProcessOrder(*OrderDetails); err != nil {
 			utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Post request failed", "Error", err.Error())
 			return
 		}
@@ -539,15 +472,14 @@ func (ctrl *Controller) ProcessOrderDriver(c *gin.Context) {
 
 	orderTransitions := payload.GetOrderTransitions()
 	if OrderDetails.OrderStatus == "Delivered" {
-		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Delivery driver can not complete the order", "", nil)
+		utils.GenerateResponse(http.StatusBadRequest, c, "Error", "Delivery driver can not complete the order", "", nil)
 		return
 	}
 
 	if newStatus, exists := orderTransitions[OrderDetails.OrderStatus]; exists {
 		OrderDetails.OrderStatus = newStatus
-		log.Printf("order status %s", OrderDetails.OrderStatus)
 	}
-	if err := ctrl.Client.ProcessOrder(*OrderDetails); err != nil {
+	if err := ctrl.OrderClient.ProcessOrder(*OrderDetails); err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Patch request failed", "Error", err.Error())
 		return
 	}
@@ -561,33 +493,33 @@ func (ctrl *Controller) ViewDriverOrders(c *gin.Context) {
 
 	UserId, err := utils.VerifyUserId(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Message", "user not authenticated", "Error", err.Error())
 		return
 	}
 
 	activeRole, exists := c.Get("activeRole")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		utils.GenerateResponse(http.StatusBadRequest, c, "Error", "User role does not exist", "", nil)
 		return
 	}
 
 	if activeRole != "Delivery driver" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "insufficient permission"})
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Error", "insufficient permission", "", nil)
 		return
 	}
 
 	var User model.User
 	err = ctrl.Repo.GetUser("user_id", UserId, &User)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Restaurant does not exists"})
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Error", "User does not exist", "", nil)
 		return
 	}
 	var userId payload.ProcessOrder
 
 	userId.UserID = User.UserId
-	Orders, err := ctrl.Client.ViewDriverOrders(userId)
+	Orders, err := ctrl.OrderClient.ViewDriverOrders(userId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error order": err.Error()})
+		utils.GenerateResponse(http.StatusBadGateway, c, "Error", err.Error(), "", nil)
 		return
 	}
 
@@ -599,31 +531,31 @@ func (ctrl *Controller) ViewDriverOrders(c *gin.Context) {
 func (ctrl *Controller) ViewOrdersWithoutDriver(c *gin.Context) {
 	UserId, err := utils.VerifyUserId(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Message", "user not authenticated", "Error", err.Error())
 		return
 	}
 
 	activeRole, exists := c.Get("activeRole")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		utils.GenerateResponse(http.StatusBadRequest, c, "Error", "User role does not exist", "", nil)
 		return
 	}
 
 	if activeRole != "Delivery driver" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "insufficient permission"})
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Error", "insufficient permission", "", nil)
 		return
 	}
 
 	var User model.User
 	err = ctrl.Repo.GetUser("user_id", UserId, &User)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Restaurant does not exists"})
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Error", "User does not exist", "", nil)
 		return
 	}
 	var userId payload.ProcessOrder
-	Orders, err := ctrl.Client.ViewOrdersWithoutRider(userId)
+	Orders, err := ctrl.OrderClient.ViewOrdersWithoutRider(userId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error order": err.Error()})
+		utils.GenerateResponse(http.StatusBadGateway, c, "Error", err.Error(), "", nil)
 		return
 	}
 
@@ -635,47 +567,47 @@ func (ctrl *Controller) ViewOrdersWithoutDriver(c *gin.Context) {
 func (ctrl *Controller) AssignDriver(c *gin.Context) {
 	UserId, err := utils.VerifyUserId(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Message", "user not authenticated", "Error", err.Error())
 		return
 	}
 
 	activeRole, exists := c.Get("activeRole")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		utils.GenerateResponse(http.StatusBadRequest, c, "Error", "User role does not exist", "", nil)
 		return
 	}
 
 	if activeRole != "Delivery driver" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "insufficient permission"})
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Error", "insufficient permission", "", nil)
 		return
 	}
 
 	var driver model.User
 	err = ctrl.Repo.GetUser("user_id", UserId, &driver)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Restaurant does not exists"})
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Error", "User does not exist", "", nil)
 		return
 	}
 	var orderId payload.ProcessOrder
 
 	if err := c.ShouldBindJSON(&orderId); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		utils.GenerateResponse(http.StatusBadRequest, c, "Error", err.Error(), "", nil)
 		return
 	}
 
-	OrderDetails, err := ctrl.Client.ViewOrdersDetails(orderId)
+	OrderDetails, err := ctrl.OrderClient.ViewOrdersDetails(orderId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error order": err.Error()})
+		utils.GenerateResponse(http.StatusBadGateway, c, "Error", err.Error(), "", nil)
 		return
 	}
 
 	if OrderDetails.DeliverDriverID != 0 {
-		c.JSON(http.StatusInternalServerError, "Order already have a delivery driver")
+		utils.GenerateResponse(http.StatusInternalServerError, c, "Error", "Order already have a delivery driver", "", nil)
 		return
 	}
 
 	OrderDetails.DeliverDriverID = driver.UserId
-	if err := ctrl.Client.ProcessOrder(*OrderDetails); err != nil {
+	if err := ctrl.OrderClient.ProcessOrder(*OrderDetails); err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Patch request failed", "Error", err.Error())
 		return
 	}

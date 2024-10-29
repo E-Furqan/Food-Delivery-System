@@ -1,4 +1,4 @@
-package ClientPackage
+package OrderClient
 
 import (
 	"bytes"
@@ -11,106 +11,23 @@ import (
 	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
 )
 
-type Client struct {
-	BaseUrl                   string
-	ProcessOrderURL           string
-	OrderPort                 string
-	AuthPort                  string
-	GenerateResponseUrl       string
-	RefreshTokenUrl           string
-	UserOrderUrl              string
-	ViewOrderDetailsUrl       string
-	ViewOrderWithoutDriverUrl string
-	DriverOrderUrl            string
+type OrderClient struct {
+	environmentVariable.Environment
 }
 
-func NewClient() *Client {
-	return &Client{}
+func NewClient(env environmentVariable.Environment) *OrderClient {
+	return &OrderClient{
+		Environment: env,
+	}
 }
-
-func (client *Client) SetEnvValue(envVar environmentVariable.Environment) {
-	client.BaseUrl = envVar.BASE_URL
-	client.ProcessOrderURL = envVar.PROCESS_ORDER_URL
-	client.OrderPort = envVar.ORDER_PORT
-	client.AuthPort = envVar.AUTH_PORT
-	client.GenerateResponseUrl = envVar.GENERATE_TOKEN_URL
-	client.RefreshTokenUrl = envVar.REFRESH_TOKEN_URL
-	client.UserOrderUrl = envVar.User_ORDERS_URL
-	client.ViewOrderDetailsUrl = envVar.VIEW_ORDER_DETAIL_URL
-	client.ViewOrderWithoutDriverUrl = envVar.VIEW_ORDER_WITHOUT_DRIVER_URL
-	client.DriverOrderUrl = envVar.DRIVER_ORDERS_URL
-}
-
-func (client *Client) GenerateResponse(input payload.UserClaim) (*payload.Tokens, error) {
-
-	jsonData, err := json.Marshal(input)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling input: %v", err)
-	}
-	url := fmt.Sprintf("%s%s%s", client.BaseUrl, client.AuthPort, client.GenerateResponseUrl)
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		return nil, fmt.Errorf("error creating request: %v", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("error sending request: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("received non-200 response: %v", resp.Status)
-	}
-
-	var tokens payload.Tokens
-	if err := json.NewDecoder(resp.Body).Decode(&tokens); err != nil {
-		return nil, fmt.Errorf("error decoding response: %v", err)
-	}
-
-	return &tokens, nil
-}
-
-func (client *Client) RefreshToken(input payload.RefreshToken) (*payload.Tokens, error) {
-
-	jsonData, err := json.Marshal(input)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling input: %v", err)
-	}
-	url := fmt.Sprintf("%s%s%s", client.BaseUrl, client.AuthPort, client.RefreshTokenUrl)
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		return nil, fmt.Errorf("error creating request: %v", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("error sending request: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("received non-200 response: %v", resp.Status)
-	}
-
-	var tokens payload.Tokens
-	if err := json.NewDecoder(resp.Body).Decode(&tokens); err != nil {
-		return nil, fmt.Errorf("error decoding response: %v", err)
-	}
-
-	return &tokens, nil
-}
-
-func (client *Client) ProcessOrder(input payload.ProcessOrder) error {
+func (orderClient *OrderClient) ProcessOrder(input payload.ProcessOrder) error {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
 		return fmt.Errorf("error marshaling input: %v", err)
 	}
 
-	url := fmt.Sprintf("%s%s%s", client.BaseUrl, client.OrderPort, client.ProcessOrderURL)
+	url := fmt.Sprintf("%s%s%s", orderClient.Environment.BASE_URL, orderClient.Environment.ORDER_PORT, orderClient.Environment.PROCESS_ORDER_URL)
 	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return fmt.Errorf("error creating request: %v", err)
@@ -130,13 +47,13 @@ func (client *Client) ProcessOrder(input payload.ProcessOrder) error {
 	return nil
 }
 
-func (client *Client) ViewUserOrders(input payload.ProcessOrder) (*[]payload.ProcessOrder, error) {
+func (orderClient *OrderClient) ViewUserOrders(input payload.ProcessOrder) (*[]payload.ProcessOrder, error) {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling input: %v", err)
 	}
-	url := fmt.Sprintf("%s%s%s", client.BaseUrl, client.OrderPort, client.UserOrderUrl)
+	url := fmt.Sprintf("%s%s%s", orderClient.Environment.BASE_URL, orderClient.Environment.ORDER_PORT, orderClient.Environment.User_ORDERS_URL)
 	log.Print(url)
 	req, err := http.NewRequest("GET", url, bytes.NewBuffer(jsonData))
 	if err != nil {
@@ -161,13 +78,13 @@ func (client *Client) ViewUserOrders(input payload.ProcessOrder) (*[]payload.Pro
 
 	return &orders, nil
 }
-func (client *Client) ViewDriverOrders(input payload.ProcessOrder) (*[]payload.ProcessOrder, error) {
+func (orderClient *OrderClient) ViewDriverOrders(input payload.ProcessOrder) (*[]payload.ProcessOrder, error) {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling input: %v", err)
 	}
-	url := fmt.Sprintf("%s%s%s", client.BaseUrl, client.OrderPort, client.DriverOrderUrl)
+	url := fmt.Sprintf("%s%s%s", orderClient.Environment.BASE_URL, orderClient.Environment.ORDER_PORT, orderClient.Environment.DRIVER_ORDERS_URL)
 	log.Print(url)
 	req, err := http.NewRequest("GET", url, bytes.NewBuffer(jsonData))
 	if err != nil {
@@ -193,13 +110,13 @@ func (client *Client) ViewDriverOrders(input payload.ProcessOrder) (*[]payload.P
 	return &orders, nil
 }
 
-func (client *Client) ViewOrdersDetails(input payload.ProcessOrder) (*payload.ProcessOrder, error) {
+func (orderClient *OrderClient) ViewOrdersDetails(input payload.ProcessOrder) (*payload.ProcessOrder, error) {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling input: %v", err)
 	}
-	url := fmt.Sprintf("%s%s%s", client.BaseUrl, client.OrderPort, client.ViewOrderDetailsUrl)
+	url := fmt.Sprintf("%s%s%s", orderClient.Environment.BASE_URL, orderClient.Environment.ORDER_PORT, orderClient.Environment.VIEW_ORDER_DETAIL_URL)
 	req, err := http.NewRequest("GET", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %v", err)
@@ -224,13 +141,13 @@ func (client *Client) ViewOrdersDetails(input payload.ProcessOrder) (*payload.Pr
 	return &orders, nil
 }
 
-func (client *Client) ViewOrdersWithoutRider(input payload.ProcessOrder) (*[]payload.ProcessOrder, error) {
+func (orderClient *OrderClient) ViewOrdersWithoutRider(input payload.ProcessOrder) (*[]payload.ProcessOrder, error) {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling input: %v", err)
 	}
-	url := fmt.Sprintf("%s%s%s", client.BaseUrl, client.OrderPort, client.ViewOrderWithoutDriverUrl)
+	url := fmt.Sprintf("%s%s%s", orderClient.Environment.BASE_URL, orderClient.Environment.ORDER_PORT, orderClient.Environment.VIEW_ORDER_WITHOUT_DRIVER_URL)
 	log.Print(url)
 	req, err := http.NewRequest("GET", url, bytes.NewBuffer(jsonData))
 	if err != nil {

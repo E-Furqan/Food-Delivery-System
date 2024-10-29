@@ -1,11 +1,11 @@
 package Middleware
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
-	ClientPackage "github.com/E-Furqan/Food-Delivery-System/Client"
+	"github.com/E-Furqan/Food-Delivery-System/Client/AuthClient"
 	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
 	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
@@ -14,26 +14,22 @@ import (
 )
 
 type Middleware struct {
-	Client *ClientPackage.Client
+	AuthClient *AuthClient.AuthClient
+	envVar     *environmentVariable.Environment
 }
 
-func NewMiddleware(client *ClientPackage.Client) *Middleware {
+func NewMiddleware(AuthClient *AuthClient.AuthClient, envVar *environmentVariable.Environment) *Middleware {
 	return &Middleware{
-		Client: client,
+		AuthClient: AuthClient,
+		envVar:     envVar,
 	}
 }
 
-var jwtKey []byte
-
-func SetEnvValue(envVar environmentVariable.Environment) {
-	jwtKey = []byte(envVar.JWT_SECRET)
-}
-
-func AuthMiddleware() gin.HandlerFunc {
+func (middle *Middleware) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString := c.GetHeader("Authorization")
 		if tokenString == "" || !strings.HasPrefix(tokenString, "Bearer ") {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization token required"})
+			utils.GenerateResponse(http.StatusNotFound, c, "Error", "Authorization token required", "", nil)
 			c.Abort()
 			return
 		}
@@ -42,11 +38,11 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		claims := &utils.Claims{}
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-			return jwtKey, nil
+			return []byte(middle.envVar.JWT_SECRET), nil
 		})
 		if err != nil || !token.Valid {
-
-			c.JSON(http.StatusUnauthorized, gin.H{"Error": fmt.Sprintf("Invalid token %v %s", err, jwtKey)})
+			log.Print(middle.envVar.JWT_SECRET)
+			utils.GenerateResponse(http.StatusUnauthorized, c, "Error", err.Error(), "", nil)
 			c.Abort()
 			return
 		}
@@ -62,16 +58,16 @@ func (ctrl *Middleware) RefreshToken(c *gin.Context) {
 	var input payload.RefreshToken
 
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.GenerateResponse(http.StatusBadRequest, c, "Error", err.Error(), "", nil)
 		return
 	}
 
 	var refreshClaim payload.RefreshToken
 	refreshClaim.RefreshToken = input.RefreshToken
 	refreshClaim.ServiceType = "Restaurant"
-	tokens, err := ctrl.Client.RefreshToken(refreshClaim)
+	tokens, err := ctrl.AuthClient.RefreshToken(refreshClaim)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
+		utils.GenerateResponse(http.StatusInternalServerError, c, "Message", "Could not generate token", "Error", err.Error())
 		return
 	}
 

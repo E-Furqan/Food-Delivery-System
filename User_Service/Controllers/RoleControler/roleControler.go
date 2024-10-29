@@ -7,6 +7,7 @@ import (
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
 	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
+	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,18 +23,18 @@ func (rCtrl *RoleController) AddRolesByAdmin(c *gin.Context) {
 
 	activeRole, exists := c.Get("activeRole")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Error", "User not authenticated", "", nil)
 		return
 	}
 
 	if activeRole != "Admin" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "You do not have the privileges to add new roles."})
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Error", "You do not have the privileges to add new roles.", "", nil)
 		return
 	}
 
 	var input payload.Role
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.GenerateResponse(http.StatusBadRequest, c, "Error", err.Error(), "", nil)
 		return
 	}
 	var role model.Role
@@ -43,11 +44,11 @@ func (rCtrl *RoleController) AddRolesByAdmin(c *gin.Context) {
 
 	err := rCtrl.Repo.CreateRole(&role)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create role"})
+		utils.GenerateResponse(http.StatusInternalServerError, c, "Error", err.Error(), "", nil)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Role added successfully"})
+	utils.GenerateResponse(http.StatusOK, c, "Message", "Role added successfully", "", nil)
 
 }
 
@@ -55,24 +56,24 @@ func (rCtrl *RoleController) GetRole(c *gin.Context) {
 
 	activeRole, exists := c.Get("activeRole")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Error", "User not authenticated", "", nil)
 		return
 	}
 
 	if activeRole != "Admin" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "You do not have the privileges to view roles."})
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Error", "You do not have the privileges to view roles.", "", nil)
 		return
 	}
 
 	var OrderInfo payload.Order
 	if err := c.ShouldBindJSON(&OrderInfo); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.GenerateResponse(http.StatusBadRequest, c, "Error", err.Error(), "", nil)
 		return
 	}
 
 	RoleData, err := rCtrl.Repo.RoleInOrder(OrderInfo.ColumnName, OrderInfo.OrderType)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.GenerateResponse(http.StatusInternalServerError, c, "Error", err.Error(), "", nil)
 		return
 	}
 
@@ -83,12 +84,12 @@ func (rCtrl *RoleController) DeleteRole(c *gin.Context) {
 
 	activeRole, exists := c.Get("activeRole")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Error", "User not authenticated", "", nil)
 		return
 	}
 
 	if activeRole != "Admin" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "You do not have the privileges to Delete roles."})
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Error", "You do not have the privileges to delete roles.", "", nil)
 		return
 	}
 
@@ -96,27 +97,26 @@ func (rCtrl *RoleController) DeleteRole(c *gin.Context) {
 	var Role model.Role
 	err := c.ShouldBindJSON(&input)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.GenerateResponse(http.StatusBadRequest, c, "Error", err.Error(), "", nil)
 		return
 	}
 
 	err = rCtrl.Repo.GetRole(input.RoleId, &Role)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Role does not exist"})
+		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Role does not exist", "Error", err.Error())
 		return
 	}
 
 	if err := rCtrl.Repo.DeleteUserRoleInfo(input.RoleId, "role_role_id"); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.GenerateResponse(http.StatusInternalServerError, c, "Error", err.Error(), "", nil)
 		return
 	}
 
 	if err := rCtrl.Repo.DeleteRole(&Role); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete the role"})
+		utils.GenerateResponse(http.StatusInternalServerError, c, "Message", "Failed to delete the role", "Error", err.Error())
 		return
 	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "Role deleted successfully"})
+	utils.GenerateResponse(http.StatusOK, c, "Message", "Role deleted successfully", "", nil)
 
 }
 
@@ -145,63 +145,9 @@ func (rCtrl *RoleController) AddDefaultRoles(c *gin.Context) {
 
 	err := rCtrl.Repo.BulkCreateRoles(roles)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add default roles"})
+		utils.GenerateResponse(http.StatusInternalServerError, c, "Message", "Failed to add default roles", "Error", err.Error())
 		return
 	}
 
 	log.Printf("Message: Default roles added successfully ")
 }
-
-// func (rCtrl *RoleController) AddRoleToUser(c *gin.Context) {
-// 	username, exists := c.Get("username")
-// 	if !exists {
-// 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
-// 		return
-// 	}
-
-// 	usernameStr, ok := username.(string)
-// 	if !ok {
-// 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid username type"})
-// 		return
-// 	}
-
-// 	var user model.User
-// 	err := rCtrl.Repo.FindUser("username", usernameStr, &user)
-// 	if err != nil {
-// 		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("User not found %v %s", err, usernameStr)})
-// 		retu/ func (rCtrl *RoleController) AddRoleToUser(c *gin.Context) {
-// 	username, exists := c.Get("username")
-// 	if !exists {
-// 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
-// 		return
-// 	}
-
-// 	usernameStr, ok := username.(string)
-// 	if !ok {
-// 		c.JS
-// 	for _, roleid := range updateData.Roles {
-// 		var role model.Role
-// 		if err := rCtrl.Repo.FindRole(roleid.RoleId, &role); err != nil {
-// 			c.JSON(http.StatusNotFound, gin.H{"error": "Role not found"})
-// 			return
-// 		}
-
-// 		existingRole := model.UserRole{}
-// 		if err := rCtrl.Repo.DB.Where("user_id = ? AND role_id = ?", user.UserId, roleid.RoleId).First(&existingRole).Error; err == nil {
-// 			c.JSON(http.StatusBadRequest, gin.H{"error": "User already has this role"})
-// 			return
-// 		}
-
-// 		userRole := model.UserRole{
-// 			UserId: user.UserId,
-// 			RoleId: roleid.RoleId,
-// 		}
-
-// 		if err := rCtrl.Repo.DB.Create(&userRole).Error; err != nil {
-// 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add role to user"})
-// 			return
-// 		}
-// 	}
-
-// 	c.JSON(http.StatusOK, gin.H{"message": "Role added to user successfully"})
-// }

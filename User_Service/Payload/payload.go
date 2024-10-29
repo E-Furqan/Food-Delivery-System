@@ -16,7 +16,7 @@ type UserSearch struct {
 
 type Order struct {
 	ColumnName string `json:"column_name"`
-	OrderType  string `json:"order-type"`
+	OrderType  string `json:"order_type"`
 }
 
 type RoleSwitch struct {

@@ -11,32 +11,26 @@ import (
 	"gorm.io/gorm"
 )
 
-var (
-	user     string
-	password string
-	host     string
-	db_name  string
-	port     int
-)
+type DatabaseConfig struct {
+	environmentVariable.Environment
+}
+
+func NewDatabase(env environmentVariable.Environment) *DatabaseConfig {
+	return &DatabaseConfig{
+		Environment: env,
+	}
+}
 
 var DB *gorm.DB
 
-func SetEnvValue(envVar environmentVariable.Environment) {
-	user = envVar.USER
-	password = envVar.PASSWORD
-	host = envVar.HOST
-	db_name = envVar.DB_NAME
-	port = envVar.PORT
-}
-
-func Connection() *gorm.DB {
+func (DatabaseConfig *DatabaseConfig) Connection() *gorm.DB {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
 
 	var connection_string = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		host, port, user, password, db_name)
+		DatabaseConfig.Environment.HOST, DatabaseConfig.Environment.PORT, DatabaseConfig.Environment.USER, DatabaseConfig.Environment.PASSWORD, DatabaseConfig.Environment.DB_NAME)
 
 	DB, err = gorm.Open(postgres.Open(connection_string), &gorm.Config{})
 	if err != nil {
