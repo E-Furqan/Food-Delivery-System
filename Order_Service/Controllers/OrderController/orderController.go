@@ -18,7 +18,6 @@ type OrderController struct {
 	ResClient *RestaurantClient.RestaurantClient
 }
 
-// NewController initializes the controller with the repository dependency
 func NewController(repo *database.Repository, ResClient *RestaurantClient.RestaurantClient) *OrderController {
 	return &OrderController{
 		Repo:      repo,
