@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"fmt"
 	"os"
 
+	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 )
@@ -32,4 +34,66 @@ func GetEnv(key string, defaultVal string) string {
 		return value
 	}
 	return defaultVal
+}
+
+func CreateInvoice(order model.Order, orderItems []model.OrderItem, items []model.Items) gin.H {
+	invoiceItems := []gin.H{}
+	totalBill := order.TotalBill
+
+	for _, orderItem := range orderItems {
+		for _, item := range items {
+			if item.ItemId == orderItem.ItemId {
+				invoiceItems = append(invoiceItems, gin.H{
+					"item_id":    item.ItemId,
+					"name":       item.ItemName,
+					"quantity":   orderItem.Quantity,
+					"unit_price": item.ItemPrice,
+					"total":      float64(orderItem.Quantity) * item.ItemPrice,
+				})
+			}
+		}
+
+	}
+
+	return gin.H{
+		"order_id":      order.OrderID,
+		"user_id":       order.UserId,
+		"restaurant_id": order.RestaurantID,
+		"order_status":  order.OrderStatus,
+		"total_bill":    totalBill,
+		"items":         invoiceItems,
+	}
+}
+func CreateOrderObj(order model.CombineOrderItem, bill float64) model.Order {
+	return model.Order{
+		OrderStatus:  "order placed",
+		UserId:       order.UserId,
+		RestaurantID: order.RestaurantId,
+		TotalBill:    bill,
+	}
+}
+
+func CalculateBill(CombineOrderItem model.CombineOrderItem, items []model.Items) (float64, error) {
+	totalBill := 0.0
+
+	for _, orderedItem := range CombineOrderItem.Items {
+		var ItemPrice float64
+		ItemFound := false
+
+		for _, item := range items {
+			if item.ItemId == orderedItem.ItemId {
+				ItemPrice = item.ItemPrice
+				ItemFound = true
+				break
+			}
+		}
+
+		if !ItemFound {
+			return 0.0, fmt.Errorf("item with ID %d not found", orderedItem.ItemId)
+		}
+
+		totalBill += ItemPrice * float64(orderedItem.Quantity)
+	}
+
+	return totalBill, nil
 }

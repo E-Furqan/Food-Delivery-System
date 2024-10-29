@@ -99,7 +99,6 @@ func (orderCtrl *OrderController) GetOrdersOfDeliveryDriver(c *gin.Context) {
 
 func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 	ServiceType, exists := c.Get("ServiceType")
-	log.Printf("servie %s", ServiceType)
 	if !exists {
 		c.JSON(http.StatusBadRequest, "userId id does not exist")
 		return
@@ -131,12 +130,12 @@ func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 		return
 	}
 
-	totalBill, err := orderCtrl.calculateBill(CombineOrderItem, items)
+	totalBill, err := utils.CalculateBill(CombineOrderItem, items)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-	order := orderCtrl.createOrderObj(CombineOrderItem, totalBill)
+	order := utils.CreateOrderObj(CombineOrderItem, totalBill)
 	err = orderCtrl.Repo.PlaceOrder(&order, &CombineOrderItem)
 
 	if err != nil {
@@ -177,6 +176,13 @@ func (orderCtrl *OrderController) ViewOrdersWithoutRider(c *gin.Context) {
 }
 
 func (orderCtrl *OrderController) GenerateInvoice(c *gin.Context) {
+
+	userId, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusBadRequest, "userId id does not exist")
+		return
+	}
+
 	var orderId model.ID
 	if err := c.ShouldBindJSON(&orderId); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -186,6 +192,11 @@ func (orderCtrl *OrderController) GenerateInvoice(c *gin.Context) {
 	var order model.Order
 	if err := orderCtrl.Repo.GetOrder(&order, orderId.OrderID); err != nil {
 		utils.GenerateResponse(http.StatusNotFound, c, "Message", "Order not found", "Error", err.Error())
+		return
+	}
+
+	if userId != order.UserId {
+		utils.GenerateResponse(http.StatusNotFound, c, "Error", "You are not allowed to generate invoice of this order", "", nil)
 		return
 	}
 
@@ -207,68 +218,7 @@ func (orderCtrl *OrderController) GenerateInvoice(c *gin.Context) {
 		return
 	}
 
-	invoice := orderCtrl.createInvoice(order, orderItems, items)
+	invoice := utils.CreateInvoice(order, orderItems, items)
 
 	c.JSON(http.StatusOK, gin.H{"invoice": invoice})
-}
-
-func (orderCtrl *OrderController) createInvoice(order model.Order, orderItems []model.OrderItem, items []model.Items) gin.H {
-	invoiceItems := []gin.H{}
-	totalBill := order.TotalBill
-
-	for _, orderItem := range orderItems {
-		for _, item := range items {
-			if item.ItemId == orderItem.ItemId {
-				invoiceItems = append(invoiceItems, gin.H{
-					"item_id":    item.ItemId,
-					"name":       item.ItemName,
-					"quantity":   orderItem.Quantity,
-					"unit_price": item.ItemPrice,
-					"total":      float64(orderItem.Quantity) * item.ItemPrice,
-				})
-			}
-		}
-
-	}
-
-	return gin.H{
-		"order_id":      order.OrderID,
-		"user_id":       order.UserId,
-		"restaurant_id": order.RestaurantID,
-		"order_status":  order.OrderStatus,
-		"total_bill":    totalBill,
-		"items":         invoiceItems,
-	}
-}
-func (orderCtrl *OrderController) createOrderObj(order model.CombineOrderItem, bill float64) model.Order {
-	return model.Order{
-		OrderStatus:  "order placed",
-		UserId:       order.UserId,
-		RestaurantID: order.RestaurantId,
-		TotalBill:    bill,
-	}
-}
-func (orderCtrl *OrderController) calculateBill(CombineOrderItem model.CombineOrderItem, items []model.Items) (float64, error) {
-	totalBill := 0.0
-
-	for _, orderedItem := range CombineOrderItem.Items {
-		var ItemPrice float64
-		ItemFound := false
-
-		for _, item := range items {
-			if item.ItemId == orderedItem.ItemId {
-				ItemPrice = item.ItemPrice
-				ItemFound = true
-				break
-			}
-		}
-
-		if !ItemFound {
-			return 0.0, fmt.Errorf("item with ID %d not found", orderedItem.ItemId)
-		}
-
-		totalBill += ItemPrice * float64(orderedItem.Quantity)
-	}
-
-	return totalBill, nil
 }
