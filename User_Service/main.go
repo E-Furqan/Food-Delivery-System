@@ -24,7 +24,7 @@ func main() {
 	AuthClient := AuthClient.NewClient(envVar)
 
 	ctrl := UserControllers.NewController(repo, OrdClient, AuthClient)
-	rCtrl := RoleController.NewController(repo)
+	rCtrl := RoleController.NewController(repo, AuthClient)
 	middle := Middleware.NewMiddleware(AuthClient, &envVar)
 
 	server := gin.Default()

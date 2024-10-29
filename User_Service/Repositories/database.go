@@ -62,7 +62,7 @@ func (repo *Repository) GetRole(RoleId uint, role *model.Role) error {
 	return err
 }
 
-func (repo *Repository) PreloadInOrder(columnName string, order string) ([]model.User, error) {
+func (repo *Repository) FetchUsersWithRoles(columnName string, order string) ([]model.User, error) {
 
 	if columnName == "" {
 		columnName = "user_id"
@@ -78,22 +78,13 @@ func (repo *Repository) PreloadInOrder(columnName string, order string) ([]model
 	return user_data, err
 }
 
-func (repo *Repository) RoleInOrder(columnName string, order string) ([]model.Role, error) {
+func (repo *Repository) GetAllRoles() ([]model.Role, error) {
 
-	if columnName == "" {
-		columnName = "role_id"
-	}
-	if order == "" {
-		order = "asc"
-	}
+	var roles []model.Role
 
-	var user_data []model.Role
+	err := repo.DB.Find(&roles).Error
 
-	query := fmt.Sprintf("%s %v", columnName, order)
-
-	err := repo.DB.Order(query).Find(&user_data).Error
-
-	return user_data, err
+	return roles, err
 }
 
 func (repo *Repository) Update(user *model.User, update_user *model.User) error {
@@ -110,17 +101,6 @@ func (repo *Repository) DeleteUser(user *model.User) error {
 func (repo *Repository) DeleteRole(Role *model.Role) error {
 	err := repo.DB.Delete(Role).Error
 	return err
-}
-
-func (repo *Repository) CheckUserExistence(username, email string, phoneNumber int) (bool, error) {
-	var count int64
-
-	err := repo.DB.Model(&model.User{}).Where("username = ? OR phone_number = ? OR email = ?", username, phoneNumber, email).Count(&count).Error
-	if err != nil {
-		return false, err
-	}
-
-	return count > 0, nil
 }
 
 func (repo *Repository) BulkCreateRoles(roles []model.Role) error {

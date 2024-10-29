@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/E-Furqan/Food-Delivery-System/Client/AuthClient"
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
@@ -11,11 +12,14 @@ import (
 )
 
 type RoleController struct {
-	Repo *database.Repository
+	Repo       *database.Repository
+	AuthClient *AuthClient.AuthClient
 }
 
-func NewController(repo *database.Repository) *RoleController {
-	return &RoleController{Repo: repo}
+func NewController(repo *database.Repository, AuthClient *AuthClient.AuthClient) *RoleController {
+	return &RoleController{
+		Repo:       repo,
+		AuthClient: AuthClient}
 }
 
 func (rCtrl *RoleController) AddRolesByAdmin(c *gin.Context) {
@@ -50,7 +54,7 @@ func (rCtrl *RoleController) AddRolesByAdmin(c *gin.Context) {
 	utils.GenerateResponse(http.StatusOK, c, "Message", "Role added successfully", "", nil)
 }
 
-func (rCtrl *RoleController) GetRole(c *gin.Context) {
+func (rCtrl *RoleController) GetRoles(c *gin.Context) {
 
 	activeRole, exists := c.Get("activeRole")
 	if !exists {
@@ -63,13 +67,7 @@ func (rCtrl *RoleController) GetRole(c *gin.Context) {
 		return
 	}
 
-	var OrderInfo model.Order
-	if err := c.ShouldBindJSON(&OrderInfo); err != nil {
-		utils.GenerateResponse(http.StatusBadRequest, c, "Error", err.Error(), "", nil)
-		return
-	}
-
-	RoleData, err := rCtrl.Repo.RoleInOrder(OrderInfo.ColumnName, OrderInfo.OrderType)
+	RoleData, err := rCtrl.Repo.GetAllRoles()
 	if err != nil {
 		utils.GenerateResponse(http.StatusInternalServerError, c, "Error", err.Error(), "", nil)
 		return
@@ -148,4 +146,62 @@ func (rCtrl *RoleController) AddDefaultRoles(c *gin.Context) {
 	}
 
 	log.Printf("Message: Default roles added successfully ")
+}
+
+func (RoleController *RoleController) SwitchRole(c *gin.Context) {
+
+	UserId, err := utils.VerifyUserId(c)
+	if err != nil {
+		utils.GenerateResponse(http.StatusNotFound, c, "Error", err.Error(), "", nil)
+		return
+	}
+
+	var user model.User
+	err = RoleController.Repo.GetUser("user_id", UserId, &user)
+	if err != nil {
+		utils.GenerateResponse(http.StatusNotFound, c, "Error", err.Error(), "", nil)
+		return
+	}
+
+	var RoleSwitch model.RoleSwitch
+	err = c.ShouldBindJSON(&RoleSwitch)
+	if err != nil {
+		utils.GenerateResponse(http.StatusBadRequest, c, "Error", err.Error(), "", nil)
+		return
+	}
+
+	var roleExists bool
+	var newRole model.Role
+	for _, role := range user.Roles {
+		if role.RoleId == RoleSwitch.NewRoleID {
+			roleExists = true
+			newRole = role
+			break
+		}
+	}
+
+	if !roleExists {
+		utils.GenerateResponse(http.StatusNotFound, c, "Error", "Role not found in user's roles", "", nil)
+		return
+	}
+
+	user.ActiveRole = newRole.RoleType
+
+	if err := RoleController.Repo.UpdateUserActiveRole(&user); err != nil {
+		utils.GenerateResponse(http.StatusInternalServerError, c, "Error", "Failed to update user active role", "", nil)
+		return
+	}
+
+	UserClaim := utils.CreateUserClaim(user)
+
+	token, err := RoleController.AuthClient.GenerateToken(UserClaim)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"access token":  token.AccessToken,
+		"refresh token": token.RefreshToken,
+		"expires at":    token.Expiration,
+	})
 }

@@ -2,7 +2,9 @@ package utils
 
 import (
 	"fmt"
+	"os"
 
+	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
@@ -47,4 +49,19 @@ func VerificationRole(c *gin.Context) (any, error) {
 	}
 
 	return activeRole, nil
+}
+
+func CreateUserClaim(user model.User) model.UserClaim {
+	var UserClaim model.UserClaim
+	UserClaim.Username = user.Username
+	UserClaim.ActiveRole = user.ActiveRole
+	UserClaim.ServiceType = "User"
+	return UserClaim
+}
+
+func GetEnv(key string, defaultVal string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultVal
 }

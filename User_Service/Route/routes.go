@@ -21,7 +21,7 @@ func User_routes(ctrl *UserControllers.Controller, rCtrl *roleController.RoleCon
 		user.POST("/process/driver/order", ctrl.ProcessOrderDriver)
 		user.POST("/assign/driver", ctrl.AssignDriver)
 
-		user.GET("/get/role", rCtrl.GetRole)
+		user.GET("/get/roles", rCtrl.GetRoles)
 		user.GET("/get/users", ctrl.GetUsers)
 		user.GET("/profile", ctrl.Profile)
 		user.GET("/view/user/orders", ctrl.ViewUserOrders)
@@ -30,7 +30,7 @@ func User_routes(ctrl *UserControllers.Controller, rCtrl *roleController.RoleCon
 
 		// protected.PATCH("/add/user_roles", role.AddRoleToUser)
 		user.PATCH("/update/profile", ctrl.UpdateUser)
-		user.PATCH("/switch/role", ctrl.SwitchRole)
+		user.PATCH("/switch/role", rCtrl.SwitchRole)
 
 		user.DELETE("/delete/user", ctrl.DeleteUser)
 		user.DELETE("/delete/role", rCtrl.DeleteRole)

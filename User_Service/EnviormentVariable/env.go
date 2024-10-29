@@ -2,9 +2,9 @@ package environmentVariable
 
 import (
 	"log"
-	"os"
 	"strconv"
 
+	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 	"github.com/joho/godotenv"
 )
 
@@ -22,7 +22,7 @@ type Environment struct {
 	REFRESH_TOKEN_URL             string
 	ORDER_PORT                    string
 	AUTH_PORT                     string
-	User_ORDERS_URL               string
+	USER_ORDERS_URL               string
 	VIEW_ORDER_DETAIL_URL         string
 	VIEW_ORDER_WITHOUT_DRIVER_URL string
 	DRIVER_ORDERS_URL             string
@@ -36,27 +36,28 @@ func ReadEnv() Environment {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
 
-	envVar.HOST = os.Getenv("HOST")
-	envVar.USER = os.Getenv("USER1")
-	envVar.PASSWORD = os.Getenv("PASSWORD")
-	envVar.DB_NAME = os.Getenv("DB_NAME")
-	envVar.BASE_URL = os.Getenv("BASE_URL")
-	envVar.PROCESS_ORDER_URL = os.Getenv("PROCESS_ORDER_URL")
-	envVar.ORDER_PORT = os.Getenv("ORDER_PORT")
-	envVar.AUTH_PORT = os.Getenv("AUTH_PORT")
-	envVar.GENERATE_TOKEN_URL = os.Getenv("GENERATE_TOKEN_URL")
-	envVar.REFRESH_TOKEN_URL = os.Getenv("REFRESH_TOKEN_URL")
-	envVar.User_ORDERS_URL = os.Getenv("USER_ORDERS_URL")
-	envVar.DRIVER_ORDERS_URL = os.Getenv("DRIVER_ORDERS_URL")
-	envVar.VIEW_ORDER_DETAIL_URL = os.Getenv("VIEW_ORDER_DETAIL_URL")
-	envVar.VIEW_ORDER_WITHOUT_DRIVER_URL = os.Getenv("VIEW_ORDER_WITHOUT_DRIVER_URL")
+	envVar.HOST = utils.GetEnv("HOST", "0.0.0.0")
+	envVar.USER = utils.GetEnv("USER1", "furqan")
+	envVar.PASSWORD = utils.GetEnv("PASSWORD", "furqan")
+	envVar.DB_NAME = utils.GetEnv("DB_NAME", "User")
 
-	portStr := os.Getenv("PORT")
+	envVar.BASE_URL = utils.GetEnv("BASE_URL", "http://localhost")
+	envVar.PROCESS_ORDER_URL = utils.GetEnv("PROCESS_ORDER_URL", "/order/update/status")
+	envVar.GENERATE_TOKEN_URL = utils.GetEnv("GENERATE_TOKEN_URL", "/auth/login")
+	envVar.REFRESH_TOKEN_URL = utils.GetEnv("REFRESH_TOKEN_URL", "/auth/refresh")
+	envVar.USER_ORDERS_URL = utils.GetEnv("USER_ORDERS_URL", "/order/view/user/orders")
+	envVar.DRIVER_ORDERS_URL = utils.GetEnv("DRIVER_ORDERS_URL", "/order/view/driver/orders")
+	envVar.VIEW_ORDER_DETAIL_URL = utils.GetEnv("VIEW_ORDER_DETAIL_URL", "/order/view/order")
+	envVar.VIEW_ORDER_WITHOUT_DRIVER_URL = utils.GetEnv("VIEW_ORDER_WITHOUT_DRIVER_URL", "/order/view/without/driver/orders")
+
+	envVar.ORDER_PORT = utils.GetEnv("ORDER_PORT", ":8081")
+	envVar.AUTH_PORT = utils.GetEnv("AUTH_PORT", ":8084")
+	portStr := utils.GetEnv("PORT", "5430")
 	envVar.PORT, err = strconv.Atoi(portStr)
 	if err != nil {
 		log.Fatalf("Error converting PORT to integer: %v", err)
 	}
-	envVar.JWT_SECRET = os.Getenv("JWT_SECRET")
-	envVar.RefreshTokenKey = os.Getenv("REFRESH_TOKEN_SECRET")
+	envVar.JWT_SECRET = utils.GetEnv("JWT_SECRET", "Furqan")
+	envVar.RefreshTokenKey = utils.GetEnv("REFRESH_TOKEN_SECRET", "Ali")
 	return envVar
 }
