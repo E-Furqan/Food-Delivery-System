@@ -228,7 +228,7 @@ func (ctrl *RestaurantController) ProcessOrder(c *gin.Context) {
 		return
 	}
 
-	utils.GenerateResponse(http.StatusOK, c, "Message", "Post request successful", "", "")
+	utils.GenerateResponse(http.StatusOK, c, "Message", "Order status updated", "", "")
 }
 
 func (ctrl *RestaurantController) ViewRestaurantOrders(c *gin.Context) {
