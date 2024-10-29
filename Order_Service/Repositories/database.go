@@ -18,7 +18,7 @@ func NewRepository(db *gorm.DB) *Repository {
 	}
 }
 
-func (repo *Repository) GetOrders(order *[]model.Order, ID int, columnName string, orderDirection string, searchColumn string) error {
+func (repo *Repository) GetOrders(order *[]model.Order, ID uint, columnName string, orderDirection string, searchColumn string) error {
 
 	if orderDirection != "asc" && orderDirection != "desc" {
 		orderDirection = "asc"

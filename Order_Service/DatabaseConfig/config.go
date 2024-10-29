@@ -56,3 +56,39 @@ func (DatabaseConfig *DatabaseConfig) Connection() *gorm.DB {
 
 	return DB
 }
+
+func TestDatabaseConnection() *gorm.DB {
+	envVar := environmentVariable.ReadEnv()
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
+	}
+
+	var connection_string = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		envVar.HOST, envVar.PORT, envVar.USER, envVar.PASSWORD, "testorder")
+
+	DB, err = gorm.Open(postgres.Open(connection_string), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+
+	err = DB.AutoMigrate(&model.Order{})
+	if err != nil {
+		log.Fatalf("Failed to migrate database: %v", err)
+	}
+
+	err = DB.AutoMigrate(&model.Item{})
+	if err != nil {
+		log.Fatalf("Failed to migrate database: %v", err)
+	}
+
+	err = DB.AutoMigrate(&model.OrderItem{})
+	if err != nil {
+		log.Fatalf("Failed to migrate database: %v", err)
+	}
+
+	log.Println("Database connection established")
+
+	return DB
+}

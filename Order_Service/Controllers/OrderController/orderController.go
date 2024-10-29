@@ -70,12 +70,12 @@ func (orderCtrl *OrderController) GetOrders(c *gin.Context, UserType string) {
 	var err error
 
 	if UserType == "user" {
-		err = orderCtrl.Repo.GetOrders(&order, int(OrderNFilter.UserId), OrderNFilter.Filter.ColumnName, OrderNFilter.Filter.OrderDirection, "user_id")
+		err = orderCtrl.Repo.GetOrders(&order, OrderNFilter.UserId, OrderNFilter.Filter.ColumnName, OrderNFilter.Filter.OrderDirection, "user_id")
 	} else if UserType == "restaurant" {
-		err = orderCtrl.Repo.GetOrders(&order, int(OrderNFilter.RestaurantId), OrderNFilter.Filter.ColumnName, OrderNFilter.Filter.OrderDirection, "restaurant_id")
+		err = orderCtrl.Repo.GetOrders(&order, OrderNFilter.RestaurantId, OrderNFilter.Filter.ColumnName, OrderNFilter.Filter.OrderDirection, "restaurant_id")
 
 	} else if UserType == "delivery driver" {
-		err = orderCtrl.Repo.GetOrders(&order, int(OrderNFilter.RestaurantId), OrderNFilter.Filter.ColumnName, OrderNFilter.Filter.OrderDirection, "delivery_driver")
+		err = orderCtrl.Repo.GetOrders(&order, OrderNFilter.RestaurantId, OrderNFilter.Filter.ColumnName, OrderNFilter.Filter.OrderDirection, "delivery_driver")
 	}
 
 	if err != nil {
