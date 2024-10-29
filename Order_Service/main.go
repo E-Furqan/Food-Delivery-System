@@ -1,7 +1,7 @@
 package main
 
 import (
-	RestaurantClient "github.com/E-Furqan/Food-Delivery-System/Client"
+	"github.com/E-Furqan/Food-Delivery-System/Client/RestaurantClient"
 	OrderControllers "github.com/E-Furqan/Food-Delivery-System/Controllers/OrderController"
 	config "github.com/E-Furqan/Food-Delivery-System/DatabaseConfig"
 	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
