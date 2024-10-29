@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	ClientPackage "github.com/E-Furqan/Food-Delivery-System/Client"
+	"github.com/E-Furqan/Food-Delivery-System/Client/AuthClient"
 	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
 	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
@@ -14,22 +14,18 @@ import (
 )
 
 type Middleware struct {
-	Client *ClientPackage.Client
+	AuthClient *AuthClient.AuthClient
+	envVar     *environmentVariable.Environment
 }
 
-func NewMiddleware(client *ClientPackage.Client) *Middleware {
+func NewMiddleware(AuthClient *AuthClient.AuthClient, envVar *environmentVariable.Environment) *Middleware {
 	return &Middleware{
-		Client: client,
+		AuthClient: AuthClient,
+		envVar:     envVar,
 	}
 }
 
-var jwtKey []byte
-
-func SetEnvValue(envVar environmentVariable.Environment) {
-	jwtKey = []byte(envVar.JWT_SECRET)
-}
-
-func AuthMiddleware() gin.HandlerFunc {
+func (middle *Middleware) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString := c.GetHeader("Authorization")
 		if tokenString == "" || !strings.HasPrefix(tokenString, "Bearer ") {
@@ -42,11 +38,11 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		claims := &utils.Claims{}
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-			return jwtKey, nil
+			return []byte(middle.envVar.JWT_SECRET), nil
 		})
 		if err != nil || !token.Valid {
 
-			c.JSON(http.StatusUnauthorized, gin.H{"Error": fmt.Sprintf("Invalid token %v %s", err, jwtKey)})
+			c.JSON(http.StatusUnauthorized, gin.H{"Error": fmt.Sprint("Invalid token")})
 			c.Abort()
 			return
 		}
@@ -56,7 +52,7 @@ func AuthMiddleware() gin.HandlerFunc {
 	}
 }
 
-func (ctrl *Middleware) RefreshToken(c *gin.Context) {
+func (middle *Middleware) RefreshToken(c *gin.Context) {
 
 	var input payload.RefreshToken
 
@@ -68,7 +64,7 @@ func (ctrl *Middleware) RefreshToken(c *gin.Context) {
 	var refreshClaim payload.RefreshToken
 	refreshClaim.RefreshToken = input.RefreshToken
 	refreshClaim.ServiceType = "Restaurant"
-	tokens, err := ctrl.Client.RefreshToken(refreshClaim)
+	tokens, err := middle.AuthClient.RefreshToken(refreshClaim)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
 		return

@@ -5,7 +5,8 @@ import (
 	"net/http"
 	"strings"
 
-	ClientPackage "github.com/E-Furqan/Food-Delivery-System/Client"
+	"github.com/E-Furqan/Food-Delivery-System/Client/AuthClient"
+	"github.com/E-Furqan/Food-Delivery-System/Client/OrderClient"
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
 	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
@@ -15,14 +16,16 @@ import (
 )
 
 type RestaurantController struct {
-	Repo   *database.Repository
-	Client *ClientPackage.Client
+	Repo        *database.Repository
+	OrderClient *OrderClient.OrderClient
+	AuthClient  *AuthClient.AuthClient
 }
 
-func NewController(repo *database.Repository, client *ClientPackage.Client) *RestaurantController {
+func NewController(repo *database.Repository, OrderClient *OrderClient.OrderClient, AuthClient *AuthClient.AuthClient) *RestaurantController {
 	return &RestaurantController{
-		Repo:   repo,
-		Client: client,
+		Repo:        repo,
+		OrderClient: OrderClient,
+		AuthClient:  AuthClient,
 	}
 }
 
@@ -73,7 +76,7 @@ func (ctrl *RestaurantController) Login(c *gin.Context) {
 	RestaurantClaim.ClaimId = Restaurant.RestaurantId
 	RestaurantClaim.ServiceType = "Restaurant"
 
-	tokens, err := ctrl.Client.GenerateResponse(RestaurantClaim)
+	tokens, err := ctrl.AuthClient.GenerateResponse(RestaurantClaim)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
 		return
@@ -165,12 +168,6 @@ func (ctrl *RestaurantController) ProcessOrder(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Restaurant not authenticated"})
 		return
 	}
-	// var Restaurant model.Restaurant
-	// err := ctrl.Repo.GetRestaurant("restaurant_id", RestaurantID, &Restaurant)
-	// if err != nil {
-	// 	c.JSON(http.StatusUnauthorized, gin.H{"error": "Restaurant does not exists"})
-	// 	return
-	// }
 
 	var order payload.OrderDetails
 
@@ -179,7 +176,7 @@ func (ctrl *RestaurantController) ProcessOrder(c *gin.Context) {
 		return
 	}
 
-	OrderDetails, err := ctrl.Client.ViewOrdersDetails(order)
+	OrderDetails, err := ctrl.OrderClient.ViewOrdersDetails(order)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -193,7 +190,7 @@ func (ctrl *RestaurantController) ProcessOrder(c *gin.Context) {
 
 	if strings.ToLower(order.OrderStatus) == "cancelled" {
 		OrderDetails.OrderStatus = "Cancelled"
-		if err := ctrl.Client.ProcessOrder(*OrderDetails); err != nil {
+		if err := ctrl.OrderClient.ProcessOrder(*OrderDetails); err != nil {
 			utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Post request failed", "Error", err.Error())
 			return
 		}
@@ -227,59 +224,13 @@ func (ctrl *RestaurantController) ProcessOrder(c *gin.Context) {
 		OrderDetails.OrderStatus = newStatus
 	}
 
-	if err := ctrl.Client.ProcessOrder(*OrderDetails); err != nil {
+	if err := ctrl.OrderClient.ProcessOrder(*OrderDetails); err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Post request failed", "Error", err.Error())
 		return
 	}
 
 	utils.GenerateResponse(http.StatusOK, c, "Message", "Post request successful", "", "")
 }
-
-// // remove
-// func (ctrl *RestaurantController) CancelOrder(c *gin.Context) {
-// 	RestaurantID, exists := c.Get("RestaurantID")
-// 	if !exists {
-// 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Restaurant not authenticated"})
-// 		return
-// 	}
-// 	RestaurantID, ok := RestaurantID.(uint)
-// 	if !ok {
-// 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid Email address"})
-// 		return
-// 	}
-
-// 	var Restaurant model.Restaurant
-// 	err := ctrl.Repo.GetRestaurant("restaurant_id", RestaurantID, &Restaurant)
-// 	if err != nil {
-// 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
-// 		return
-// 	}
-
-// 	var input payload.OrderDetails
-
-// 	if err := c.ShouldBindJSON(&input); err != nil {
-// 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Binding input data failed", "Error", err.Error())
-// 		return
-// 	}
-
-// 	if input.RestaurantId != Restaurant.RestaurantId {
-
-// 		c.JSON(http.StatusBadRequest, gin.H{
-// 			"Message": "You are not authorized to cancel this order as it belongs to a different restaurant",
-// 		})
-// 		return
-// 	}
-
-// 	input.OrderStatus = "Cancelled"
-// 	utils.GenerateResponse(http.StatusOK, c, "Message", "Order cancelled successfully", "Order details", input)
-
-// 	if err := ctrl.Client.ProcessOrder(input); err != nil {
-// 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Post request failed", "Error", err.Error())
-// 		return
-// 	}
-
-// 	utils.GenerateResponse(http.StatusOK, c, "Message", "Post request successful", "", nil)
-// }
 
 func (ctrl *RestaurantController) ViewRestaurantOrders(c *gin.Context) {
 	RestaurantID, err := utils.Verification(c)
@@ -298,7 +249,7 @@ func (ctrl *RestaurantController) ViewRestaurantOrders(c *gin.Context) {
 	var restaurantId payload.Input
 
 	restaurantId.RestaurantId = Restaurant.RestaurantId
-	Orders, err := ctrl.Client.ViewRestaurantOrders(restaurantId)
+	Orders, err := ctrl.OrderClient.ViewRestaurantOrders(restaurantId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error order": err.Error()})
 		return

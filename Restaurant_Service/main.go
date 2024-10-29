@@ -1,7 +1,8 @@
 package main
 
 import (
-	ClientPackage "github.com/E-Furqan/Food-Delivery-System/Client"
+	"github.com/E-Furqan/Food-Delivery-System/Client/AuthClient"
+	"github.com/E-Furqan/Food-Delivery-System/Client/OrderClient"
 	"github.com/E-Furqan/Food-Delivery-System/Controllers/ItemController"
 	"github.com/E-Furqan/Food-Delivery-System/Controllers/RestaurantController"
 	config "github.com/E-Furqan/Food-Delivery-System/DatabaseConfig"
@@ -14,17 +15,16 @@ import (
 
 func main() {
 	envVar := environmentVariable.ReadEnv()
-	config.SetEnvValue(envVar)
-	db := config.Connection()
-	Middleware.SetEnvValue(envVar)
+	databaseConfig := config.NewDatabase(envVar)
+	db := databaseConfig.Connection()
 
-	client := ClientPackage.NewClient()
-	client.SetEnvValue(envVar)
+	OrdClient := OrderClient.NewClient(envVar)
+	AuthClient := AuthClient.NewClient(envVar)
 
 	repo := database.NewRepository(db)
-	ctrl := RestaurantController.NewController(repo, client)
+	ctrl := RestaurantController.NewController(repo, OrdClient, AuthClient)
 	ItemController := ItemController.NewController(repo)
-	middle := Middleware.NewMiddleware(client)
+	middle := Middleware.NewMiddleware(AuthClient, &envVar)
 
 	server := gin.Default()
 	route.Restaurant_routes(ctrl, ItemController, middle, server)
