@@ -8,7 +8,6 @@ import (
 	"github.com/E-Furqan/Food-Delivery-System/Client/AuthClient"
 	"github.com/E-Furqan/Food-Delivery-System/Client/OrderClient"
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
-	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
 	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 	"github.com/gin-gonic/gin"
@@ -58,7 +57,7 @@ func (ctrl *Controller) Register(c *gin.Context) {
 
 func (ctrl *Controller) Login(c *gin.Context) {
 
-	var input payload.Credentials
+	var input model.Credentials
 	if err := c.ShouldBindJSON(&input); err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Error", err.Error(), "", nil)
 		return
@@ -75,7 +74,7 @@ func (ctrl *Controller) Login(c *gin.Context) {
 		utils.GenerateResponse(http.StatusUnauthorized, c, "Error", "Invalid password", "", nil)
 		return
 	}
-	var UserClaim payload.UserClaim
+	var UserClaim model.UserClaim
 	UserClaim.Username = user.Username
 	UserClaim.ActiveRole = user.ActiveRole
 	UserClaim.ServiceType = "User"
@@ -105,7 +104,7 @@ func (ctrl *Controller) GetUsers(c *gin.Context) {
 	}
 
 	var userData []model.User
-	var OrderInfo payload.Order
+	var OrderInfo model.Order
 
 	if err := c.ShouldBindJSON(&OrderInfo); err != nil {
 		log.Print("binding error")
@@ -237,7 +236,7 @@ func (ctrl *Controller) SearchForUser(c *gin.Context) {
 		return
 	}
 
-	var input payload.UserSearch
+	var input model.UserSearch
 	err := c.ShouldBindJSON(&input)
 	if err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Error", err.Error(), "", nil)
@@ -269,7 +268,7 @@ func (ctrl *Controller) SwitchRole(c *gin.Context) {
 		return
 	}
 
-	var RoleSwitch payload.RoleSwitch
+	var RoleSwitch model.RoleSwitch
 	err = c.ShouldBindJSON(&RoleSwitch)
 	if err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Error", err.Error(), "", nil)
@@ -298,7 +297,7 @@ func (ctrl *Controller) SwitchRole(c *gin.Context) {
 		return
 	}
 
-	var UserClaim payload.UserClaim
+	var UserClaim model.UserClaim
 	UserClaim.Username = user.Username
 	UserClaim.ActiveRole = user.ActiveRole
 	UserClaim.ServiceType = "User"
@@ -328,7 +327,7 @@ func (ctrl *Controller) ViewUserOrders(c *gin.Context) {
 		utils.GenerateResponse(http.StatusNotFound, c, "Error", err.Error(), "", nil)
 		return
 	}
-	var userId payload.ProcessOrder
+	var userId model.ProcessOrder
 
 	userId.UserID = User.UserId
 	Orders, err := ctrl.OrderClient.ViewUserOrders(userId)
@@ -358,7 +357,7 @@ func (ctrl *Controller) ProcessOrderUser(c *gin.Context) {
 		return
 	}
 
-	var order payload.ProcessOrder
+	var order model.ProcessOrder
 
 	if err := c.ShouldBindJSON(&order); err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Error", err.Error(), "", nil)
@@ -385,7 +384,7 @@ func (ctrl *Controller) ProcessOrderUser(c *gin.Context) {
 		return
 	}
 
-	orderTransitions := payload.GetOrderTransitions()
+	orderTransitions := model.GetOrderTransitions()
 	if OrderDetails.OrderStatus == "Delivered" {
 		var driver model.User
 		err := ctrl.Repo.GetUser("user_id", OrderDetails.DeliverDriverID, &driver)
@@ -438,7 +437,7 @@ func (ctrl *Controller) ProcessOrderDriver(c *gin.Context) {
 		return
 	}
 
-	var order payload.ProcessOrder
+	var order model.ProcessOrder
 
 	if err := c.ShouldBindJSON(&order); err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Error", err.Error(), "", nil)
@@ -470,7 +469,7 @@ func (ctrl *Controller) ProcessOrderDriver(c *gin.Context) {
 		return
 	}
 
-	orderTransitions := payload.GetOrderTransitions()
+	orderTransitions := model.GetOrderTransitions()
 	if OrderDetails.OrderStatus == "Delivered" {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Error", "Delivery driver can not complete the order", "", nil)
 		return
@@ -514,7 +513,7 @@ func (ctrl *Controller) ViewDriverOrders(c *gin.Context) {
 		utils.GenerateResponse(http.StatusUnauthorized, c, "Error", "User does not exist", "", nil)
 		return
 	}
-	var userId payload.ProcessOrder
+	var userId model.ProcessOrder
 
 	userId.UserID = User.UserId
 	Orders, err := ctrl.OrderClient.ViewDriverOrders(userId)
@@ -552,7 +551,7 @@ func (ctrl *Controller) ViewOrdersWithoutDriver(c *gin.Context) {
 		utils.GenerateResponse(http.StatusUnauthorized, c, "Error", "User does not exist", "", nil)
 		return
 	}
-	var userId payload.ProcessOrder
+	var userId model.ProcessOrder
 	Orders, err := ctrl.OrderClient.ViewOrdersWithoutRider(userId)
 	if err != nil {
 		utils.GenerateResponse(http.StatusBadGateway, c, "Error", err.Error(), "", nil)
@@ -588,7 +587,7 @@ func (ctrl *Controller) AssignDriver(c *gin.Context) {
 		utils.GenerateResponse(http.StatusUnauthorized, c, "Error", "User does not exist", "", nil)
 		return
 	}
-	var orderId payload.ProcessOrder
+	var orderId model.ProcessOrder
 
 	if err := c.ShouldBindJSON(&orderId); err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Error", err.Error(), "", nil)

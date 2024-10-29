@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
-	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
+	model "github.com/E-Furqan/Food-Delivery-System/Models"
 )
 
 type OrderClient struct {
@@ -20,7 +20,8 @@ func NewClient(env environmentVariable.Environment) *OrderClient {
 		Environment: env,
 	}
 }
-func (orderClient *OrderClient) ProcessOrder(input payload.ProcessOrder) error {
+
+func (orderClient *OrderClient) ProcessOrder(input model.ProcessOrder) error {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
@@ -47,7 +48,7 @@ func (orderClient *OrderClient) ProcessOrder(input payload.ProcessOrder) error {
 	return nil
 }
 
-func (orderClient *OrderClient) ViewUserOrders(input payload.ProcessOrder) (*[]payload.ProcessOrder, error) {
+func (orderClient *OrderClient) ViewUserOrders(input model.ProcessOrder) (*[]model.ProcessOrder, error) {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
@@ -71,14 +72,15 @@ func (orderClient *OrderClient) ViewUserOrders(input payload.ProcessOrder) (*[]p
 		return nil, fmt.Errorf("received non-200 response: %v", resp.Status)
 	}
 
-	var orders []payload.ProcessOrder
+	var orders []model.ProcessOrder
 	if err := json.NewDecoder(resp.Body).Decode(&orders); err != nil {
 		return nil, fmt.Errorf("error decoding response: %v", err)
 	}
 
 	return &orders, nil
 }
-func (orderClient *OrderClient) ViewDriverOrders(input payload.ProcessOrder) (*[]payload.ProcessOrder, error) {
+
+func (orderClient *OrderClient) ViewDriverOrders(input model.ProcessOrder) (*[]model.ProcessOrder, error) {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
@@ -102,7 +104,7 @@ func (orderClient *OrderClient) ViewDriverOrders(input payload.ProcessOrder) (*[
 		return nil, fmt.Errorf("received non-200 response: %v", resp.Status)
 	}
 
-	var orders []payload.ProcessOrder
+	var orders []model.ProcessOrder
 	if err := json.NewDecoder(resp.Body).Decode(&orders); err != nil {
 		return nil, fmt.Errorf("error decoding response: %v", err)
 	}
@@ -110,7 +112,7 @@ func (orderClient *OrderClient) ViewDriverOrders(input payload.ProcessOrder) (*[
 	return &orders, nil
 }
 
-func (orderClient *OrderClient) ViewOrdersDetails(input payload.ProcessOrder) (*payload.ProcessOrder, error) {
+func (orderClient *OrderClient) ViewOrdersDetails(input model.ProcessOrder) (*model.ProcessOrder, error) {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
@@ -133,7 +135,7 @@ func (orderClient *OrderClient) ViewOrdersDetails(input payload.ProcessOrder) (*
 		return nil, fmt.Errorf("received non-200 response: %v", resp.Status)
 	}
 
-	var orders payload.ProcessOrder
+	var orders model.ProcessOrder
 	if err := json.NewDecoder(resp.Body).Decode(&orders); err != nil {
 		return nil, fmt.Errorf("error decoding response: %v", err)
 	}
@@ -141,7 +143,7 @@ func (orderClient *OrderClient) ViewOrdersDetails(input payload.ProcessOrder) (*
 	return &orders, nil
 }
 
-func (orderClient *OrderClient) ViewOrdersWithoutRider(input payload.ProcessOrder) (*[]payload.ProcessOrder, error) {
+func (orderClient *OrderClient) ViewOrdersWithoutRider(input model.ProcessOrder) (*[]model.ProcessOrder, error) {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
@@ -165,7 +167,7 @@ func (orderClient *OrderClient) ViewOrdersWithoutRider(input payload.ProcessOrde
 		return nil, fmt.Errorf("received non-200 response: %v", resp.Status)
 	}
 
-	var orders []payload.ProcessOrder
+	var orders []model.ProcessOrder
 	if err := json.NewDecoder(resp.Body).Decode(&orders); err != nil {
 		return nil, fmt.Errorf("error decoding response: %v", err)
 	}

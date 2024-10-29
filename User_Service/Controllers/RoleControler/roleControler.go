@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
-	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
 	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 	"github.com/gin-gonic/gin"
@@ -32,7 +31,7 @@ func (rCtrl *RoleController) AddRolesByAdmin(c *gin.Context) {
 		return
 	}
 
-	var input payload.Role
+	var input model.Role
 	if err := c.ShouldBindJSON(&input); err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Error", err.Error(), "", nil)
 		return
@@ -49,7 +48,6 @@ func (rCtrl *RoleController) AddRolesByAdmin(c *gin.Context) {
 	}
 
 	utils.GenerateResponse(http.StatusOK, c, "Message", "Role added successfully", "", nil)
-
 }
 
 func (rCtrl *RoleController) GetRole(c *gin.Context) {
@@ -65,7 +63,7 @@ func (rCtrl *RoleController) GetRole(c *gin.Context) {
 		return
 	}
 
-	var OrderInfo payload.Order
+	var OrderInfo model.Order
 	if err := c.ShouldBindJSON(&OrderInfo); err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Error", err.Error(), "", nil)
 		return
@@ -93,7 +91,7 @@ func (rCtrl *RoleController) DeleteRole(c *gin.Context) {
 		return
 	}
 
-	var input payload.Role
+	var input model.Role
 	var Role model.Role
 	err := c.ShouldBindJSON(&input)
 	if err != nil {
@@ -123,7 +121,7 @@ func (rCtrl *RoleController) DeleteRole(c *gin.Context) {
 func (rCtrl *RoleController) AddDefaultRoles(c *gin.Context) {
 	var roles []model.Role
 
-	for _, RolesFromPayLoad := range payload.RolesList {
+	for _, RolesFromPayLoad := range model.RolesList {
 		var existingRole model.Role
 		err := rCtrl.Repo.GetRole(RolesFromPayLoad.RoleId, &existingRole)
 		if err == nil {

@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
-	payload "github.com/E-Furqan/Food-Delivery-System/Payload"
+	model "github.com/E-Furqan/Food-Delivery-System/Models"
 )
 
 type AuthClient struct {
@@ -19,7 +19,7 @@ func NewClient(env environmentVariable.Environment) *AuthClient {
 		Environment: env,
 	}
 }
-func (client *AuthClient) GenerateToken(input payload.UserClaim) (*payload.Tokens, error) {
+func (client *AuthClient) GenerateToken(input model.UserClaim) (*model.Tokens, error) {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
@@ -42,7 +42,7 @@ func (client *AuthClient) GenerateToken(input payload.UserClaim) (*payload.Token
 		return nil, fmt.Errorf("received non-200 response: %v", resp.Status)
 	}
 
-	var tokens payload.Tokens
+	var tokens model.Tokens
 	if err := json.NewDecoder(resp.Body).Decode(&tokens); err != nil {
 		return nil, fmt.Errorf("error decoding response: %v", err)
 	}
@@ -50,7 +50,7 @@ func (client *AuthClient) GenerateToken(input payload.UserClaim) (*payload.Token
 	return &tokens, nil
 }
 
-func (client *AuthClient) RefreshToken(input payload.RefreshToken) (*payload.Tokens, error) {
+func (client *AuthClient) RefreshToken(input model.RefreshToken) (*model.Tokens, error) {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
@@ -73,7 +73,7 @@ func (client *AuthClient) RefreshToken(input payload.RefreshToken) (*payload.Tok
 		return nil, fmt.Errorf("received non-200 response: %v", resp.Status)
 	}
 
-	var tokens payload.Tokens
+	var tokens model.Tokens
 	if err := json.NewDecoder(resp.Body).Decode(&tokens); err != nil {
 		return nil, fmt.Errorf("error decoding response: %v", err)
 	}

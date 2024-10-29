@@ -60,19 +60,3 @@ func ReadEnv() Environment {
 	envVar.RefreshTokenKey = os.Getenv("REFRESH_TOKEN_SECRET")
 	return envVar
 }
-
-// func Get_env(key string) string {
-
-// 	err := godotenv.Load()
-// 	if err != nil {
-// 		log.Fatalf("Error loading .env file: %v", err)
-// 	}
-
-// 	value := os.Getenv(key)
-// 	if value == "" {
-// 		log.Fatalf("environment variable %s is not set", key)
-// 		return "" // Return an error if the variable is not found
-// 	}
-
-// 	return value
-// }
