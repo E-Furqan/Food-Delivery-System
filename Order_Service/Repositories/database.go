@@ -36,7 +36,7 @@ func (repo *Repository) GetOrders(order *[]model.Order, ID uint, columnName stri
 	}
 
 	tx := repo.DB.Begin()
-	err := repo.DB.Preload("Item").Where((fmt.Sprintf("%s = ?", searchColumn)), ID).Order(fmt.Sprintf("%s %s", columnName, orderDirection)).Find(order).Error
+	err := repo.DB.Where((fmt.Sprintf("%s = ?", searchColumn)), ID).Preload("Item").Order(fmt.Sprintf("%s %s", columnName, orderDirection)).Find(order).Error
 	if err != nil {
 		tx.Rollback()
 		return nil
@@ -51,7 +51,7 @@ func (repo *Repository) GetOrders(order *[]model.Order, ID uint, columnName stri
 
 func (repo *Repository) GetOrder(order *model.Order, OrderId uint) error {
 	tx := repo.DB.Begin()
-	err := repo.DB.Where("order_id = ?", OrderId).First(order).Error
+	err := tx.Where("order_id = ?", OrderId).Preload("Item").First(order).Error
 	if err != nil {
 		tx.Rollback()
 		return nil
@@ -66,7 +66,7 @@ func (repo *Repository) GetOrder(order *model.Order, OrderId uint) error {
 
 func (repo *Repository) GetOrderWithoutRider(order *[]model.Order) error {
 	tx := repo.DB.Begin()
-	err := repo.DB.Where("delivery_driver = ?", 0).Find(order).Error
+	err := repo.DB.Where("delivery_driver = ?", 0).Preload("Item").Find(order).Error
 	if err != nil {
 		tx.Rollback()
 		return nil
@@ -93,6 +93,7 @@ func (repo *Repository) GetOrderItems(orderItems *[]model.OrderItem, orderID uin
 
 	return nil
 }
+
 func (repo *Repository) GetItemByID(itemID uint, item *model.Item) error {
 	tx := repo.DB.Begin()
 	err := repo.DB.First(item, itemID).Error
