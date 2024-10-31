@@ -76,7 +76,7 @@ func (repo *Repository) LoadItems(RestaurantID uint, columnName string, order st
 	var ItemData []model.Item
 	tx := repo.DB.Begin()
 
-	err := repo.DB.
+	err := tx.
 		Where("restaurant_id = ?", RestaurantID).
 		Order(fmt.Sprintf("%s %s", columnName, order)).
 		Find(&ItemData).Error
