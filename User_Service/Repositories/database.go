@@ -140,28 +140,6 @@ func (repo *Repository) UpdateUserActiveRole(user *model.User) error {
 	return repo.DB.Model(user).Where("user_id = ?", user.UserId).Update("active_role", user.ActiveRole).Error
 }
 
-func (repo *Repository) GetDeliveryDriver(driver *model.User) error {
-
-	tx := repo.DB.Begin()
-
-	err := repo.DB.Where("active_role = ? AND (role_status != ? AND role_status != ?)",
-		"Delivery driver", "not active", "not available").First(&driver).Error
-
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	driver.RoleStatus = "not available"
-	err = repo.UpdateRoleStatus(driver)
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	return tx.Commit().Error
-}
-
 func (repo *Repository) UpdateRoleStatus(user *model.User) error {
 	return repo.DB.Model(user).Where("user_id = ?", user.UserId).Update("role_status", user.RoleStatus).Error
 }

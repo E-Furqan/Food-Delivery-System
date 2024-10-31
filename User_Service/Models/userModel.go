@@ -6,7 +6,7 @@ type User struct {
 	Username    string `gorm:"size:100;not null;uniqueIndex;column:username" json:"username"`
 	Password    string `gorm:"size:100;not null;column:password" json:"password"`
 	Email       string `gorm:"size:100;uniqueIndex;column:email" json:"email"`
-	PhoneNumber uint   `gorm:"uniqueIndex;column:phone_number" json:"phoneNumber"`
+	PhoneNumber string `gorm:"uniqueIndex;column:phone_number" json:"phoneNumber"`
 	Address     string `gorm:"size:100;column:address" json:"address"`
 	RoleStatus  string `gorm:"size:100;column:role_status" json:"roleStatus"`
 	ActiveRole  string `gorm:"size:100;column:active_role" json:"activeRole"`
