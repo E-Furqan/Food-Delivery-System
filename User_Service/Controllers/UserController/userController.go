@@ -97,7 +97,7 @@ func (ctrl *Controller) GetUsers(c *gin.Context) {
 	}
 
 	if activeRole != "Admin" {
-		utils.GenerateResponse(http.StatusBadRequest, c, "error", "You do not have the privileges to view users.", "", nil)
+		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "You do not have the privileges to view users.", "", nil)
 		return
 	}
 
@@ -208,7 +208,7 @@ func (ctrl *Controller) Profile(c *gin.Context) {
 
 	UserId, err := utils.VerifyUserId(c)
 	if err != nil {
-		utils.GenerateResponse(http.StatusNotFound, c, "error", err.Error(), "", nil)
+		utils.GenerateResponse(http.StatusUnauthorized, c, "error", err.Error(), "", nil)
 		return
 	}
 
@@ -255,7 +255,7 @@ func (ctrl *Controller) ViewUserOrders(c *gin.Context) {
 	UserId, err := utils.VerifyUserId(c)
 
 	if err != nil {
-		utils.GenerateResponse(http.StatusBadRequest, c, "error", err.Error(), "", nil)
+		utils.GenerateResponse(http.StatusUnauthorized, c, "error", err.Error(), "", nil)
 		return
 	}
 
@@ -436,7 +436,7 @@ func (ctrl *Controller) ViewDriverOrders(c *gin.Context) {
 
 	activeRole, exists := c.Get("activeRole")
 	if !exists {
-		utils.GenerateResponse(http.StatusBadRequest, c, "error", "User role does not exist", "", nil)
+		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "User role does not exist", "", nil)
 		return
 	}
 
@@ -453,7 +453,7 @@ func (ctrl *Controller) ViewDriverOrders(c *gin.Context) {
 	}
 	var userId model.ProcessOrder
 
-	userId.UserID = User.UserId
+	userId.DeliverDriverID = User.UserId
 	Orders, err := ctrl.OrderClient.ViewDriverOrders(userId)
 	if err != nil {
 		utils.GenerateResponse(http.StatusBadGateway, c, "error", err.Error(), "", nil)
