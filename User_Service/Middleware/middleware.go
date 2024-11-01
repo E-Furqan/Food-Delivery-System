@@ -29,7 +29,7 @@ func (middle *Middleware) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString := c.GetHeader("Authorization")
 		if tokenString == "" || !strings.HasPrefix(tokenString, "Bearer ") {
-			utils.GenerateResponse(http.StatusNotFound, c, "Error", "Authorization token required", "", nil)
+			utils.GenerateResponse(http.StatusNotFound, c, "error", "Authorization token required", "", nil)
 			c.Abort()
 			return
 		}
@@ -42,7 +42,7 @@ func (middle *Middleware) AuthMiddleware() gin.HandlerFunc {
 		})
 		if err != nil || !token.Valid {
 			log.Print(middle.envVar.JWT_SECRET)
-			utils.GenerateResponse(http.StatusUnauthorized, c, "Error", err.Error(), "", nil)
+			utils.GenerateResponse(http.StatusUnauthorized, c, "error", err.Error(), "", nil)
 			c.Abort()
 			return
 		}
@@ -58,7 +58,7 @@ func (ctrl *Middleware) RefreshToken(c *gin.Context) {
 	var input model.RefreshToken
 
 	if err := c.ShouldBindJSON(&input); err != nil {
-		utils.GenerateResponse(http.StatusBadRequest, c, "Error", err.Error(), "", nil)
+		utils.GenerateResponse(http.StatusBadRequest, c, "error", err.Error(), "", nil)
 		return
 	}
 
@@ -67,7 +67,7 @@ func (ctrl *Middleware) RefreshToken(c *gin.Context) {
 	refreshClaim.ServiceType = "Restaurant"
 	tokens, err := ctrl.AuthClient.RefreshToken(refreshClaim)
 	if err != nil {
-		utils.GenerateResponse(http.StatusInternalServerError, c, "Message", "Could not generate token", "Error", err.Error())
+		utils.GenerateResponse(http.StatusInternalServerError, c, "Message", "Could not generate token", "error", err.Error())
 		return
 	}
 

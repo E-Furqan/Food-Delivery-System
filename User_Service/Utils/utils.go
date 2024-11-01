@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	"github.com/dgrijalva/jwt-go"
@@ -16,8 +17,14 @@ type Claims struct {
 }
 
 func GenerateResponse(httpStatusCode int, c *gin.Context, title1 string, message1 string, title2 string, input interface{}) {
+
+	errorMessage := strings.TrimPrefix(message1, "ERROR: ")
+	// if idx := strings.Index(errorMessage, " (SQLSTATE"); idx != -1 {
+	// 	errorMessage = errorMessage[:idx]
+	// }
+
 	response := gin.H{
-		title1: message1,
+		title1: errorMessage,
 	}
 
 	if title2 != "" && input != nil {
