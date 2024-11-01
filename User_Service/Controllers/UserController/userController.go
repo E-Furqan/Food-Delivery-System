@@ -69,9 +69,8 @@ func (ctrl *Controller) Login(c *gin.Context) {
 		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "Invalid credentials", "", nil)
 		return
 	}
-
 	if user.Password != input.Password {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "Invalid password", "", nil)
+		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "Invalid credentials", "", nil)
 		return
 	}
 

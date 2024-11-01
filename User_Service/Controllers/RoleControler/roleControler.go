@@ -61,7 +61,7 @@ func (rCtrl *RoleController) GetRoles(c *gin.Context) {
 		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "User not authenticated", "", nil)
 		return
 	}
-
+	log.Print(activeRole)
 	if activeRole != "Admin" {
 		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "You do not have the privileges to view roles.", "", nil)
 		return
@@ -155,7 +155,7 @@ func (RoleController *RoleController) SwitchRole(c *gin.Context) {
 		utils.GenerateResponse(http.StatusNotFound, c, "error", err.Error(), "", nil)
 		return
 	}
-
+	log.Print(UserId)
 	var user model.User
 	err = RoleController.Repo.GetUser("user_id", UserId, &user)
 	if err != nil {

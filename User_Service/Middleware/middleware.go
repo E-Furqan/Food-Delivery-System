@@ -46,7 +46,6 @@ func (middle *Middleware) AuthMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-
 		c.Set("userId", claims.UserId)
 		c.Set("activeRole", claims.ActiveRole)
 		c.Next()

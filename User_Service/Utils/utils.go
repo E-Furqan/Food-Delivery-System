@@ -19,10 +19,6 @@ type Claims struct {
 func GenerateResponse(httpStatusCode int, c *gin.Context, title1 string, message1 string, title2 string, input interface{}) {
 
 	errorMessage := strings.TrimPrefix(message1, "ERROR: ")
-	// if idx := strings.Index(errorMessage, " (SQLSTATE"); idx != -1 {
-	// 	errorMessage = errorMessage[:idx]
-	// }
-
 	response := gin.H{
 		title1: errorMessage,
 	}
@@ -39,7 +35,7 @@ func VerifyUserId(c *gin.Context) (any, error) {
 	if !exists {
 		return 0, fmt.Errorf("userId does not exist")
 	}
-	userId, ok := userIdValue.(string)
+	userId, ok := userIdValue.(uint)
 	if !ok {
 		return 0, fmt.Errorf("invalid userId")
 	}
@@ -60,7 +56,7 @@ func VerificationRole(c *gin.Context) (any, error) {
 
 func CreateUserClaim(user model.User) model.UserClaim {
 	var UserClaim model.UserClaim
-	UserClaim.Username = user.Username
+	UserClaim.UserId = user.UserId
 	UserClaim.ActiveRole = user.ActiveRole
 	UserClaim.ServiceType = "User"
 	return UserClaim

@@ -19,8 +19,8 @@ type UserRole struct {
 }
 
 type Credentials struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
 }
 
 type UserSearch struct {
@@ -34,7 +34,7 @@ type Order struct {
 }
 
 type UserClaim struct {
-	Username    string `json:"username"`
+	UserId      uint   `json:"user_id"`
 	ActiveRole  string `json:"activeRole"`
 	ServiceType string `json:"service_type"`
 }
