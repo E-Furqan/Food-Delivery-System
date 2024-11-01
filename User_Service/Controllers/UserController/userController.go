@@ -124,7 +124,7 @@ func (ctrl *Controller) UpdateUser(c *gin.Context) {
 
 	UserId, err := utils.VerifyUserId(c)
 	if err != nil {
-		utils.GenerateResponse(http.StatusNotFound, c, "error", err.Error(), "", nil)
+		utils.GenerateResponse(http.StatusUnauthorized, c, "error", err.Error(), "", nil)
 		return
 	}
 
@@ -179,7 +179,7 @@ func (ctrl *Controller) UpdateUser(c *gin.Context) {
 func (ctrl *Controller) DeleteUser(c *gin.Context) {
 	UserId, err := utils.VerifyUserId(c)
 	if err != nil {
-		utils.GenerateResponse(http.StatusNotFound, c, "error", err.Error(), "", nil)
+		utils.GenerateResponse(http.StatusUnauthorized, c, "error", err.Error(), "", nil)
 		return
 	}
 
@@ -230,7 +230,7 @@ func (ctrl *Controller) SearchForUser(c *gin.Context) {
 		return
 	}
 	if role != "Admin" {
-		utils.GenerateResponse(http.StatusBadRequest, c, "error", "You do not have the privileges to Search for users.", "", nil)
+		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "You do not have the privileges to Search for users.", "", nil)
 		return
 	}
 
@@ -286,6 +286,18 @@ func (ctrl *Controller) ProcessOrderUser(c *gin.Context) {
 		return
 	}
 
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Message", "authorization token not provided", "error", nil)
+		return
+	}
+	tokenParts := strings.Split(authHeader, " ")
+	if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Message", "invalid authorization header format", "error", nil)
+		return
+	}
+	token := tokenParts[1]
+
 	user := model.User{}
 
 	err = ctrl.Repo.GetUser("user_id", UserId, &user)
@@ -301,7 +313,7 @@ func (ctrl *Controller) ProcessOrderUser(c *gin.Context) {
 		utils.GenerateResponse(http.StatusBadRequest, c, "error", err.Error(), "", nil)
 		return
 	}
-	OrderDetails, err := ctrl.OrderClient.ViewOrdersDetails(order)
+	OrderDetails, err := ctrl.OrderClient.ViewOrdersDetails(order, token)
 
 	if err != nil {
 		utils.GenerateResponse(http.StatusInternalServerError, c, "error", err.Error(), "", nil)
@@ -352,7 +364,7 @@ func (ctrl *Controller) ProcessOrderDriver(c *gin.Context) {
 
 	UserId, err := utils.VerifyUserId(c)
 	if err != nil {
-		utils.GenerateResponse(http.StatusBadRequest, c, "error", err.Error(), "", nil)
+		utils.GenerateResponse(http.StatusUnauthorized, c, "error", err.Error(), "", nil)
 		return
 	}
 	activeRole, exists := c.Get("activeRole")
@@ -365,6 +377,18 @@ func (ctrl *Controller) ProcessOrderDriver(c *gin.Context) {
 		utils.GenerateResponse(http.StatusBadRequest, c, "error", "insufficient permission", "", nil)
 		return
 	}
+
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Message", "authorization token not provided", "error", nil)
+		return
+	}
+	tokenParts := strings.Split(authHeader, " ")
+	if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Message", "invalid authorization header format", "error", nil)
+		return
+	}
+	token := tokenParts[1]
 
 	user := model.User{}
 	err = ctrl.Repo.GetUser("user_id", UserId, &user)
@@ -382,7 +406,7 @@ func (ctrl *Controller) ProcessOrderDriver(c *gin.Context) {
 		return
 	}
 
-	OrderDetails, err := ctrl.OrderClient.ViewOrdersDetails(order)
+	OrderDetails, err := ctrl.OrderClient.ViewOrdersDetails(order, token)
 	if err != nil {
 		utils.GenerateResponse(http.StatusInternalServerError, c, "error", err.Error(), "", nil)
 		return
@@ -510,7 +534,7 @@ func (ctrl *Controller) AssignDriver(c *gin.Context) {
 
 	activeRole, exists := c.Get("activeRole")
 	if !exists {
-		utils.GenerateResponse(http.StatusBadRequest, c, "error", "User role does not exist", "", nil)
+		utils.GenerateResponse(http.StatusNotFound, c, "error", "User role does not exist", "", nil)
 		return
 	}
 
@@ -518,6 +542,18 @@ func (ctrl *Controller) AssignDriver(c *gin.Context) {
 		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "insufficient permission", "", nil)
 		return
 	}
+
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Message", "authorization token not provided", "error", nil)
+		return
+	}
+	tokenParts := strings.Split(authHeader, " ")
+	if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Message", "invalid authorization header format", "error", nil)
+		return
+	}
+	token := tokenParts[1]
 
 	var driver model.User
 	err = ctrl.Repo.GetUser("user_id", UserId, &driver)
@@ -532,7 +568,7 @@ func (ctrl *Controller) AssignDriver(c *gin.Context) {
 		return
 	}
 
-	OrderDetails, err := ctrl.OrderClient.ViewOrdersDetails(orderId)
+	OrderDetails, err := ctrl.OrderClient.ViewOrdersDetails(orderId, token)
 	if err != nil {
 		utils.GenerateResponse(http.StatusBadGateway, c, "error", err.Error(), "", nil)
 		return

@@ -99,7 +99,7 @@ func (rCtrl *RoleController) DeleteRole(c *gin.Context) {
 
 	err = rCtrl.Repo.GetRole(input.RoleId, &Role)
 	if err != nil {
-		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Role does not exist", "error", err.Error())
+		utils.GenerateResponse(http.StatusNotFound, c, "Message", "Role does not exist", "error", err.Error())
 		return
 	}
 

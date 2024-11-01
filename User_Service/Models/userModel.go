@@ -24,8 +24,8 @@ type Credentials struct {
 }
 
 type UserSearch struct {
-	ColumnName      string      `json:"columnName"`
-	SearchParameter interface{} `json:"searchParameter"`
+	ColumnName      string      `json:"columnName" binding:"required"`
+	SearchParameter interface{} `json:"searchParameter" binding:"required"`
 }
 
 type Order struct {

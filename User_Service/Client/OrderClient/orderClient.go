@@ -112,7 +112,7 @@ func (orderClient *OrderClient) ViewDriverOrders(input model.ProcessOrder) (*[]m
 	return &orders, nil
 }
 
-func (orderClient *OrderClient) ViewOrdersDetails(input model.ProcessOrder) (*model.ProcessOrder, error) {
+func (orderClient *OrderClient) ViewOrdersDetails(input model.ProcessOrder, token string) (*model.ProcessOrder, error) {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
@@ -124,6 +124,7 @@ func (orderClient *OrderClient) ViewOrdersDetails(input model.ProcessOrder) (*mo
 		return nil, fmt.Errorf("error creating request: %v", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
