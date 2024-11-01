@@ -282,7 +282,7 @@ func (ctrl *Controller) ViewUserOrders(c *gin.Context) {
 func (ctrl *Controller) ProcessOrderUser(c *gin.Context) {
 	UserId, err := utils.VerifyUserId(c)
 	if err != nil {
-		utils.GenerateResponse(http.StatusNotFound, c, "error", err.Error(), "", nil)
+		utils.GenerateResponse(http.StatusUnauthorized, c, "error", err.Error(), "", nil)
 		return
 	}
 

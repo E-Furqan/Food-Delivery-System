@@ -41,7 +41,8 @@ func VerifyUserId(c *gin.Context) (any, error) {
 	}
 	return userId, nil
 }
-func VerificationRole(c *gin.Context) (any, error) {
+
+func VerifyActiveRole(c *gin.Context) (any, error) {
 	activeRole, exists := c.Get("activeRole")
 	if !exists {
 		return activeRole, fmt.Errorf("invalid Role Type")

@@ -24,14 +24,9 @@ func NewController(repo *database.Repository, AuthClient *AuthClient.AuthClient)
 
 func (rCtrl *RoleController) AddRolesByAdmin(c *gin.Context) {
 
-	activeRole, exists := c.Get("activeRole")
-	if !exists {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "User not authenticated", "", nil)
-		return
-	}
-
-	if activeRole != "Admin" {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "You do not have the privileges to add new roles.", "", nil)
+	_, err := utils.VerifyActiveRole(c)
+	if err != nil {
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Message", "user not authenticated", "error", err.Error())
 		return
 	}
 
@@ -45,7 +40,7 @@ func (rCtrl *RoleController) AddRolesByAdmin(c *gin.Context) {
 	role.RoleId = input.RoleId
 	role.RoleType = input.RoleType
 
-	err := rCtrl.Repo.CreateRole(&role)
+	err = rCtrl.Repo.CreateRole(&role)
 	if err != nil {
 		utils.GenerateResponse(http.StatusInternalServerError, c, "error", err.Error(), "", nil)
 		return
