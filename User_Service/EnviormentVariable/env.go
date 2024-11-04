@@ -26,6 +26,7 @@ type Environment struct {
 	VIEW_ORDER_DETAIL_URL         string
 	VIEW_ORDER_WITHOUT_DRIVER_URL string
 	DRIVER_ORDERS_URL             string
+	ASSIGN_DRIVER_URL             string
 }
 
 func ReadEnv() Environment {
@@ -49,6 +50,7 @@ func ReadEnv() Environment {
 	envVar.DRIVER_ORDERS_URL = utils.GetEnv("DRIVER_ORDERS_URL", "/order/view/driver/orders")
 	envVar.VIEW_ORDER_DETAIL_URL = utils.GetEnv("VIEW_ORDER_DETAIL_URL", "/order/view/order")
 	envVar.VIEW_ORDER_WITHOUT_DRIVER_URL = utils.GetEnv("VIEW_ORDER_WITHOUT_DRIVER_URL", "/order/view/without/driver/orders")
+	envVar.ASSIGN_DRIVER_URL = utils.GetEnv("ASSIGN_DRIVER_URL", "/order/assign/diver")
 
 	envVar.ORDER_PORT = utils.GetEnv("ORDER_PORT", ":8081")
 	envVar.AUTH_PORT = utils.GetEnv("AUTH_PORT", ":8084")

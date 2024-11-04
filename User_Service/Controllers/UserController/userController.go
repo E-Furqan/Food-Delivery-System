@@ -265,7 +265,7 @@ func (ctrl *Controller) ViewUserOrders(c *gin.Context) {
 		utils.GenerateResponse(http.StatusNotFound, c, "error", err.Error(), "", nil)
 		return
 	}
-	var userId model.ProcessOrder
+	var userId model.UpdateOrder
 
 	userId.UserID = User.UserId
 	Orders, err := ctrl.OrderClient.ViewUserOrders(userId)
@@ -279,176 +279,143 @@ func (ctrl *Controller) ViewUserOrders(c *gin.Context) {
 	})
 }
 
-func (ctrl *Controller) ProcessOrderUser(c *gin.Context) {
+func (ctrl *Controller) UpdateOrderStatus(c *gin.Context) {
 	UserId, err := utils.VerifyUserId(c)
 	if err != nil {
 		utils.GenerateResponse(http.StatusUnauthorized, c, "error", err.Error(), "", nil)
 		return
 	}
 
-	authHeader := c.GetHeader("Authorization")
-	if authHeader == "" {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "Message", "authorization token not provided", "error", nil)
-		return
-	}
-	tokenParts := strings.Split(authHeader, " ")
-	if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "Message", "invalid authorization header format", "error", nil)
-		return
-	}
-	token := tokenParts[1]
+	token := utils.GetAuthToken(c)
 
 	user := model.User{}
-
 	err = ctrl.Repo.GetUser("user_id", UserId, &user)
-
 	if err != nil {
 		utils.GenerateResponse(http.StatusNotFound, c, "error", "User not found", "", nil)
 		return
 	}
 
-	var order model.ProcessOrder
-
+	var order model.UpdateOrder
 	if err := c.ShouldBindJSON(&order); err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "error", err.Error(), "", nil)
 		return
 	}
-	OrderDetails, err := ctrl.OrderClient.ViewOrdersDetails(order, token)
-
+	updatedOrder, err := ctrl.OrderClient.UpdateOrderStatus(order, token)
 	if err != nil {
-		utils.GenerateResponse(http.StatusInternalServerError, c, "error", err.Error(), "", nil)
-		return
-	}
-	if OrderDetails.UserID != user.UserId {
-		utils.GenerateResponse(http.StatusInternalServerError, c, "error", "Order is not of this user", "", nil)
-		return
-	}
-
-	if strings.ToLower(order.OrderStatus) == "cancelled" {
-		OrderDetails.OrderStatus = "cancelled"
-		if err := ctrl.OrderClient.UpdateOrderStatus(*OrderDetails); err != nil {
-			utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Post request failed", "error", err.Error())
-			return
-		}
-		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Order Cancelled", "order", order)
-		return
-	}
-
-	orderTransitions := model.GetOrderTransitions()
-	if OrderDetails.OrderStatus == "Delivered" {
-		var driver model.User
-		err := ctrl.Repo.GetUser("user_id", OrderDetails.DeliverDriverID, &driver)
-		if err != nil {
-			utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Delivery driver not found", "error", err.Error())
-			return
-		}
-
-		driver.RoleStatus = "available"
-		ctrl.Repo.UpdateRoleStatus(&driver)
-	}
-
-	if newStatus, exists := orderTransitions[OrderDetails.OrderStatus]; exists {
-		OrderDetails.OrderStatus = newStatus
-	}
-	if err := ctrl.OrderClient.UpdateOrderStatus(*OrderDetails); err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Patch request failed", "error", err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"Order": OrderDetails,
-	})
-}
-
-func (ctrl *Controller) ProcessOrderDriver(c *gin.Context) {
-
-	UserId, err := utils.VerifyUserId(c)
-	if err != nil {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "error", err.Error(), "", nil)
-		return
-	}
-	activeRole, exists := c.Get("activeRole")
-	if !exists {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "User not authenticated", "", nil)
-		return
-	}
-
-	if activeRole != "Delivery driver" {
-		utils.GenerateResponse(http.StatusBadRequest, c, "error", "insufficient permission", "", nil)
-		return
-	}
-
-	authHeader := c.GetHeader("Authorization")
-	if authHeader == "" {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "Message", "authorization token not provided", "error", nil)
-		return
-	}
-	tokenParts := strings.Split(authHeader, " ")
-	if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "Message", "invalid authorization header format", "error", nil)
-		return
-	}
-	token := tokenParts[1]
-
-	user := model.User{}
-	err = ctrl.Repo.GetUser("user_id", UserId, &user)
-
-	if err != nil {
-
-		utils.GenerateResponse(http.StatusNotFound, c, "error", "User not found", "", nil)
-		return
-	}
-
-	var order model.ProcessOrder
-
-	if err := c.ShouldBindJSON(&order); err != nil {
-		utils.GenerateResponse(http.StatusBadRequest, c, "error", err.Error(), "", nil)
-		return
-	}
-
-	OrderDetails, err := ctrl.OrderClient.ViewOrdersDetails(order, token)
-	if err != nil {
-		utils.GenerateResponse(http.StatusInternalServerError, c, "error", err.Error(), "", nil)
-		return
-	}
-	if OrderDetails.DeliverDriverID == 0 {
-		utils.GenerateResponse(http.StatusInternalServerError, c, "error", "Order have no delivery driver", "", nil)
-		return
-	}
-
-	if OrderDetails.DeliverDriverID != user.UserId {
-		utils.GenerateResponse(http.StatusInternalServerError, c, "error", "Order is not of this driver", "", nil)
-		return
-	}
-
-	if strings.ToLower(order.OrderStatus) == "cancelled" {
-		OrderDetails.OrderStatus = "cancelled"
-		if err := ctrl.OrderClient.UpdateOrderStatus(*OrderDetails); err != nil {
-			utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Post request failed", "error", err.Error())
-			return
+	if strings.ToLower(updatedOrder.OrderStatus) == "completed" {
+		if updatedOrder.DeliverDriverID == user.UserId {
+			user.RoleStatus = "Available"
+			ctrl.Repo.UpdateRoleStatus(&user)
+		} else {
+			user := model.User{}
+			err = ctrl.Repo.GetUser("user_id", updatedOrder.DeliverDriverID, &user)
+			if err != nil {
+				utils.GenerateResponse(http.StatusNotFound, c, "error", "User not found", "", nil)
+				return
+			}
+			user.RoleStatus = "Available"
+			ctrl.Repo.UpdateRoleStatus(&user)
 		}
-		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Order Cancelled", "order", order)
-		return
-	}
-
-	orderTransitions := model.GetOrderTransitions()
-	if OrderDetails.OrderStatus == "Delivered" {
-		utils.GenerateResponse(http.StatusBadRequest, c, "error", "Delivery driver can not complete the order", "", nil)
-		return
-	}
-
-	if newStatus, exists := orderTransitions[OrderDetails.OrderStatus]; exists {
-		OrderDetails.OrderStatus = newStatus
-	}
-	if err := ctrl.OrderClient.UpdateOrderStatus(*OrderDetails); err != nil {
-		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Patch request failed", "error", err.Error())
-		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"Order": OrderDetails,
+		"Message": "order status updated",
 	})
 }
+
+// func (ctrl *Controller) ProcessOrderDriver(c *gin.Context) {
+
+// 	UserId, err := utils.VerifyUserId(c)
+// 	if err != nil {
+// 		utils.GenerateResponse(http.StatusUnauthorized, c, "error", err.Error(), "", nil)
+// 		return
+// 	}
+// 	activeRole, exists := c.Get("activeRole")
+// 	if !exists {
+// 		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "User not authenticated", "", nil)
+// 		return
+// 	}
+
+// 	if activeRole != "Delivery driver" {
+// 		utils.GenerateResponse(http.StatusBadRequest, c, "error", "insufficient permission", "", nil)
+// 		return
+// 	}
+
+// 	authHeader := c.GetHeader("Authorization")
+// 	if authHeader == "" {
+// 		utils.GenerateResponse(http.StatusUnauthorized, c, "Message", "authorization token not provided", "error", nil)
+// 		return
+// 	}
+// 	tokenParts := strings.Split(authHeader, " ")
+// 	if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
+// 		utils.GenerateResponse(http.StatusUnauthorized, c, "Message", "invalid authorization header format", "error", nil)
+// 		return
+// 	}
+// 	token := tokenParts[1]
+
+// 	user := model.User{}
+// 	err = ctrl.Repo.GetUser("user_id", UserId, &user)
+
+// 	if err != nil {
+
+// 		utils.GenerateResponse(http.StatusNotFound, c, "error", "User not found", "", nil)
+// 		return
+// 	}
+
+// 	var order model.UpdateOrder
+
+// 	if err := c.ShouldBindJSON(&order); err != nil {
+// 		utils.GenerateResponse(http.StatusBadRequest, c, "error", err.Error(), "", nil)
+// 		return
+// 	}
+
+// 	OrderDetails, err := ctrl.OrderClient.ViewOrdersDetails(order, token)
+// 	if err != nil {
+// 		utils.GenerateResponse(http.StatusInternalServerError, c, "error", err.Error(), "", nil)
+// 		return
+// 	}
+// 	if OrderDetails.DeliverDriverID == 0 {
+// 		utils.GenerateResponse(http.StatusInternalServerError, c, "error", "Order have no delivery driver", "", nil)
+// 		return
+// 	}
+
+// 	if OrderDetails.DeliverDriverID != user.UserId {
+// 		utils.GenerateResponse(http.StatusInternalServerError, c, "error", "Order is not of this driver", "", nil)
+// 		return
+// 	}
+
+// 	if strings.ToLower(order.OrderStatus) == "cancelled" {
+// 		OrderDetails.OrderStatus = "cancelled"
+// 		if err := ctrl.OrderClient.UpdateOrderStatus(*OrderDetails); err != nil {
+// 			utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Post request failed", "error", err.Error())
+// 			return
+// 		}
+// 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Order Cancelled", "order", order)
+// 		return
+// 	}
+
+// 	orderTransitions := model.GetOrderTransitions()
+// 	if OrderDetails.OrderStatus == "Delivered" {
+// 		utils.GenerateResponse(http.StatusBadRequest, c, "error", "Delivery driver can not complete the order", "", nil)
+// 		return
+// 	}
+
+// 	if newStatus, exists := orderTransitions[OrderDetails.OrderStatus]; exists {
+// 		OrderDetails.OrderStatus = newStatus
+// 	}
+// 	if err := ctrl.OrderClient.UpdateOrderStatus(*OrderDetails); err != nil {
+// 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Patch request failed", "error", err.Error())
+// 		return
+// 	}
+
+// 	c.JSON(http.StatusOK, gin.H{
+// 		"Order": OrderDetails,
+// 	})
+// }
 
 func (ctrl *Controller) ViewDriverOrders(c *gin.Context) {
 
@@ -475,7 +442,7 @@ func (ctrl *Controller) ViewDriverOrders(c *gin.Context) {
 		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "User does not exist", "", nil)
 		return
 	}
-	var userId model.ProcessOrder
+	var userId model.UpdateOrder
 
 	userId.DeliverDriverID = User.UserId
 	Orders, err := ctrl.OrderClient.ViewDriverOrders(userId)
@@ -513,7 +480,7 @@ func (ctrl *Controller) ViewOrdersWithoutDriver(c *gin.Context) {
 		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "User does not exist", "", nil)
 		return
 	}
-	var userId model.ProcessOrder
+	var userId model.UpdateOrder
 	Orders, err := ctrl.OrderClient.ViewOrdersWithoutRider(userId)
 	if err != nil {
 		utils.GenerateResponse(http.StatusBadGateway, c, "error", err.Error(), "", nil)
@@ -525,7 +492,6 @@ func (ctrl *Controller) ViewOrdersWithoutDriver(c *gin.Context) {
 	})
 }
 
-// need new endpoint
 func (ctrl *Controller) AssignDriver(c *gin.Context) {
 	UserId, err := utils.VerifyUserId(c)
 	if err != nil {
@@ -544,17 +510,7 @@ func (ctrl *Controller) AssignDriver(c *gin.Context) {
 		return
 	}
 
-	authHeader := c.GetHeader("Authorization")
-	if authHeader == "" {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "Message", "authorization token not provided", "error", nil)
-		return
-	}
-	tokenParts := strings.Split(authHeader, " ")
-	if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "Message", "invalid authorization header format", "error", nil)
-		return
-	}
-	token := tokenParts[1]
+	token := utils.GetAuthToken(c)
 
 	var driver model.User
 	err = ctrl.Repo.GetUser("user_id", UserId, &driver)
@@ -562,26 +518,14 @@ func (ctrl *Controller) AssignDriver(c *gin.Context) {
 		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "User does not exist", "", nil)
 		return
 	}
-	var orderId model.ProcessOrder
+	var orderId model.UpdateOrder
 
 	if err := c.ShouldBindJSON(&orderId); err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "error", err.Error(), "", nil)
 		return
 	}
 
-	OrderDetails, err := ctrl.OrderClient.ViewOrdersDetails(orderId, token)
-	if err != nil {
-		utils.GenerateResponse(http.StatusBadGateway, c, "error", err.Error(), "", nil)
-		return
-	}
-
-	if OrderDetails.DeliverDriverID != 0 {
-		utils.GenerateResponse(http.StatusInternalServerError, c, "error", "Order already have a delivery driver", "", nil)
-		return
-	}
-
-	OrderDetails.DeliverDriverID = driver.UserId
-	if err := ctrl.OrderClient.UpdateOrderStatus(*OrderDetails); err != nil {
+	if err := ctrl.OrderClient.AssignDriver(orderId, token); err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Patch request failed", "error", err.Error())
 		return
 	}
@@ -590,6 +534,6 @@ func (ctrl *Controller) AssignDriver(c *gin.Context) {
 	ctrl.Repo.UpdateRoleStatus(&driver)
 
 	c.JSON(http.StatusOK, gin.H{
-		"Order": OrderDetails,
+		"Message": "Delivery driver assigned to the order",
 	})
 }

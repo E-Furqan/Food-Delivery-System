@@ -17,8 +17,6 @@ func User_routes(ctrl *UserControllers.Controller, rCtrl *roleController.RoleCon
 
 	user.Use(middleware.AuthMiddleware())
 	{
-		user.POST("/process/user/order", ctrl.ProcessOrderUser)
-		user.POST("/process/driver/order", ctrl.ProcessOrderDriver)
 		user.POST("/assign/driver", ctrl.AssignDriver)
 
 		user.GET("/get/roles", rCtrl.GetRoles)
@@ -28,6 +26,7 @@ func User_routes(ctrl *UserControllers.Controller, rCtrl *roleController.RoleCon
 		user.GET("/view/driver/orders", ctrl.ViewDriverOrders)
 		user.GET("/view/orders/without/driver", ctrl.ViewOrdersWithoutDriver)
 
+		user.PATCH("/update/order/status", ctrl.UpdateOrderStatus)
 		user.PATCH("/update/profile", ctrl.UpdateUser)
 		user.PATCH("/switch/role", rCtrl.SwitchRole)
 
