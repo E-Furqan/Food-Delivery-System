@@ -50,6 +50,11 @@ func ReFreshToken(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
 		return
 	}
-	input.AccessToken = accessToken
-	c.JSON(http.StatusOK, input)
+
+	var tokens payload.Tokens
+	tokens.AccessToken = accessToken
+	tokens.RefreshToken = input.RefreshToken
+	tokens.Expiration = time.Now().Add(30 * time.Minute).Unix()
+
+	c.JSON(http.StatusOK, tokens)
 }

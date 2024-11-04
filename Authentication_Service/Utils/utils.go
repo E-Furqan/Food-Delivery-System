@@ -65,6 +65,8 @@ func RefreshToken(refreshToken string, c *gin.Context) (string, error) {
 	log.Print(claims.ActiveRole)
 
 	var input payload.Input
+	input.ClaimId = claims.ClaimId
+	input.ActiveRole = claims.ActiveRole
 	accessClaims, refreshClaims = CreateClaim(input)
 
 	accessToken, _, err := GenerateTokens(accessClaims, refreshClaims)
