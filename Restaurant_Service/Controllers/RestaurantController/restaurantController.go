@@ -75,7 +75,7 @@ func (ctrl *RestaurantController) Login(c *gin.Context) {
 	RestaurantClaim.ClaimId = Restaurant.RestaurantId
 	RestaurantClaim.Role = "Restaurant"
 
-	tokens, err := ctrl.AuthClient.GenerateResponse(RestaurantClaim)
+	tokens, err := ctrl.AuthClient.GenerateToken(RestaurantClaim)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
 		return

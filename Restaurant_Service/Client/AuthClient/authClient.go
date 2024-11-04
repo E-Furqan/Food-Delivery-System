@@ -20,7 +20,7 @@ func NewClient(env environmentVariable.Environment) *AuthClient {
 	}
 }
 
-func (client *AuthClient) GenerateResponse(input model.RestaurantClaim) (*model.Tokens, error) {
+func (client *AuthClient) GenerateToken(input model.RestaurantClaim) (*model.Tokens, error) {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
