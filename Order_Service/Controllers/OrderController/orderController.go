@@ -2,9 +2,8 @@ package OrderControllers
 
 import (
 	"fmt"
-	"log"
 	"net/http"
-	"time"
+	"strings"
 
 	"github.com/E-Furqan/Food-Delivery-System/Client/RestaurantClient"
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
@@ -26,29 +25,97 @@ func NewController(repo *database.Repository, ResClient *RestaurantClient.Restau
 }
 
 func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
-	var OrderStatus model.OrderIDS
+	var request model.OrderStatusUpdateRequest
 
-	if err := c.ShouldBindJSON(&OrderStatus); err != nil {
+	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	var order model.Order
 
-	err := orderCtrl.Repo.GetOrder(&order, OrderStatus.OrderID)
+	err := orderCtrl.Repo.GetOrder(&order, request.OrderID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, "Order not found")
+		c.JSON(http.StatusNotFound, gin.H{"error": "Order not found"})
 		return
 	}
 
-	if OrderStatus.DeliveryDriverID != 0 {
-		order.DeliveryDriverID = OrderStatus.DeliveryDriverID
-
+	if strings.ToLower(request.OrderStatus) == "cancelled" {
+		order.OrderStatus = request.OrderStatus
+		if err := orderCtrl.Repo.Update(&order); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, order)
+		return
 	}
-	log.Printf("time: %v", order.Time)
-	order.Time = time.Now()
-	log.Printf("uptime: %v", order.Time)
-	order.OrderStatus = OrderStatus.OrderStatus
+
+	orderTransitions := model.GetOrderTransitions()
+
+	switch strings.ToLower(request.Role) {
+	case "user":
+		if newStatus, exists := orderTransitions["user"][order.OrderStatus]; exists {
+			order.OrderStatus = newStatus
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "User is not allowed to update the order status at this point"})
+			return
+		}
+
+	case "restaurant":
+		if newStatus, exists := orderTransitions["restaurant"][order.OrderStatus]; exists {
+			order.OrderStatus = newStatus
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Restaurant is not allowed to update the order status at this point"})
+			return
+		}
+
+	case "delivery driver":
+		if newStatus, exists := orderTransitions["delivery driver"][order.OrderStatus]; exists {
+			order.OrderStatus = newStatus
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Delivery driver is not allowed to update the order status at this point"})
+			return
+		}
+
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role"})
+		return
+	}
+
+	if err := orderCtrl.Repo.Update(&order); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, order)
+}
+
+func (orderCtrl *OrderController) AssignDeliveryDriver(c *gin.Context) {
+	var request model.AssignDeliveryDriver
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if strings.ToLower(request.Role) != "delivery driver" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role"})
+		return
+	}
+
+	var order model.Order
+
+	err := orderCtrl.Repo.GetOrder(&order, request.OrderID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Order not found"})
+		return
+	}
+
+	if order.DeliveryDriverID != 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Order already have a driver"})
+		return
+	}
+
+	order.DeliveryDriverID = request.DeliveryDriverID
 	if err := orderCtrl.Repo.Update(&order); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
+	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
@@ -31,7 +32,7 @@ func (middle *Middleware) AuthMiddleware() gin.HandlerFunc {
 
 		tokenString = strings.TrimPrefix(tokenString, "Bearer ")
 
-		claims := &utils.Claims{}
+		claims := &model.Claims{}
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 			return []byte(middle.envVar.JWT_SECRET), nil
 		})

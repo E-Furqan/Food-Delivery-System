@@ -26,9 +26,16 @@ type ID struct {
 	DeliveryDriverID uint `json:"delivery_driver"`
 }
 
-type OrderIDS struct {
+type OrderStatusUpdateRequest struct {
 	ID
 	OrderStatus string `json:"order_status"`
+	Role        string `json:"activeRole"`
+}
+
+type AssignDeliveryDriver struct {
+	OrderID          uint   `json:"order_id"`
+	DeliveryDriverID uint   `json:"delivery_driver"`
+	Role             string `json:"activeRole"`
 }
 
 type CombineOrderItem struct {
