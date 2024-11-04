@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"os"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
@@ -84,6 +85,8 @@ func CalculateBill(CombineOrderItem model.CombineOrderItem, items []model.Items)
 
 		totalBill += ItemPrice * float64(orderedItem.Quantity)
 	}
-
+	if totalBill == 0 {
+		return totalBill, fmt.Errorf("items are not of this restaurant")
+	}
 	return totalBill, nil
 }

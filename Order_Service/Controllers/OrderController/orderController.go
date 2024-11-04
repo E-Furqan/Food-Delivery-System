@@ -71,7 +71,7 @@ func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 	orderTransitions := model.GetOrderTransitions()
 
 	switch strings.ToLower(activeRoleStr) {
-	case "user":
+	case "customer":
 
 		if order.UserId != Id {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "You don't have the permission to update order status"})
@@ -127,6 +127,12 @@ func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 }
 
 func (orderCtrl *OrderController) AssignDeliveryDriver(c *gin.Context) {
+	Id, exists := c.Get("ClaimId")
+	if !exists {
+		c.JSON(http.StatusBadRequest, "userId id does not exist")
+		return
+	}
+	IDint := Id.(uint)
 	activeRole, exists := c.Get("activeRole")
 	if !exists {
 		c.JSON(http.StatusBadRequest, "userId role does not exist")
@@ -162,8 +168,7 @@ func (orderCtrl *OrderController) AssignDeliveryDriver(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Order already have a driver"})
 		return
 	}
-
-	order.DeliveryDriverID = request.DeliveryDriverID
+	order.DeliveryDriverID = IDint
 	if err := orderCtrl.Repo.Update(&order); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -217,8 +222,9 @@ func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, "userId id does not exist")
 		return
 	}
-	if userRole != "User" {
-		c.JSON(http.StatusBadRequest, "Only user can place order")
+	userRoleStr := userRole.(string)
+	if strings.ToLower(userRoleStr) != "customer" {
+		c.JSON(http.StatusBadRequest, "Only customer can place order")
 		return
 	}
 
@@ -246,7 +252,7 @@ func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 
 	totalBill, err := utils.CalculateBill(CombineOrderItem, items)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
 	order := utils.CreateOrderObj(CombineOrderItem, totalBill)
@@ -256,7 +262,7 @@ func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Error while creating order", "Error", err.Error())
 		return
 	}
-	utils.GenerateResponse(http.StatusOK, c, "Message", fmt.Sprintf("Order created successfully with total bill: %v", totalBill), "", nil)
+	utils.GenerateResponse(http.StatusOK, c, "Message", fmt.Sprintf("Order created successfully with order id %v and total bill: %v", order.OrderID, totalBill), "", nil)
 }
 
 func (orderCtrl *OrderController) ViewOrderDetails(c *gin.Context) {
