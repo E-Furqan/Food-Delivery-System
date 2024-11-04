@@ -2,6 +2,7 @@ package OrderControllers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
@@ -74,42 +75,42 @@ func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 	case "customer":
 
 		if order.UserId != Id {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "You don't have the permission to update order status"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "You don't have the permission to update order status"})
 			return
 		}
 
 		if newStatus, exists := orderTransitions["user"][order.OrderStatus]; exists {
 			order.OrderStatus = newStatus
 		} else {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "User is not allowed to update the order status at this point"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "User is not allowed to update the order status at this point"})
 			return
 		}
 
 	case "restaurant":
 
 		if order.RestaurantID != Id {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "You don't have the permission to update order status"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "You don't have the permission to update order status"})
 			return
 		}
 
 		if newStatus, exists := orderTransitions["restaurant"][order.OrderStatus]; exists {
 			order.OrderStatus = newStatus
 		} else {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Restaurant is not allowed to update the order status at this point"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Restaurant is not allowed to update the order status at this point"})
 			return
 		}
 
 	case "delivery driver":
 
 		if order.DeliveryDriverID != Id {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "You don't have the permission to update order status"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "You don't have the permission to update order status"})
 			return
 		}
 
 		if newStatus, exists := orderTransitions["delivery driver"][order.OrderStatus]; exists {
 			order.OrderStatus = newStatus
 		} else {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Delivery driver is not allowed to update the order status at this point"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Delivery driver is not allowed to update the order status at this point"})
 			return
 		}
 
@@ -179,6 +180,13 @@ func (orderCtrl *OrderController) AssignDeliveryDriver(c *gin.Context) {
 
 func (orderCtrl *OrderController) GetOrders(c *gin.Context, UserType string) {
 
+	Id, exists := c.Get("ClaimId")
+	if !exists {
+		c.JSON(http.StatusBadRequest, "userId id does not exist")
+		return
+	}
+
+	IdValue := Id.(uint)
 	var OrderNFilter model.CombineOrderFilter
 	if err := c.ShouldBindJSON(&OrderNFilter); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -189,12 +197,12 @@ func (orderCtrl *OrderController) GetOrders(c *gin.Context, UserType string) {
 	var err error
 
 	if UserType == "user" {
-		err = orderCtrl.Repo.GetOrders(&order, OrderNFilter.UserId, OrderNFilter.Filter.ColumnName, OrderNFilter.Filter.OrderDirection, "user_id")
+		err = orderCtrl.Repo.GetOrders(&order, IdValue, OrderNFilter.Filter.ColumnName, OrderNFilter.Filter.OrderDirection, "user_id")
 	} else if UserType == "restaurant" {
-		err = orderCtrl.Repo.GetOrders(&order, OrderNFilter.RestaurantId, OrderNFilter.Filter.ColumnName, OrderNFilter.Filter.OrderDirection, "restaurant_id")
+		err = orderCtrl.Repo.GetOrders(&order, IdValue, OrderNFilter.Filter.ColumnName, OrderNFilter.Filter.OrderDirection, "restaurant_id")
 
 	} else if UserType == "delivery driver" {
-		err = orderCtrl.Repo.GetOrders(&order, OrderNFilter.RestaurantId, OrderNFilter.Filter.ColumnName, OrderNFilter.Filter.OrderDirection, "delivery_driver")
+		err = orderCtrl.Repo.GetOrders(&order, IdValue, OrderNFilter.Filter.ColumnName, OrderNFilter.Filter.OrderDirection, "delivery_driver")
 	}
 
 	if err != nil {
@@ -208,12 +216,13 @@ func (orderCtrl *OrderController) GetOrders(c *gin.Context, UserType string) {
 func (orderCtrl *OrderController) GetOrdersOfUser(c *gin.Context) {
 	activeRole, exists := c.Get("activeRole")
 	if !exists {
-		c.JSON(http.StatusBadRequest, "role id does not exist")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "role id does not exist"})
 		return
 	}
 	activeRoleStr := activeRole.(string)
-	if strings.ToLower(activeRoleStr) != "customer" || strings.ToLower(activeRoleStr) != "admin" {
-		c.JSON(http.StatusBadRequest, "only customer or admin can view the orders")
+	log.Print(strings.ToLower(activeRoleStr))
+	if strings.ToLower(activeRoleStr) != "customer" && strings.ToLower(activeRoleStr) != "admin" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "only customer or admin can view the orders"})
 		return
 	}
 	orderCtrl.GetOrders(c, "user")
@@ -223,13 +232,13 @@ func (orderCtrl *OrderController) GetOrdersOfRestaurant(c *gin.Context) {
 	activeRole, exists := c.Get("activeRole")
 
 	if !exists {
-		c.JSON(http.StatusBadRequest, "role id does not exist")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "role id does not exist"})
 		return
 	}
 	activeRoleStr := activeRole.(string)
 
-	if strings.ToLower(activeRoleStr) != "restaurant" || strings.ToLower(activeRoleStr) != "admin" {
-		c.JSON(http.StatusBadRequest, "only restaurant and admin can view the orders")
+	if strings.ToLower(activeRoleStr) != "restaurant" && strings.ToLower(activeRoleStr) != "admin" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "only restaurant and admin can view the orders"})
 		return
 	}
 	orderCtrl.GetOrders(c, "restaurant")
@@ -238,13 +247,13 @@ func (orderCtrl *OrderController) GetOrdersOfDeliveryDriver(c *gin.Context) {
 	activeRole, exists := c.Get("activeRole")
 
 	if !exists {
-		c.JSON(http.StatusBadRequest, "role id does not exist")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "role id does not exist"})
 		return
 	}
 	activeRoleStr := activeRole.(string)
 
-	if strings.ToLower(activeRoleStr) != "delivery driver" || strings.ToLower(activeRoleStr) != "admin" {
-		c.JSON(http.StatusBadRequest, "only delivery driver and admin can view the orders")
+	if strings.ToLower(activeRoleStr) != "delivery driver" && strings.ToLower(activeRoleStr) != "admin" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "only delivery driver and admin can view the orders"})
 		return
 	}
 
@@ -254,12 +263,12 @@ func (orderCtrl *OrderController) GetOrdersOfDeliveryDriver(c *gin.Context) {
 func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 	userRole, exists := c.Get("activeRole")
 	if !exists {
-		c.JSON(http.StatusBadRequest, "userId id does not exist")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "userId id does not exist"})
 		return
 	}
 	userRoleStr := userRole.(string)
 	if strings.ToLower(userRoleStr) != "customer" {
-		c.JSON(http.StatusBadRequest, "Only customer can place order")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Only customer can place order"})
 		return
 	}
 
@@ -327,8 +336,8 @@ func (orderCtrl *OrderController) ViewOrdersWithoutRider(c *gin.Context) {
 	}
 	activeRoleStr := activeRole.(string)
 
-	if strings.ToLower(activeRoleStr) != "delivery driver" || strings.ToLower(activeRoleStr) != "admin" {
-		c.JSON(http.StatusBadRequest, "only delivery driver and admin can view the orders")
+	if strings.ToLower(activeRoleStr) != "delivery driver" && strings.ToLower(activeRoleStr) != "admin" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "only delivery driver and admin can view the orders"})
 		return
 	}
 
@@ -364,7 +373,7 @@ func (orderCtrl *OrderController) GenerateInvoice(c *gin.Context) {
 	}
 
 	if userId != order.UserId {
-		utils.GenerateResponse(http.StatusNotFound, c, "Error", "You are not allowed to generate invoice of this order", "", nil)
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Error", "You are not allowed to generate invoice of this order", "", nil)
 		return
 	}
 
@@ -385,7 +394,7 @@ func (orderCtrl *OrderController) GenerateInvoice(c *gin.Context) {
 		utils.GenerateResponse(http.StatusInternalServerError, c, "Message", "Error retrieving order items", "Error", err.Error())
 		return
 	}
-
+	log.Print(orderItems)
 	invoice := utils.CreateInvoice(order, orderItems, items)
 
 	c.JSON(http.StatusOK, gin.H{"invoice": invoice})
