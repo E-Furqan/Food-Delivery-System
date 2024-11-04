@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Login(c *gin.Context) {
+func GenerateTokens(c *gin.Context) {
 	var input payload.Input
 	var accessClaims payload.Claims
 	var refreshClaims payload.Claims
