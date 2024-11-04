@@ -17,7 +17,7 @@ type Environment struct {
 	JWT_SECRET                    string
 	RefreshTokenKey               string
 	BASE_URL                      string
-	Update_ORDER_Status_URL       string
+	UPDATE_ORDER_STATUS_URL       string
 	GENERATE_TOKEN_URL            string
 	REFRESH_TOKEN_URL             string
 	ORDER_PORT                    string
@@ -43,7 +43,7 @@ func ReadEnv() Environment {
 	envVar.DB_NAME = utils.GetEnv("DB_NAME", "User")
 
 	envVar.BASE_URL = utils.GetEnv("BASE_URL", "http://localhost")
-	envVar.Update_ORDER_Status_URL = utils.GetEnv("PROCESS_ORDER_URL", "/order/update/status")
+	envVar.UPDATE_ORDER_STATUS_URL = utils.GetEnv("UPDATE_ORDER_STATUS_URL", "/order/update/status")
 	envVar.GENERATE_TOKEN_URL = utils.GetEnv("GENERATE_TOKEN_URL", "/auth/login")
 	envVar.REFRESH_TOKEN_URL = utils.GetEnv("REFRESH_TOKEN_URL", "/auth/refresh")
 	envVar.USER_ORDERS_URL = utils.GetEnv("USER_ORDERS_URL", "/order/view/user/orders")
