@@ -326,7 +326,7 @@ func (ctrl *Controller) ProcessOrderUser(c *gin.Context) {
 
 	if strings.ToLower(order.OrderStatus) == "cancelled" {
 		OrderDetails.OrderStatus = "cancelled"
-		if err := ctrl.OrderClient.ProcessOrder(*OrderDetails); err != nil {
+		if err := ctrl.OrderClient.UpdateOrderStatus(*OrderDetails); err != nil {
 			utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Post request failed", "error", err.Error())
 			return
 		}
@@ -350,7 +350,7 @@ func (ctrl *Controller) ProcessOrderUser(c *gin.Context) {
 	if newStatus, exists := orderTransitions[OrderDetails.OrderStatus]; exists {
 		OrderDetails.OrderStatus = newStatus
 	}
-	if err := ctrl.OrderClient.ProcessOrder(*OrderDetails); err != nil {
+	if err := ctrl.OrderClient.UpdateOrderStatus(*OrderDetails); err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Patch request failed", "error", err.Error())
 		return
 	}
@@ -423,7 +423,7 @@ func (ctrl *Controller) ProcessOrderDriver(c *gin.Context) {
 
 	if strings.ToLower(order.OrderStatus) == "cancelled" {
 		OrderDetails.OrderStatus = "cancelled"
-		if err := ctrl.OrderClient.ProcessOrder(*OrderDetails); err != nil {
+		if err := ctrl.OrderClient.UpdateOrderStatus(*OrderDetails); err != nil {
 			utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Post request failed", "error", err.Error())
 			return
 		}
@@ -440,7 +440,7 @@ func (ctrl *Controller) ProcessOrderDriver(c *gin.Context) {
 	if newStatus, exists := orderTransitions[OrderDetails.OrderStatus]; exists {
 		OrderDetails.OrderStatus = newStatus
 	}
-	if err := ctrl.OrderClient.ProcessOrder(*OrderDetails); err != nil {
+	if err := ctrl.OrderClient.UpdateOrderStatus(*OrderDetails); err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Patch request failed", "error", err.Error())
 		return
 	}
@@ -525,6 +525,7 @@ func (ctrl *Controller) ViewOrdersWithoutDriver(c *gin.Context) {
 	})
 }
 
+// need new endpoint
 func (ctrl *Controller) AssignDriver(c *gin.Context) {
 	UserId, err := utils.VerifyUserId(c)
 	if err != nil {
@@ -580,7 +581,7 @@ func (ctrl *Controller) AssignDriver(c *gin.Context) {
 	}
 
 	OrderDetails.DeliverDriverID = driver.UserId
-	if err := ctrl.OrderClient.ProcessOrder(*OrderDetails); err != nil {
+	if err := ctrl.OrderClient.UpdateOrderStatus(*OrderDetails); err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Patch request failed", "error", err.Error())
 		return
 	}

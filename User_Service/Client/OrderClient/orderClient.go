@@ -21,14 +21,14 @@ func NewClient(env environmentVariable.Environment) *OrderClient {
 	}
 }
 
-func (orderClient *OrderClient) ProcessOrder(input model.ProcessOrder) error {
+func (orderClient *OrderClient) UpdateOrderStatus(input model.ProcessOrder) error {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
 		return fmt.Errorf("error marshaling input: %v", err)
 	}
 
-	url := fmt.Sprintf("%s%s%s", orderClient.Environment.BASE_URL, orderClient.Environment.ORDER_PORT, orderClient.Environment.PROCESS_ORDER_URL)
+	url := fmt.Sprintf("%s%s%s", orderClient.Environment.BASE_URL, orderClient.Environment.ORDER_PORT, orderClient.Environment.Update_ORDER_Status_URL)
 	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return fmt.Errorf("error creating request: %v", err)
