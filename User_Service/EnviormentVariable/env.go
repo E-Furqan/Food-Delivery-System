@@ -44,8 +44,8 @@ func ReadEnv() Environment {
 
 	envVar.BASE_URL = utils.GetEnv("BASE_URL", "http://localhost")
 	envVar.UPDATE_ORDER_STATUS_URL = utils.GetEnv("UPDATE_ORDER_STATUS_URL", "/order/update/status")
-	envVar.GENERATE_TOKEN_URL = utils.GetEnv("GENERATE_TOKEN_URL", "/auth/login")
-	envVar.REFRESH_TOKEN_URL = utils.GetEnv("REFRESH_TOKEN_URL", "/auth/refresh")
+	envVar.GENERATE_TOKEN_URL = utils.GetEnv("GENERATE_TOKEN_URL", "/auth/generate/token")
+	envVar.REFRESH_TOKEN_URL = utils.GetEnv("REFRESH_TOKEN_URL", "/auth/refresh/token")
 	envVar.USER_ORDERS_URL = utils.GetEnv("USER_ORDERS_URL", "/order/view/user/orders")
 	envVar.DRIVER_ORDERS_URL = utils.GetEnv("DRIVER_ORDERS_URL", "/order/view/driver/orders")
 	envVar.VIEW_ORDER_DETAIL_URL = utils.GetEnv("VIEW_ORDER_DETAIL_URL", "/order/view/order")
