@@ -25,6 +25,24 @@ func NewController(repo *database.Repository, ResClient *RestaurantClient.Restau
 }
 
 func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
+	Id, exists := c.Get("ClaimId")
+	if !exists {
+		c.JSON(http.StatusBadRequest, "userId id does not exist")
+		return
+	}
+
+	activeRole, exists := c.Get("activeRole")
+	if !exists {
+		c.JSON(http.StatusBadRequest, "userId role does not exist")
+		return
+	}
+
+	activeRoleStr, ok := activeRole.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, "activeRole is not a string")
+		return
+	}
+
 	var request model.OrderStatusUpdateRequest
 
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -52,8 +70,14 @@ func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 
 	orderTransitions := model.GetOrderTransitions()
 
-	switch strings.ToLower(request.Role) {
+	switch strings.ToLower(activeRoleStr) {
 	case "user":
+
+		if order.UserId != Id {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "You don't have the permission to update order status"})
+			return
+		}
+
 		if newStatus, exists := orderTransitions["user"][order.OrderStatus]; exists {
 			order.OrderStatus = newStatus
 		} else {
@@ -62,6 +86,12 @@ func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 		}
 
 	case "restaurant":
+
+		if order.RestaurantID != Id {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "You don't have the permission to update order status"})
+			return
+		}
+
 		if newStatus, exists := orderTransitions["restaurant"][order.OrderStatus]; exists {
 			order.OrderStatus = newStatus
 		} else {
@@ -70,6 +100,12 @@ func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 		}
 
 	case "delivery driver":
+
+		if order.DeliveryDriverID != Id {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "You don't have the permission to update order status"})
+			return
+		}
+
 		if newStatus, exists := orderTransitions["delivery driver"][order.OrderStatus]; exists {
 			order.OrderStatus = newStatus
 		} else {
@@ -91,13 +127,25 @@ func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 }
 
 func (orderCtrl *OrderController) AssignDeliveryDriver(c *gin.Context) {
+	activeRole, exists := c.Get("activeRole")
+	if !exists {
+		c.JSON(http.StatusBadRequest, "userId role does not exist")
+		return
+	}
+
+	activeRoleStr, ok := activeRole.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, "activeRole is not a string")
+		return
+	}
+
 	var request model.AssignDeliveryDriver
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if strings.ToLower(request.Role) != "delivery driver" {
+	if strings.ToLower(activeRoleStr) != "delivery driver" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role"})
 		return
 	}
@@ -164,12 +212,12 @@ func (orderCtrl *OrderController) GetOrdersOfDeliveryDriver(c *gin.Context) {
 }
 
 func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
-	ServiceType, exists := c.Get("ServiceType")
+	userRole, exists := c.Get("activeRole")
 	if !exists {
 		c.JSON(http.StatusBadRequest, "userId id does not exist")
 		return
 	}
-	if ServiceType != "User" {
+	if userRole != "User" {
 		c.JSON(http.StatusBadRequest, "Only user can place order")
 		return
 	}
@@ -243,7 +291,7 @@ func (orderCtrl *OrderController) ViewOrdersWithoutRider(c *gin.Context) {
 
 func (orderCtrl *OrderController) GenerateInvoice(c *gin.Context) {
 
-	userId, exists := c.Get("userId")
+	userId, exists := c.Get("ClaimId")
 	if !exists {
 		c.JSON(http.StatusBadRequest, "userId id does not exist")
 		return
