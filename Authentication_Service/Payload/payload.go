@@ -10,10 +10,8 @@ type Environment struct {
 }
 
 type Input struct {
-	ClaimId     uint   `json:"claim_id"`
-	UserId      uint   `json:"user_id"`
-	ActiveRole  string `json:"activeRole"`
-	ServiceType string `json:"service_type"`
+	ClaimId    uint   `json:"claim_id"`
+	ActiveRole string `json:"activeRole"`
 	jwt.StandardClaims
 }
 
@@ -22,25 +20,14 @@ type Claims interface {
 	SetExpirationTime(expiration int64)
 }
 
-type UserClaims struct {
-	UserId      uint   `json:"user_id"`
-	ActiveRole  string `json:"activeRole"`
-	ServiceType string `json:"service_type"`
+type GeneralClaim struct {
+	ClaimId    uint   `json:"claim_id"`
+	ActiveRole string `json:"activeRole"`
 	jwt.StandardClaims
 }
 
-func (u *UserClaims) SetExpirationTime(expiration int64) {
+func (u *GeneralClaim) SetExpirationTime(expiration int64) {
 	u.ExpiresAt = expiration
-}
-
-type IDClaims struct {
-	ClaimId     uint   `json:"claim_id"`
-	ServiceType string `json:"service_type"`
-	jwt.StandardClaims
-}
-
-func (o *IDClaims) SetExpirationTime(expiration int64) {
-	o.ExpiresAt = expiration
 }
 
 type Tokens struct {

@@ -38,17 +38,9 @@ func GenerateTokens(accessClaims payload.Claims, refreshClaims payload.Claims) (
 	return accessTokenString, refreshTokenString, nil
 }
 
-type Claims struct {
-	ClaimId     uint   `json:"claim_id"`
-	UserID      uint   `json:"user_id"`
-	ActiveRole  string `json:"activeRole"`
-	ServiceType string `json:"service_type"`
-	jwt.StandardClaims
-}
-
 func RefreshToken(refreshToken string, c *gin.Context) (string, error) {
 
-	claims := &Claims{}
+	claims := &payload.Input{}
 	token, err := jwt.ParseWithClaims(refreshToken, claims, func(token *jwt.Token) (interface{}, error) {
 		return []byte(refreshTokenKey), nil
 	})
@@ -67,21 +59,13 @@ func RefreshToken(refreshToken string, c *gin.Context) (string, error) {
 	var accessClaims payload.Claims
 	var refreshClaims payload.Claims
 
-	log.Print("claims.RestaurantID")
+	log.Print("claims.id")
 	log.Print(claims.ClaimId)
-	log.Print("claims.ServiceType")
-	log.Print(claims.ServiceType)
+	log.Print("claims.role")
+	log.Print(claims.ActiveRole)
 
 	var input payload.Input
-
-	if claims.ServiceType == "User" {
-		input.UserId = claims.UserID
-		input.ActiveRole = claims.ActiveRole
-		accessClaims, refreshClaims = CreateUserClaim(input)
-	} else {
-		input.ClaimId = claims.ClaimId
-		accessClaims, refreshClaims = CreateClaim(input)
-	}
+	accessClaims, refreshClaims = CreateClaim(input)
 
 	accessToken, _, err := GenerateTokens(accessClaims, refreshClaims)
 	if err != nil {
@@ -92,40 +76,19 @@ func RefreshToken(refreshToken string, c *gin.Context) (string, error) {
 	return accessToken, nil
 }
 
-func CreateUserClaim(input payload.Input) (payload.Claims, payload.Claims) {
-	var accessClaims payload.Claims
-	var refreshClaims payload.Claims
-
-	accessClaims = &payload.UserClaims{
-		UserId:      input.UserId,
-		ActiveRole:  input.ActiveRole,
-		ServiceType: input.ServiceType,
-	}
-	accessClaims.SetExpirationTime(time.Now().Add(30 * time.Minute).Unix())
-
-	refreshClaims = &payload.UserClaims{
-		UserId:      input.UserId,
-		ActiveRole:  input.ActiveRole,
-		ServiceType: "User",
-	}
-	refreshClaims.SetExpirationTime(time.Now().Add(7 * 24 * time.Hour).Unix())
-
-	return accessClaims, refreshClaims
-}
-
 func CreateClaim(input payload.Input) (payload.Claims, payload.Claims) {
 	var accessClaims payload.Claims
 	var refreshClaims payload.Claims
 
-	accessClaims = &payload.IDClaims{
-		ClaimId:     input.ClaimId,
-		ServiceType: input.ServiceType,
+	accessClaims = &payload.GeneralClaim{
+		ClaimId:    input.ClaimId,
+		ActiveRole: input.ActiveRole,
 	}
 	accessClaims.SetExpirationTime(time.Now().Add(15 * time.Minute).Unix())
 
-	refreshClaims = &payload.IDClaims{
-		ClaimId:     input.ClaimId,
-		ServiceType: input.ServiceType,
+	refreshClaims = &payload.GeneralClaim{
+		ClaimId:    input.ClaimId,
+		ActiveRole: input.ActiveRole,
 	}
 
 	refreshClaims.SetExpirationTime(time.Now().Add(7 * 24 * time.Hour).Unix())

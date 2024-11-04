@@ -19,12 +19,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	if input.ServiceType == "User" {
-		accessClaims, refreshClaims = utils.CreateUserClaim(input)
-	} else {
-		accessClaims, refreshClaims = utils.CreateClaim(input)
-	}
-
+	accessClaims, refreshClaims = utils.CreateClaim(input)
 	accessTokenString, refreshTokenString, err := utils.GenerateTokens(accessClaims, refreshClaims)
 
 	if err != nil {
@@ -57,8 +52,4 @@ func ReFreshToken(c *gin.Context) {
 	}
 	input.AccessToken = accessToken
 	c.JSON(http.StatusOK, input)
-}
-
-func Validate(c *gin.Context) {
-
 }
