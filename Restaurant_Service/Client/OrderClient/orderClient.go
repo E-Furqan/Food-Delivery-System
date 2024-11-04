@@ -20,19 +20,20 @@ func NewClient(env environmentVariable.Environment) *OrderClient {
 	}
 }
 
-func (OrderClient *OrderClient) ProcessOrder(input model.OrderDetails) error {
+func (OrderClient *OrderClient) UpdateOrderStatus(input model.OrderDetails, token string) error {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
 		return fmt.Errorf("error marshaling input: %v", err)
 	}
 
-	url := fmt.Sprintf("%s%s%s", OrderClient.Environment.BASE_URL, OrderClient.Environment.ORDER_PORT, OrderClient.Environment.PROCESS_ORDER_URL)
+	url := fmt.Sprintf("%s%s%s", OrderClient.Environment.BASE_URL, OrderClient.Environment.ORDER_PORT, OrderClient.Environment.UPDATE_ORDER_STATUS_URL)
 	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return fmt.Errorf("error creating request: %v", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -78,7 +79,7 @@ func (OrderClient *OrderClient) ViewRestaurantOrders(input model.Input) (*[]mode
 	return &orders, nil
 }
 
-func (OrderClient *OrderClient) ViewOrdersDetails(input model.OrderDetails) (*model.OrderDetails, error) {
+func (OrderClient *OrderClient) ViewOrdersDetails(input model.OrderDetails, token string) (*model.OrderDetails, error) {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
@@ -90,6 +91,7 @@ func (OrderClient *OrderClient) ViewOrdersDetails(input model.OrderDetails) (*mo
 		return nil, fmt.Errorf("error creating request: %v", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {

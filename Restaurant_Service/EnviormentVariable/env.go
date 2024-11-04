@@ -9,21 +9,21 @@ import (
 )
 
 type Environment struct {
-	HOST                  string
-	USER                  string
-	PASSWORD              string
-	DB_NAME               string
-	PORT                  int
-	JWT_SECRET            string
-	RefreshTokenKey       string
-	BASE_URL              string
-	PROCESS_ORDER_URL     string
-	GENERATE_TOKEN_URL    string
-	REFRESH_TOKEN_URL     string
-	ORDER_PORT            string
-	AUTH_PORT             string
-	RESTAURANT_ORDERS_URL string
-	VIEW_ORDER_DETAIL_URL string
+	HOST                    string
+	USER                    string
+	PASSWORD                string
+	DB_NAME                 string
+	PORT                    int
+	JWT_SECRET              string
+	RefreshTokenKey         string
+	BASE_URL                string
+	UPDATE_ORDER_STATUS_URL string
+	GENERATE_TOKEN_URL      string
+	REFRESH_TOKEN_URL       string
+	ORDER_PORT              string
+	AUTH_PORT               string
+	RESTAURANT_ORDERS_URL   string
+	VIEW_ORDER_DETAIL_URL   string
 }
 
 var envVar Environment
@@ -40,7 +40,7 @@ func ReadEnv() Environment {
 	envVar.PASSWORD = utils.GetEnv("PASSWORD", "furqan")
 	envVar.DB_NAME = utils.GetEnv("DB_NAME", "Restaurant")
 	envVar.BASE_URL = utils.GetEnv("BASE_URL", "http://localhost")
-	envVar.PROCESS_ORDER_URL = utils.GetEnv("PROCESS_ORDER_URL", "/order/update/status")
+	envVar.UPDATE_ORDER_STATUS_URL = utils.GetEnv("UPDATE_ORDER_STATUS_URL", "/order/update/status")
 	envVar.ORDER_PORT = utils.GetEnv("ORDER_PORT", ":8081")
 	envVar.AUTH_PORT = utils.GetEnv("AUTH_PORT", ":8084")
 	envVar.GENERATE_TOKEN_URL = utils.GetEnv("GENERATE_TOKEN_URL", "/auth/login")
