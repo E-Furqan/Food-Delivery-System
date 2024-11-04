@@ -10,13 +10,14 @@ func Order_routes(orderController *OrderControllers.OrderController, middle *Mid
 
 	orderRoute := server.Group("/order")
 
-	orderRoute.GET("/view/user/orders", orderController.GetOrdersOfUser)
-	orderRoute.GET("/view/restaurant/orders", orderController.GetOrdersOfRestaurant)
-	orderRoute.GET("/view/driver/orders", orderController.GetOrdersOfDeliveryDriver)
-	orderRoute.GET("/view/without/driver/orders", orderController.ViewOrdersWithoutRider)
-
 	orderRoute.Use(middle.AuthMiddleware())
 	{
+
+		orderRoute.GET("/view/user/orders", orderController.GetOrdersOfUser)
+		orderRoute.GET("/view/restaurant/orders", orderController.GetOrdersOfRestaurant)
+		orderRoute.GET("/view/driver/orders", orderController.GetOrdersOfDeliveryDriver)
+		orderRoute.GET("/view/without/driver/orders", orderController.ViewOrdersWithoutRider)
+
 		orderRoute.PATCH("/update/status", orderController.UpdateOrderStatus)
 		orderRoute.PATCH("/assign/diver", orderController.AssignDeliveryDriver)
 		orderRoute.GET("/generate/invoice", orderController.GenerateInvoice)

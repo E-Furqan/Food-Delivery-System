@@ -206,13 +206,48 @@ func (orderCtrl *OrderController) GetOrders(c *gin.Context, UserType string) {
 }
 
 func (orderCtrl *OrderController) GetOrdersOfUser(c *gin.Context) {
+	activeRole, exists := c.Get("activeRole")
+	if !exists {
+		c.JSON(http.StatusBadRequest, "role id does not exist")
+		return
+	}
+	activeRoleStr := activeRole.(string)
+	if strings.ToLower(activeRoleStr) != "customer" || strings.ToLower(activeRoleStr) != "admin" {
+		c.JSON(http.StatusBadRequest, "only customer or admin can view the orders")
+		return
+	}
 	orderCtrl.GetOrders(c, "user")
 }
 
 func (orderCtrl *OrderController) GetOrdersOfRestaurant(c *gin.Context) {
+	activeRole, exists := c.Get("activeRole")
+
+	if !exists {
+		c.JSON(http.StatusBadRequest, "role id does not exist")
+		return
+	}
+	activeRoleStr := activeRole.(string)
+
+	if strings.ToLower(activeRoleStr) != "restaurant" || strings.ToLower(activeRoleStr) != "admin" {
+		c.JSON(http.StatusBadRequest, "only restaurant and admin can view the orders")
+		return
+	}
 	orderCtrl.GetOrders(c, "restaurant")
 }
 func (orderCtrl *OrderController) GetOrdersOfDeliveryDriver(c *gin.Context) {
+	activeRole, exists := c.Get("activeRole")
+
+	if !exists {
+		c.JSON(http.StatusBadRequest, "role id does not exist")
+		return
+	}
+	activeRoleStr := activeRole.(string)
+
+	if strings.ToLower(activeRoleStr) != "delivery driver" || strings.ToLower(activeRoleStr) != "admin" {
+		c.JSON(http.StatusBadRequest, "only delivery driver and admin can view the orders")
+		return
+	}
+
 	orderCtrl.GetOrders(c, "delivery driver")
 }
 
@@ -283,6 +318,19 @@ func (orderCtrl *OrderController) ViewOrderDetails(c *gin.Context) {
 }
 
 func (orderCtrl *OrderController) ViewOrdersWithoutRider(c *gin.Context) {
+
+	activeRole, exists := c.Get("activeRole")
+
+	if !exists {
+		c.JSON(http.StatusBadRequest, "role id does not exist")
+		return
+	}
+	activeRoleStr := activeRole.(string)
+
+	if strings.ToLower(activeRoleStr) != "delivery driver" || strings.ToLower(activeRoleStr) != "admin" {
+		c.JSON(http.StatusBadRequest, "only delivery driver and admin can view the orders")
+		return
+	}
 
 	var order []model.Order
 	err := orderCtrl.Repo.GetOrderWithoutRider(&order)
