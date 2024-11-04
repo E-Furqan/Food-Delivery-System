@@ -6,15 +6,8 @@ import (
 	"strings"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
-
-type Claims struct {
-	UserId     uint   `json:"user_id"`
-	ActiveRole string `json:"activeRole"`
-	jwt.StandardClaims
-}
 
 func GenerateResponse(httpStatusCode int, c *gin.Context, title1 string, message1 string, title2 string, input interface{}) {
 

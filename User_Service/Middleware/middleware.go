@@ -36,7 +36,7 @@ func (middle *Middleware) AuthMiddleware() gin.HandlerFunc {
 
 		tokenString = strings.TrimPrefix(tokenString, "Bearer ")
 
-		claims := &utils.Claims{}
+		claims := &model.Claims{}
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 			return []byte(middle.envVar.JWT_SECRET), nil
 		})
