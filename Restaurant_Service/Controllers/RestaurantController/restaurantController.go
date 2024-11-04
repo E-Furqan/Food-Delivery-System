@@ -73,7 +73,7 @@ func (ctrl *RestaurantController) Login(c *gin.Context) {
 
 	var RestaurantClaim model.RestaurantClaim
 	RestaurantClaim.ClaimId = Restaurant.RestaurantId
-	RestaurantClaim.ServiceType = "Restaurant"
+	RestaurantClaim.Role = "Restaurant"
 
 	tokens, err := ctrl.AuthClient.GenerateResponse(RestaurantClaim)
 	if err != nil {

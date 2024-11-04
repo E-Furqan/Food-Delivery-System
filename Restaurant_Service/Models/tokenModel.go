@@ -1,12 +1,16 @@
 package model
 
+import "github.com/golang-jwt/jwt"
+
 type RefreshToken struct {
 	RefreshToken string `json:"refresh_token"`
-	ServiceType  string `json:"service_type"`
+	Role         string `json:"activeRole"`
 }
+
 type RestaurantClaim struct {
-	ClaimId     uint   `json:"claim_id"`
-	ServiceType string `json:"service_type"`
+	ClaimId uint   `json:"claim_id"`
+	Role    string `json:"activeRole"`
+	jwt.StandardClaims
 }
 
 type Tokens struct {

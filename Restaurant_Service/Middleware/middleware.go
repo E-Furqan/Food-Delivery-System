@@ -8,7 +8,6 @@ import (
 	"github.com/E-Furqan/Food-Delivery-System/Client/AuthClient"
 	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
-	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
@@ -36,7 +35,7 @@ func (middle *Middleware) AuthMiddleware() gin.HandlerFunc {
 
 		tokenString = strings.TrimPrefix(tokenString, "Bearer ")
 
-		claims := &utils.Claims{}
+		claims := &model.RestaurantClaim{}
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 			return []byte(middle.envVar.JWT_SECRET), nil
 		})
@@ -63,7 +62,7 @@ func (middle *Middleware) RefreshToken(c *gin.Context) {
 
 	var refreshClaim model.RefreshToken
 	refreshClaim.RefreshToken = input.RefreshToken
-	refreshClaim.ServiceType = "Restaurant"
+	refreshClaim.Role = "Restaurant"
 	tokens, err := middle.AuthClient.RefreshToken(refreshClaim)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})

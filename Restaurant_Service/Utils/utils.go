@@ -4,15 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	model "github.com/E-Furqan/Food-Delivery-System/Models"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
-
-type Claims struct {
-	model.RestaurantClaim
-	jwt.StandardClaims
-}
 
 func Verification(c *gin.Context) (any, error) {
 	RestaurantID, exists := c.Get("RestaurantID")
