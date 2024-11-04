@@ -125,7 +125,7 @@ func (ctrl *RestaurantController) UpdateRestaurantStatus(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, "Restaurant status updated")
+	c.JSON(http.StatusOK, gin.H{"Message": "Restaurant status updated"})
 }
 
 func (ctrl *RestaurantController) ViewMenu(c *gin.Context) {
@@ -198,17 +198,19 @@ func (ctrl *RestaurantController) ViewRestaurantOrders(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Restaurant does not exists"})
 		return
 	}
+
+	token := utils.GetAuthToken(c)
 	var restaurantId model.Input
 
 	restaurantId.RestaurantId = Restaurant.RestaurantId
-	Orders, err := ctrl.OrderClient.ViewRestaurantOrders(restaurantId)
+	Orders, err := ctrl.OrderClient.ViewRestaurantOrders(restaurantId, token)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error order": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	var filter model.OrderFilter
-	if err := c.ShouldBindJSON(filter); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error order": err.Error()})
+	if err := c.ShouldBindJSON(&filter); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 

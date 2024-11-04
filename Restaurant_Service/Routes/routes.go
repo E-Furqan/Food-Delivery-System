@@ -13,11 +13,11 @@ func Restaurant_routes(RestaurantController *RestaurantController.RestaurantCont
 	restaurantRoute.POST("/register", RestaurantController.Register)
 	restaurantRoute.POST("/login", RestaurantController.Login)
 	restaurantRoute.POST("/refresh/token", middleware.RefreshToken)
-	restaurantRoute.POST("/view/menu", RestaurantController.ViewMenu)
+	restaurantRoute.GET("/view/menu", RestaurantController.ViewMenu)
 	restaurantRoute.GET("/get/restaurants", RestaurantController.GetAllRestaurants)
 	restaurantRoute.Use(middleware.AuthMiddleware())
 	{
-		restaurantRoute.POST("/process/order", RestaurantController.UpdateOrderStatus)
+		restaurantRoute.PATCH("/update/order/status", RestaurantController.UpdateOrderStatus)
 		restaurantRoute.POST("/add/items", ItemController.AddItemsInMenu)
 		restaurantRoute.DELETE("/delete/items", ItemController.DeleteItemsFromMenu)
 		restaurantRoute.PATCH("/update/status", RestaurantController.UpdateRestaurantStatus)

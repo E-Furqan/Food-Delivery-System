@@ -44,7 +44,7 @@ func (ItemController *ItemController) AddItemsInMenu(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, "Item added to menu successfully")
+	c.JSON(http.StatusOK, gin.H{"message": "Item added to menu successfully"})
 }
 
 func (ItemController *ItemController) DeleteItemsFromMenu(c *gin.Context) {
@@ -75,5 +75,5 @@ func (ItemController *ItemController) DeleteItemsFromMenu(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, "Item deleted from the restaurant menu")
+	c.JSON(http.StatusOK, gin.H{"message": "Item deleted from the restaurant menu"})
 }

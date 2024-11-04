@@ -61,7 +61,6 @@ func (repo *Repository) LoadRestaurantWithItems(Restaurant *model.Restaurant) er
 		return err
 	}
 
-	log.Printf("Successfully loaded user with Item: %v", Restaurant.Items)
 	return tx.Commit().Error
 }
 

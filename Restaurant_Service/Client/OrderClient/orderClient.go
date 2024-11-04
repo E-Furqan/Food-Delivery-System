@@ -48,7 +48,7 @@ func (OrderClient *OrderClient) UpdateOrderStatus(input model.OrderDetails, toke
 	return nil
 }
 
-func (OrderClient *OrderClient) ViewRestaurantOrders(input model.Input) (*[]model.OrderDetails, error) {
+func (OrderClient *OrderClient) ViewRestaurantOrders(input model.Input, token string) (*[]model.OrderDetails, error) {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
@@ -60,6 +60,7 @@ func (OrderClient *OrderClient) ViewRestaurantOrders(input model.Input) (*[]mode
 		return nil, fmt.Errorf("error creating request: %v", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
