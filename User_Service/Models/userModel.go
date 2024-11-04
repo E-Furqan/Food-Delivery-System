@@ -1,7 +1,5 @@
 package model
 
-import "github.com/golang-jwt/jwt"
-
 type User struct {
 	UserId      uint   `gorm:"primaryKey;column:user_id;autoIncrement" json:"user_id"`
 	FullName    string `gorm:"size:100;not null;column:full_name" json:"fullName"`
@@ -36,9 +34,8 @@ type Order struct {
 }
 
 type UserClaim struct {
-	UserId      uint   `json:"user_id"`
-	ActiveRole  string `json:"activeRole"`
-	ServiceType string `json:"service_type"`
+	UserId     uint   `json:"claim_id"`
+	ActiveRole string `json:"activeRole"`
 }
 
 type ProcessOrder struct {
@@ -46,10 +43,4 @@ type ProcessOrder struct {
 	UserID          uint   `json:"user_id"`
 	DeliverDriverID uint   `json:"delivery_driver"`
 	OrderStatus     string `json:"order_status"`
-}
-
-type Claims struct {
-	UserId     uint   `json:"user_id"`
-	ActiveRole string `json:"activeRole"`
-	jwt.StandardClaims
 }

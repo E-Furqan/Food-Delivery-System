@@ -52,7 +52,6 @@ func CreateUserClaim(user model.User) model.UserClaim {
 	var UserClaim model.UserClaim
 	UserClaim.UserId = user.UserId
 	UserClaim.ActiveRole = user.ActiveRole
-	UserClaim.ServiceType = "User"
 	return UserClaim
 }
 

@@ -46,8 +46,8 @@ func (middle *Middleware) AuthMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		c.Set("userId", claims.UserId)
-		c.Set("activeRole", claims.ActiveRole)
+		c.Set("userId", claims.ClaimId)
+		c.Set("activeRole", claims.Role)
 		c.Next()
 	}
 }
@@ -63,7 +63,7 @@ func (ctrl *Middleware) RefreshToken(c *gin.Context) {
 
 	var refreshClaim model.RefreshToken
 	refreshClaim.RefreshToken = input.RefreshToken
-	refreshClaim.ServiceType = "Restaurant"
+	refreshClaim.Role = input.Role
 	tokens, err := ctrl.AuthClient.RefreshToken(refreshClaim)
 	if err != nil {
 		utils.GenerateResponse(http.StatusInternalServerError, c, "Message", "Could not generate token", "error", err.Error())
