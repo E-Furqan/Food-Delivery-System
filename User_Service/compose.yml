@@ -23,3 +23,6 @@ services:
       POSTGRES_DB: User
     ports:
       - "5430:5432"  
+
+networks:
+  
