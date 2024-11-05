@@ -34,7 +34,7 @@ func ReadEnv() Environment {
 
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+		log.Printf("Error loading .env file: %v", err)
 	}
 
 	envVar.HOST = utils.GetEnv("HOST", "0.0.0.0")
@@ -57,7 +57,7 @@ func ReadEnv() Environment {
 	portStr := utils.GetEnv("PORT", "5430")
 	envVar.PORT, err = strconv.Atoi(portStr)
 	if err != nil {
-		log.Fatalf("Error converting PORT to integer: %v", err)
+		log.Printf("Error converting PORT to integer: %v", err)
 		envVar.PORT = 5430
 	}
 	envVar.JWT_SECRET = utils.GetEnv("JWT_SECRET", "Furqan")
