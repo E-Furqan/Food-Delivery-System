@@ -37,7 +37,7 @@ func ReadEnv() Environment {
 		log.Printf("Error loading .env file: %v", err)
 	}
 
-	envVar.HOST = utils.GetEnv("HOST", "0.0.0.0")
+	envVar.HOST = utils.GetEnv("HOST", "db")
 	envVar.USER = utils.GetEnv("USER1", "furqan")
 	envVar.PASSWORD = utils.GetEnv("PASSWORD", "furqan")
 	envVar.DB_NAME = utils.GetEnv("DB_NAME", "User")
@@ -54,13 +54,14 @@ func ReadEnv() Environment {
 
 	envVar.ORDER_PORT = utils.GetEnv("ORDER_PORT", ":8081")
 	envVar.AUTH_PORT = utils.GetEnv("AUTH_PORT", ":8084")
-	portStr := utils.GetEnv("PORT", "5430")
+	portStr := utils.GetEnv("PORT", "5432")
 	envVar.PORT, err = strconv.Atoi(portStr)
 	if err != nil {
 		log.Printf("Error converting PORT to integer: %v", err)
-		envVar.PORT = 5430
+		envVar.PORT = 5432
 	}
 	envVar.JWT_SECRET = utils.GetEnv("JWT_SECRET", "Furqan")
 	envVar.RefreshTokenKey = utils.GetEnv("REFRESH_TOKEN_SECRET", "Ali")
+
 	return envVar
 }

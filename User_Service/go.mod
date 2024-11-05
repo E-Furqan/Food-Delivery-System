@@ -1,6 +1,6 @@
 module github.com/E-Furqan/Food-Delivery-System
 
-go 1.20
+go 1.23.1
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible

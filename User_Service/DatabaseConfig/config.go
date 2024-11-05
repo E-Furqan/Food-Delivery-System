@@ -28,6 +28,7 @@ func (DatabaseConfig *DatabaseConfig) Connection() *gorm.DB {
 		DatabaseConfig.Environment.HOST, DatabaseConfig.Environment.PORT, DatabaseConfig.Environment.USER, DatabaseConfig.Environment.PASSWORD, DatabaseConfig.Environment.DB_NAME)
 
 	DB, err := gorm.Open(postgres.Open(connection_string), &gorm.Config{})
+	log.Print(connection_string)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}

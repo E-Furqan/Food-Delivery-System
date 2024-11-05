@@ -1,8 +1,6 @@
 package main
 
 import (
-	"log"
-
 	"github.com/E-Furqan/Food-Delivery-System/Client/AuthClient"
 	"github.com/E-Furqan/Food-Delivery-System/Client/OrderClient"
 	RoleController "github.com/E-Furqan/Food-Delivery-System/Controllers/RoleControler"
@@ -17,7 +15,6 @@ import (
 
 func main() {
 	envVar := environmentVariable.ReadEnv()
-	log.Print(envVar)
 	databaseConfig := config.NewDatabase(envVar)
 
 	db := databaseConfig.Connection()
@@ -31,7 +28,7 @@ func main() {
 	middle := Middleware.NewMiddleware(AuthClient, &envVar)
 
 	server := gin.Default()
-	rCtrl.AddDefaultRoles(&gin.Context{})
+	rCtrl.AddDefaultRoles(nil)
 
 	route.User_routes(ctrl, rCtrl, middle, server)
 	server.Run(":8083")
