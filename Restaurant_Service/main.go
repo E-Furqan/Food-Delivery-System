@@ -18,6 +18,7 @@ func main() {
 	databaseConfig := config.NewDatabase(envVar)
 	db := databaseConfig.Connection()
 
+	databaseConfig.RunMigrations()
 	OrdClient := OrderClient.NewClient(envVar)
 	AuthClient := AuthClient.NewClient(envVar)
 
