@@ -4,7 +4,9 @@ services:
     build:
       context: .
     ports:
-      - "8083:8083"  
+      - "8083:8083"
+    networks:
+      - user_network  
     depends_on:
       - db
     environment:
@@ -23,6 +25,9 @@ services:
       POSTGRES_DB: User
     ports:
       - "5430:5432"  
-
+    networks:
+      - user_network  
+      
 networks:
-  
+  user_network:
+    driver: bridge

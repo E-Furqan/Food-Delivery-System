@@ -1,11 +1,31 @@
-FROM golang:1.23.1
+FROM golang:1.23.1 as builder
 
-WORKDIR /user
+WORKDIR /app
 
-COPY . /user
+# Copy the Go module files
+COPY go.mod go.sum ./
+RUN go mod download
 
-RUN go build -o user_service /user
+# Copy the rest of your application code
+COPY . .
 
-EXPOSE 8083
+# Build the Go application
+RUN go build -o user_service ./main.go
 
-ENTRYPOINT ["./user_service"]
+# Final stage: create a minimal image
+FROM alpine:latest
+
+WORKDIR /app
+
+# Copy the built binary from the builder
+COPY --from=builder /app/user_service .
+
+# Set environment variables
+ENV DATABASE_HOST=db
+ENV DATABASE_PORT=5432
+ENV DATABASE_USER=furqan
+ENV DATABASE_PASSWORD=furqan
+ENV DATABASE_NAME=User
+
+# Run the application
+CMD ["./user_service"]
