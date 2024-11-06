@@ -22,7 +22,7 @@ func TestDatabaseConnection() *gorm.DB {
 	}
 
 	var connection_string = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		envVar.HOST, envVar.PORT, envVar.USER, envVar.PASSWORD, "testorder")
+		envVar.DATABASE_HOST, envVar.DATABASE_PORT, envVar.DATABASE_USER, envVar.DATABASE_PASSWORD, "testorder")
 
 	DB, err = gorm.Open(postgres.Open(connection_string), &gorm.Config{})
 	if err != nil {
