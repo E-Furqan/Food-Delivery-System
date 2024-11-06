@@ -43,11 +43,6 @@ type CombineOrderItem struct {
 	Items []OrderItemPayload
 }
 
-type CombineOrderFilter struct {
-	ID
-	Filter
-}
-
 type ProcessOrder struct {
 	ID
 	OrderStatus string `json:"order_status"`

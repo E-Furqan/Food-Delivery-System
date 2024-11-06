@@ -90,3 +90,16 @@ func CalculateBill(CombineOrderItem model.CombineOrderItem, items []model.Items)
 	}
 	return totalBill, nil
 }
+
+func VerifyRole(c *gin.Context) (string, error) {
+	activeRole, exists := c.Get("activeRole")
+	if !exists {
+		return "", fmt.Errorf("userId role does not exist")
+	}
+
+	activeRoleStr, ok := activeRole.(string)
+	if !ok {
+		return "", fmt.Errorf("activeRole is not a string")
+	}
+	return activeRoleStr, nil
+}

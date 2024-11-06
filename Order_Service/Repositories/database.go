@@ -18,10 +18,10 @@ func NewRepository(db *gorm.DB) *Repository {
 	}
 }
 
-func (repo *Repository) GetOrders(order *[]model.Order, ID uint, columnName string, orderDirection string, searchColumn string) error {
+func (repo *Repository) GetOrders(order *[]model.Order, ID uint, columnName string, SortOrder string, searchColumn string) error {
 
-	if orderDirection != "asc" && orderDirection != "desc" {
-		orderDirection = "asc"
+	if SortOrder != "asc" && SortOrder != "desc" {
+		SortOrder = "asc"
 	}
 
 	validColumns := map[string]bool{
@@ -36,7 +36,7 @@ func (repo *Repository) GetOrders(order *[]model.Order, ID uint, columnName stri
 	}
 
 	tx := repo.DB.Begin()
-	err := repo.DB.Where((fmt.Sprintf("%s = ?", searchColumn)), ID).Preload("Item").Order(fmt.Sprintf("%s %s", columnName, orderDirection)).Find(order).Error
+	err := repo.DB.Where((fmt.Sprintf("%s = ?", searchColumn)), ID).Preload("Item").Order(fmt.Sprintf("%s %s", columnName, SortOrder)).Find(order).Error
 	if err != nil {
 		tx.Rollback()
 		return nil

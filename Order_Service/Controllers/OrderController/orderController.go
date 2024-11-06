@@ -25,6 +25,18 @@ func NewController(repo *database.Repository, ResClient *RestaurantClient.Restau
 	}
 }
 
+// UpdateOrderStatus godoc
+// @Summary Update the status of an order
+// @Description Updates the status of an order based on the role of the user (customer, restaurant, or delivery driver)
+// @Tags Order Service
+// @Accept  json
+// @Produce  json
+// @Param orderStatusUpdateRequest body model.OrderStatusUpdateRequest true "Order status update request"
+// @Success 200 {object} model.Order "Updated order details"
+// @Failure 400 {object} map[string]interface{} "Bad Request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Order not found"
+// @Router /order/update/status [patch]
 func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 	Id, exists := c.Get("ClaimId")
 	if !exists {
@@ -32,16 +44,9 @@ func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 		return
 	}
 
-	activeRole, exists := c.Get("activeRole")
-	if !exists {
-		c.JSON(http.StatusBadRequest, "userId role does not exist")
-		return
-	}
-
-	activeRoleStr, ok := activeRole.(string)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, "activeRole is not a string")
-		return
+	activeRoleStr, err := utils.VerifyRole(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 	}
 
 	var request model.OrderStatusUpdateRequest
@@ -53,7 +58,7 @@ func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 
 	var order model.Order
 
-	err := orderCtrl.Repo.GetOrder(&order, request.OrderID)
+	err = orderCtrl.Repo.GetOrder(&order, request.OrderID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Order not found"})
 		return
@@ -127,6 +132,18 @@ func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, order)
 }
 
+// AssignDeliveryDriver godoc
+// @Summary Assign a delivery driver to an order
+// @Description Assigns a delivery driver to an order if the order doesn't already have a driver, and the role of the user is "delivery driver"
+// @Tags Order Service
+// @Accept  json
+// @Produce  json
+// @Param assignDeliveryDriverRequest body model.AssignDeliveryDriver true "Assign delivery driver request"
+// @Success 200 {object} model.Order "Assigned delivery driver to the order"
+// @Failure 400 {object} map[string]interface{} "Bad Request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Order not found"
+// @Router /order/assign/diver [patch]
 func (orderCtrl *OrderController) AssignDeliveryDriver(c *gin.Context) {
 	Id, exists := c.Get("ClaimId")
 	if !exists {
@@ -134,16 +151,10 @@ func (orderCtrl *OrderController) AssignDeliveryDriver(c *gin.Context) {
 		return
 	}
 	IDint := Id.(uint)
-	activeRole, exists := c.Get("activeRole")
-	if !exists {
-		c.JSON(http.StatusBadRequest, "userId role does not exist")
-		return
-	}
 
-	activeRoleStr, ok := activeRole.(string)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, "activeRole is not a string")
-		return
+	activeRoleStr, err := utils.VerifyRole(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 	}
 
 	var request model.AssignDeliveryDriver
@@ -159,7 +170,7 @@ func (orderCtrl *OrderController) AssignDeliveryDriver(c *gin.Context) {
 
 	var order model.Order
 
-	err := orderCtrl.Repo.GetOrder(&order, request.OrderID)
+	err = orderCtrl.Repo.GetOrder(&order, request.OrderID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Order not found"})
 		return
@@ -178,17 +189,29 @@ func (orderCtrl *OrderController) AssignDeliveryDriver(c *gin.Context) {
 	c.JSON(http.StatusOK, order)
 }
 
+// GetOrders retrieves orders based on the user type.
+//
+// @Summary Get orders based on user type (user, restaurant, or delivery driver)
+// @Description Retrieves orders filtered by user type, sorted by specified column and order.
+// @Tags Order Service
+// @Param ID header uint true "User ID from Claims"
+// @Param UserType path string true "Type of user: user, restaurant, or delivery driver"
+// @Param Filter body model.Filter true "Sorting details"
+// @Success 200 {array} model.Order "List of Orders"
+// @Failure 400 {object} model.ErrorResponse "Error occurred"
+// @Router /order/view/{UserType}/orders [get]
+// @Security ApiKeyAuth
 func (orderCtrl *OrderController) GetOrders(c *gin.Context, UserType string) {
 
-	Id, exists := c.Get("ClaimId")
+	Id, exists := c.Get("ID")
 	if !exists {
 		c.JSON(http.StatusBadRequest, "userId id does not exist")
 		return
 	}
 
 	IdValue := Id.(uint)
-	var OrderNFilter model.CombineOrderFilter
-	if err := c.ShouldBindJSON(&OrderNFilter); err != nil {
+	var Filter model.Filter
+	if err := c.ShouldBindJSON(&Filter); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -197,12 +220,12 @@ func (orderCtrl *OrderController) GetOrders(c *gin.Context, UserType string) {
 	var err error
 
 	if UserType == "user" {
-		err = orderCtrl.Repo.GetOrders(&order, IdValue, OrderNFilter.Filter.ColumnName, OrderNFilter.Filter.OrderDirection, "user_id")
+		err = orderCtrl.Repo.GetOrders(&order, IdValue, Filter.ColumnName, Filter.SortOrder, "user_id")
 	} else if UserType == "restaurant" {
-		err = orderCtrl.Repo.GetOrders(&order, IdValue, OrderNFilter.Filter.ColumnName, OrderNFilter.Filter.OrderDirection, "restaurant_id")
+		err = orderCtrl.Repo.GetOrders(&order, IdValue, Filter.ColumnName, Filter.SortOrder, "restaurant_id")
 
 	} else if UserType == "delivery driver" {
-		err = orderCtrl.Repo.GetOrders(&order, IdValue, OrderNFilter.Filter.ColumnName, OrderNFilter.Filter.OrderDirection, "delivery_driver")
+		err = orderCtrl.Repo.GetOrders(&order, IdValue, Filter.ColumnName, Filter.SortOrder, "delivery_driver")
 	}
 
 	if err != nil {
@@ -213,14 +236,23 @@ func (orderCtrl *OrderController) GetOrders(c *gin.Context, UserType string) {
 	c.JSON(http.StatusOK, order)
 }
 
+// GetOrdersOfUser retrieves orders for a user or admin.
+//
+// @Summary Get user orders
+// @Description Allows only customers or admins to view their orders.
+// @Tags Order Service
+// @Param activeRole header string true "Active Role of the User"
+// @Success 200 {array} model.Order "List of Orders"
+// @Failure 400 {object} model.ErrorResponse "Only customer or admin can view the orders"
+// @Router /order/view/user/orders [get]
+// @Security ApiKeyAuth
 func (orderCtrl *OrderController) GetOrdersOfUser(c *gin.Context) {
-	activeRole, exists := c.Get("activeRole")
-	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "role id does not exist"})
-		return
+
+	activeRoleStr, err := utils.VerifyRole(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 	}
-	activeRoleStr := activeRole.(string)
-	log.Print(strings.ToLower(activeRoleStr))
+
 	if strings.ToLower(activeRoleStr) != "customer" && strings.ToLower(activeRoleStr) != "admin" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "only customer or admin can view the orders"})
 		return
@@ -228,14 +260,22 @@ func (orderCtrl *OrderController) GetOrdersOfUser(c *gin.Context) {
 	orderCtrl.GetOrders(c, "user")
 }
 
+// GetOrdersOfUser retrieves orders for a restaurant or admin.
+//
+// @Summary Get restaurant orders
+// @Description Allows only restaurant or admins to view their orders.
+// @Tags Order Service
+// @Param activeRole header string true "Active Role of the User"
+// @Success 200 {array} model.Order "List of Orders"
+// @Failure 400 {object} model.ErrorResponse "Only restaurant or admin can view the orders"
+// @Router /order/view/restaurant/orders [get]
+// @Security ApiKeyAuth
 func (orderCtrl *OrderController) GetOrdersOfRestaurant(c *gin.Context) {
-	activeRole, exists := c.Get("activeRole")
 
-	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "role id does not exist"})
-		return
+	activeRoleStr, err := utils.VerifyRole(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 	}
-	activeRoleStr := activeRole.(string)
 
 	if strings.ToLower(activeRoleStr) != "restaurant" && strings.ToLower(activeRoleStr) != "admin" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "only restaurant and admin can view the orders"})
@@ -243,14 +283,23 @@ func (orderCtrl *OrderController) GetOrdersOfRestaurant(c *gin.Context) {
 	}
 	orderCtrl.GetOrders(c, "restaurant")
 }
-func (orderCtrl *OrderController) GetOrdersOfDeliveryDriver(c *gin.Context) {
-	activeRole, exists := c.Get("activeRole")
 
-	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "role id does not exist"})
-		return
+// GetOrdersOfUser retrieves orders for a driver or admin.
+//
+// @Summary Get driver orders
+// @Description Allows only driver or admins to view their orders.
+// @Tags Order Service
+// @Param activeRole header string true "Active Role of the User"
+// @Success 200 {array} model.Order "List of Orders"
+// @Failure 400 {object} model.ErrorResponse "Only driver or admin can view the orders"
+// @Router /order/view/driver/orders [get]
+// @Security ApiKeyAuth
+func (orderCtrl *OrderController) GetOrdersOfDeliveryDriver(c *gin.Context) {
+
+	activeRoleStr, err := utils.VerifyRole(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 	}
-	activeRoleStr := activeRole.(string)
 
 	if strings.ToLower(activeRoleStr) != "delivery driver" && strings.ToLower(activeRoleStr) != "admin" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "only delivery driver and admin can view the orders"})
@@ -260,13 +309,24 @@ func (orderCtrl *OrderController) GetOrdersOfDeliveryDriver(c *gin.Context) {
 	orderCtrl.GetOrders(c, "delivery driver")
 }
 
+// PlaceOrder godoc
+// @Summary Place an order as a customer
+// @Description Allows a customer to place an order, including selecting items from a restaurant and calculating the total bill
+// @Tags Order Service
+// @Accept  json
+// @Produce  json
+// @Param placeOrderRequest body model.CombineOrderItem true "Place order request"
+// @Success 200 {object} map[string]interface{} "Order placed successfully"
+// @Failure 400 {object} map[string]interface{} "Bad Request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Router /order/place/order [post]
 func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
-	userRole, exists := c.Get("activeRole")
-	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "userId id does not exist"})
-		return
+
+	userRoleStr, err := utils.VerifyRole(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 	}
-	userRoleStr := userRole.(string)
+
 	if strings.ToLower(userRoleStr) != "customer" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Only customer can place order"})
 		return
@@ -283,7 +343,7 @@ func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 	GetItem.OrderType = "asc"
 
 	var items []model.Items
-	items, err := orderCtrl.ResClient.GetItems(GetItem)
+	items, err = orderCtrl.ResClient.GetItems(GetItem)
 	if err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Error while getting items from the restaurant", "Error", err.Error())
 		return
@@ -309,6 +369,17 @@ func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 	utils.GenerateResponse(http.StatusOK, c, "Message", fmt.Sprintf("Order created successfully with order id %v and total bill: %v", order.OrderID, totalBill), "", nil)
 }
 
+// ViewOrderDetails godoc
+// @Summary View details of a specific order
+// @Description Retrieves detailed information about an order by order ID
+// @Tags Order Service
+// @Accept  json
+// @Produce  json
+// @Param orderId body model.ID true "Order ID JSON"
+// @Success 200 {object} model.Order "Order details"
+// @Failure 400 {object} map[string]interface{} "Bad Request"
+// @Failure 404 {object} string "Order not found"
+// @Router /order/view/order [get]
 func (orderCtrl *OrderController) ViewOrderDetails(c *gin.Context) {
 	var orderId model.ID
 
@@ -326,15 +397,22 @@ func (orderCtrl *OrderController) ViewOrderDetails(c *gin.Context) {
 	c.JSON(http.StatusOK, order)
 }
 
+// ViewOrdersWithoutRider godoc
+// @Summary Get orders without assigned delivery driver
+// @Description Retrieves orders that have not been assigned a delivery driver. Only accessible to users with roles "delivery driver" or "admin".
+// @Tags Order Service
+// @Produce json
+// @Success 200 {array} model.Order "List of orders without assigned delivery driver"
+// @Failure 400 {object} model.ErrorResponse "Bad request, role ID missing or unauthorized access"
+// @Failure 404 {object} model.ErrorResponse "Orders not found"
+// @Router /view/without/driver/orders [get]
+// @Security ApiKeyAuth
 func (orderCtrl *OrderController) ViewOrdersWithoutRider(c *gin.Context) {
 
-	activeRole, exists := c.Get("activeRole")
-
-	if !exists {
-		c.JSON(http.StatusBadRequest, "role id does not exist")
-		return
+	activeRoleStr, err := utils.VerifyRole(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 	}
-	activeRoleStr := activeRole.(string)
 
 	if strings.ToLower(activeRoleStr) != "delivery driver" && strings.ToLower(activeRoleStr) != "admin" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "only delivery driver and admin can view the orders"})
@@ -342,16 +420,28 @@ func (orderCtrl *OrderController) ViewOrdersWithoutRider(c *gin.Context) {
 	}
 
 	var order []model.Order
-	err := orderCtrl.Repo.GetOrderWithoutRider(&order)
+	err = orderCtrl.Repo.GetOrderWithoutRider(&order)
 	if err != nil {
 		c.JSON(http.StatusNotFound, "Order not found")
 		return
 	}
 
 	c.JSON(http.StatusOK, order)
-
 }
 
+// GenerateInvoice godoc
+// @Summary Generate an invoice for a specific order
+// @Description Generates an invoice for the order based on order ID and user validation
+// @Tags Order Service
+// @Accept  json
+// @Produce  json
+// @Param orderId body model.ID true "Order ID JSON"
+// @Success 200 {object} map[string]interface{} "invoice"
+// @Failure 400 {object} map[string]interface{} "Bad Request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Not Found"
+// @Failure 500 {object} map[string]interface{} "Internal Server Error"
+// @Router /order/generate/invoice [get]
 func (orderCtrl *OrderController) GenerateInvoice(c *gin.Context) {
 
 	userId, exists := c.Get("ClaimId")
