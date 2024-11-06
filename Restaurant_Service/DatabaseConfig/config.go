@@ -30,8 +30,8 @@ func (DatabaseConfig *DatabaseConfig) Connection() *gorm.DB {
 	}
 
 	var connection_string = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		DatabaseConfig.Environment.HOST, DatabaseConfig.Environment.PORT, DatabaseConfig.Environment.USER,
-		DatabaseConfig.Environment.PASSWORD, DatabaseConfig.Environment.DB_NAME)
+		DatabaseConfig.Environment.DATABASE_HOST, DatabaseConfig.Environment.DATABASE_PORT, DatabaseConfig.Environment.DATABASE_USER,
+		DatabaseConfig.Environment.DATABASE_PASSWORD, DatabaseConfig.Environment.DATABASE_NAME)
 
 	DB, err = gorm.Open(postgres.Open(connection_string), &gorm.Config{})
 	if err != nil {
