@@ -33,8 +33,10 @@ func (orderClient *OrderClient) UpdateOrderStatus(input model.UpdateOrder, token
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %v", err)
 	}
+
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+token)
+
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("error sending request: %v", err)
@@ -44,6 +46,7 @@ func (orderClient *OrderClient) UpdateOrderStatus(input model.UpdateOrder, token
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("received non-200 response: %v", resp.Status)
 	}
+
 	var orders model.UpdateOrder
 	if err := json.NewDecoder(resp.Body).Decode(&orders); err != nil {
 		return nil, fmt.Errorf("error decoding response: %v", err)

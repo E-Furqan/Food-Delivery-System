@@ -51,14 +51,9 @@ func (rCtrl *RoleController) AddRolesByAdmin(c *gin.Context) {
 
 func (rCtrl *RoleController) GetRoles(c *gin.Context) {
 
-	activeRole, exists := c.Get("activeRole")
-	if !exists {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "User not authenticated", "", nil)
-		return
-	}
-	log.Print(activeRole)
-	if activeRole != "Admin" {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "You do not have the privileges to view roles.", "", nil)
+	_, err := utils.VerifyActiveRole(c)
+	if err != nil {
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Message", "user not authenticated", "error", err.Error())
 		return
 	}
 
@@ -73,20 +68,15 @@ func (rCtrl *RoleController) GetRoles(c *gin.Context) {
 
 func (rCtrl *RoleController) DeleteRole(c *gin.Context) {
 
-	activeRole, exists := c.Get("activeRole")
-	if !exists {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "User not authenticated", "", nil)
-		return
-	}
-
-	if activeRole != "Admin" {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "You do not have the privileges to delete roles.", "", nil)
+	_, err := utils.VerifyActiveRole(c)
+	if err != nil {
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Message", "user not authenticated", "error", err.Error())
 		return
 	}
 
 	var input model.Role
 	var Role model.Role
-	err := c.ShouldBindJSON(&input)
+	err = c.ShouldBindJSON(&input)
 	if err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "error", err.Error(), "", nil)
 		return
