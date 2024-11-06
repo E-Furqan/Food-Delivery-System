@@ -31,5 +31,5 @@ func main() {
 	rCtrl.AddDefaultRoles(nil)
 
 	route.User_routes(ctrl, rCtrl, middle, server)
-	server.Run(":8083")
+	server.Run(":" + envVar.USER_SERVICE_PORT)
 }

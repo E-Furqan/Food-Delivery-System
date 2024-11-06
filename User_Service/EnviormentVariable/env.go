@@ -9,11 +9,11 @@ import (
 )
 
 type Environment struct {
-	HOST                          string
-	USER                          string
-	PASSWORD                      string
-	DB_NAME                       string
-	PORT                          int
+	DATABASE_HOST                 string
+	DATABASE_USER                 string
+	DATABASE_PASSWORD             string
+	DATABASE_NAME                 string
+	DATABASE_PORT                 int
 	JWT_SECRET                    string
 	RefreshTokenKey               string
 	BASE_URL                      string
@@ -27,6 +27,7 @@ type Environment struct {
 	VIEW_ORDER_WITHOUT_DRIVER_URL string
 	DRIVER_ORDERS_URL             string
 	ASSIGN_DRIVER_URL             string
+	USER_SERVICE_PORT             string
 }
 
 func ReadEnv() Environment {
@@ -37,10 +38,10 @@ func ReadEnv() Environment {
 		log.Printf("Error loading .env file: %v", err)
 	}
 
-	envVar.HOST = utils.GetEnv("HOST", "db")
-	envVar.USER = utils.GetEnv("USER1", "furqan")
-	envVar.PASSWORD = utils.GetEnv("PASSWORD", "furqan")
-	envVar.DB_NAME = utils.GetEnv("DB_NAME", "User")
+	envVar.DATABASE_HOST = utils.GetEnv("DATABASE_HOST", "db")
+	envVar.DATABASE_USER = utils.GetEnv("DATABASE_USER", "furqan")
+	envVar.DATABASE_PASSWORD = utils.GetEnv("DATABASE_PASSWORD", "furqan")
+	envVar.DATABASE_NAME = utils.GetEnv("DATABASE_NAME", "User")
 
 	envVar.BASE_URL = utils.GetEnv("BASE_URL", "http://localhost")
 	envVar.UPDATE_ORDER_STATUS_URL = utils.GetEnv("UPDATE_ORDER_STATUS_URL", "/order/update/status")
@@ -51,14 +52,16 @@ func ReadEnv() Environment {
 	envVar.VIEW_ORDER_DETAIL_URL = utils.GetEnv("VIEW_ORDER_DETAIL_URL", "/order/view/order")
 	envVar.VIEW_ORDER_WITHOUT_DRIVER_URL = utils.GetEnv("VIEW_ORDER_WITHOUT_DRIVER_URL", "/order/view/without/driver/orders")
 	envVar.ASSIGN_DRIVER_URL = utils.GetEnv("ASSIGN_DRIVER_URL", "/order/assign/diver")
+	envVar.USER_SERVICE_PORT = utils.GetEnv("USER_SERVICE_PORT", "8083")
 
 	envVar.ORDER_PORT = utils.GetEnv("ORDER_PORT", ":8081")
 	envVar.AUTH_PORT = utils.GetEnv("AUTH_PORT", ":8084")
-	portStr := utils.GetEnv("PORT", "5432")
-	envVar.PORT, err = strconv.Atoi(portStr)
+
+	portStr := utils.GetEnv("DATABASE_PORT", "5432")
+	envVar.DATABASE_PORT, err = strconv.Atoi(portStr)
 	if err != nil {
 		log.Printf("Error converting PORT to integer: %v", err)
-		envVar.PORT = 5432
+		envVar.DATABASE_PORT = 5432
 	}
 	envVar.JWT_SECRET = utils.GetEnv("JWT_SECRET", "Furqan")
 	envVar.RefreshTokenKey = utils.GetEnv("REFRESH_TOKEN_SECRET", "Ali")
