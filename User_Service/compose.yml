@@ -23,7 +23,7 @@ services:
       POSTGRES_PASSWORD: furqan
       POSTGRES_DB: User
     ports:
-      - "5430:5432"
+      - "5432:5432"
     networks:
       - user_network
     healthcheck:
