@@ -35,8 +35,8 @@ func (rCtrl *RoleController) AddRolesByAdmin(c *gin.Context) {
 		utils.GenerateResponse(http.StatusBadRequest, c, "error", err.Error(), "", nil)
 		return
 	}
-	var role model.Role
 
+	var role model.Role
 	role.RoleId = input.RoleId
 	role.RoleType = input.RoleType
 
@@ -97,8 +97,8 @@ func (rCtrl *RoleController) DeleteRole(c *gin.Context) {
 		utils.GenerateResponse(http.StatusInternalServerError, c, "Message", "Failed to delete the role", "error", err.Error())
 		return
 	}
-	utils.GenerateResponse(http.StatusOK, c, "Message", "Role deleted successfully", "", nil)
 
+	utils.GenerateResponse(http.StatusOK, c, "Message", "Role deleted successfully", "", nil)
 }
 
 func (rCtrl *RoleController) AddDefaultRoles(c *gin.Context) {
@@ -140,7 +140,7 @@ func (RoleController *RoleController) SwitchRole(c *gin.Context) {
 		utils.GenerateResponse(http.StatusNotFound, c, "error", err.Error(), "", nil)
 		return
 	}
-	log.Print(UserId)
+
 	var user model.User
 	err = RoleController.Repo.GetUser("user_id", UserId, &user)
 	if err != nil {
@@ -184,6 +184,7 @@ func (RoleController *RoleController) SwitchRole(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
 		return
 	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"access token":  token.AccessToken,
 		"refresh token": token.RefreshToken,

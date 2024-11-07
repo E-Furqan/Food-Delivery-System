@@ -352,8 +352,8 @@ func (ctrl *Controller) ViewDriverOrders(c *gin.Context) {
 		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "User does not exist", "", nil)
 		return
 	}
-	var userId model.UpdateOrder
 
+	var userId model.UpdateOrder
 	userId.DeliverDriverID = User.UserId
 	Orders, err := ctrl.OrderClient.ViewOrders(userId)
 	if err != nil {
@@ -390,6 +390,7 @@ func (ctrl *Controller) ViewOrdersWithoutDriver(c *gin.Context) {
 		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "User does not exist", "", nil)
 		return
 	}
+
 	var userId model.UpdateOrder
 	Orders, err := ctrl.OrderClient.ViewOrdersWithoutRider(userId)
 	if err != nil {
@@ -428,8 +429,8 @@ func (ctrl *Controller) AssignDriver(c *gin.Context) {
 		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "User does not exist", "", nil)
 		return
 	}
-	var orderId model.UpdateOrder
 
+	var orderId model.UpdateOrder
 	if err := c.ShouldBindJSON(&orderId); err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "error", err.Error(), "", nil)
 		return
