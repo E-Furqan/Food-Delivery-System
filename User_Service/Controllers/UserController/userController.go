@@ -268,7 +268,7 @@ func (ctrl *Controller) ViewUserOrders(c *gin.Context) {
 	var userId model.UpdateOrder
 
 	userId.UserID = User.UserId
-	Orders, err := ctrl.OrderClient.ViewUserOrders(userId)
+	Orders, err := ctrl.OrderClient.ViewOrders(userId)
 	if err != nil {
 		utils.GenerateResponse(http.StatusInternalServerError, c, "error", err.Error(), "", nil)
 		return
@@ -355,7 +355,7 @@ func (ctrl *Controller) ViewDriverOrders(c *gin.Context) {
 	var userId model.UpdateOrder
 
 	userId.DeliverDriverID = User.UserId
-	Orders, err := ctrl.OrderClient.ViewDriverOrders(userId)
+	Orders, err := ctrl.OrderClient.ViewOrders(userId)
 	if err != nil {
 		utils.GenerateResponse(http.StatusBadGateway, c, "error", err.Error(), "", nil)
 		return
