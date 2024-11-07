@@ -6,7 +6,6 @@ type OrderClientEnv struct {
 	VIEW_ORDER_WITHOUT_DRIVER_URL string
 	ORDER_PORT                    string
 	USER_ORDERS_URL               string
-	VIEW_ORDER_DETAIL_URL         string
 	DRIVER_ORDERS_URL             string
 	ASSIGN_DRIVER_URL             string
 }
