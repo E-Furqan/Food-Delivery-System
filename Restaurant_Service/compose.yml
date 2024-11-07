@@ -16,7 +16,9 @@ services:
       - DATABASE_PORT=5432
       - DATABASE_USER=furqan
       - DATABASE_PASSWORD=furqan
-      - DATABASE_NAME=Restaurant
+      - DATABASE_NAME=Restaurant  
+    volumes:
+      - ./Migration:/app/Migration
 
   db:
     image: postgres:14
@@ -29,12 +31,11 @@ services:
     networks:
       - restaurant_network
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "furqan", "-d", "Restaurant", "-h", "localhost"]
+      test: ["CMD", "pg_isready", "-U", "furqan", "-d", "Restaurant", "-h", "db"]
       interval: 5s
       retries: 5
       start_period: 10s
       timeout: 5s
-
 
 networks:
   restaurant_network:

@@ -14,18 +14,22 @@ import (
 )
 
 func main() {
-	envVar := environmentVariable.ReadEnv()
-	databaseConfig := config.NewDatabase(envVar)
-	db := databaseConfig.Connection()
+	DatabaseEnv := environmentVariable.ReadDatabaseEnv()
+	OrderClientEnv := environmentVariable.ReadOrderClientEnv()
+	AuthClientEnv := environmentVariable.ReadAuthClientEnv()
+	MiddlewareEnv := environmentVariable.ReadMiddlewareEnv()
 
+	databaseConfig := config.NewDatabase(DatabaseEnv)
+	db := databaseConfig.Connection()
 	databaseConfig.RunMigrations()
-	OrdClient := OrderClient.NewClient(envVar)
-	AuthClient := AuthClient.NewClient(envVar)
+
+	OrdClient := OrderClient.NewClient(OrderClientEnv)
+	AuthClient := AuthClient.NewClient(AuthClientEnv)
 
 	repo := database.NewRepository(db)
 	ctrl := RestaurantController.NewController(repo, OrdClient, AuthClient)
 	ItemController := ItemController.NewController(repo)
-	middle := Middleware.NewMiddleware(AuthClient, &envVar)
+	middle := Middleware.NewMiddleware(AuthClient, &MiddlewareEnv)
 
 	server := gin.Default()
 	route.Restaurant_routes(ctrl, ItemController, middle, server)

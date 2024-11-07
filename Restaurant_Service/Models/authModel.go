@@ -18,3 +18,15 @@ type Tokens struct {
 	RefreshToken string `json:"refresh_token"`
 	Expiration   int64  `json:"expires_at"`
 }
+
+type MiddlewareEnv struct {
+	JWT_SECRET           string
+	REFRESH_TOKEN_SECRET string
+}
+
+type AuthClientEnv struct {
+	BASE_URL           string
+	GENERATE_TOKEN_URL string
+	REFRESH_TOKEN_URL  string
+	AUTH_PORT          string
+}

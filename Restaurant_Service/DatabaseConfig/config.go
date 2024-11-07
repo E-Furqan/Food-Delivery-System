@@ -5,8 +5,9 @@ import (
 	"log"
 	"path/filepath"
 
-	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
+	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	"github.com/golang-migrate/migrate"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
@@ -14,12 +15,12 @@ import (
 )
 
 type DatabaseConfig struct {
-	environmentVariable.Environment
+	model.DatabaseEnv
 }
 
-func NewDatabase(env environmentVariable.Environment) *DatabaseConfig {
+func NewDatabase(env model.DatabaseEnv) *DatabaseConfig {
 	return &DatabaseConfig{
-		Environment: env,
+		DatabaseEnv: env,
 	}
 }
 
@@ -32,8 +33,8 @@ func (DatabaseConfig *DatabaseConfig) Connection() *gorm.DB {
 	}
 
 	var connection_string = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		DatabaseConfig.Environment.DATABASE_HOST, DatabaseConfig.Environment.DATABASE_PORT, DatabaseConfig.Environment.DATABASE_USER,
-		DatabaseConfig.Environment.DATABASE_PASSWORD, DatabaseConfig.Environment.DATABASE_NAME)
+		DatabaseConfig.DatabaseEnv.DATABASE_HOST, DatabaseConfig.DatabaseEnv.DATABASE_PORT, DatabaseConfig.DatabaseEnv.DATABASE_USER,
+		DatabaseConfig.DatabaseEnv.DATABASE_PASSWORD, DatabaseConfig.DatabaseEnv.DATABASE_NAME)
 
 	log.Println(connection_string)
 	DB, err = gorm.Open(postgres.Open(connection_string), &gorm.Config{})
@@ -57,28 +58,26 @@ func (DatabaseConfig *DatabaseConfig) Connection() *gorm.DB {
 }
 
 func (DatabaseConfig *DatabaseConfig) RunMigrations() {
-	// Use file:// scheme for local migrations
-	connectionString := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
-		DatabaseConfig.Environment.DATABASE_USER, DatabaseConfig.Environment.DATABASE_PASSWORD,
-		DatabaseConfig.Environment.DATABASE_HOST, DatabaseConfig.Environment.DATABASE_PORT,
-		DatabaseConfig.Environment.DATABASE_NAME)
+	// Use Docker service name for the database connection
+	connectionString := "postgres://furqan:furqan@restaurant_service_db_1:5432/Restaurant?sslmode=disable"
 
-	// Get the absolute path of the migration folder
 	absPath, err := filepath.Abs("./Migration")
 	if err != nil {
-		log.Fatalf("Error getting absolute path: %v", err)
+		log.Printf("Error getting absolute path: %v", err)
 	}
-	log.Printf("migration %s", absPath)
-	// Initialize migrate instance with file:// scheme and the absolute path
+	log.Printf("pringint %s", absPath)
+	absPath = "file://" + absPath
+	log.Printf("Using migration path: %s", absPath)
+	log.Printf("Using connectionString: %s", connectionString)
+
 	m, err := migrate.New(
-		"file://"+absPath, // Ensure the source has file:// scheme
+		absPath, // Ensure the source has file:// scheme
 		connectionString,
 	)
 	if err != nil {
 		log.Fatalf("Migration instance error: %v", err)
 	}
 
-	// Run migrations
 	err = m.Up()
 	if err != nil && err != migrate.ErrNoChange {
 		log.Fatalf("Migration failed: %v", err)

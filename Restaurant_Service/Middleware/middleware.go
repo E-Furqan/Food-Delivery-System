@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/E-Furqan/Food-Delivery-System/Client/AuthClient"
-	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -14,10 +13,10 @@ import (
 
 type Middleware struct {
 	AuthClient *AuthClient.AuthClient
-	envVar     *environmentVariable.Environment
+	envVar     *model.MiddlewareEnv
 }
 
-func NewMiddleware(AuthClient *AuthClient.AuthClient, envVar *environmentVariable.Environment) *Middleware {
+func NewMiddleware(AuthClient *AuthClient.AuthClient, envVar *model.MiddlewareEnv) *Middleware {
 	return &Middleware{
 		AuthClient: AuthClient,
 		envVar:     envVar,

@@ -6,17 +6,16 @@ import (
 	"fmt"
 	"net/http"
 
-	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 )
 
 type AuthClient struct {
-	environmentVariable.Environment
+	model.AuthClientEnv
 }
 
-func NewClient(env environmentVariable.Environment) *AuthClient {
+func NewClient(env model.AuthClientEnv) *AuthClient {
 	return &AuthClient{
-		Environment: env,
+		AuthClientEnv: env,
 	}
 }
 
@@ -26,7 +25,7 @@ func (client *AuthClient) GenerateToken(input model.RestaurantClaim) (*model.Tok
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling input: %v", err)
 	}
-	url := fmt.Sprintf("%s%s%s", client.Environment.BASE_URL, client.Environment.AUTH_PORT, client.Environment.GENERATE_TOKEN_URL)
+	url := fmt.Sprintf("%s%s%s", client.AuthClientEnv.BASE_URL, client.AuthClientEnv.AUTH_PORT, client.AuthClientEnv.GENERATE_TOKEN_URL)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %v", err)
@@ -57,7 +56,7 @@ func (client *AuthClient) RefreshToken(input model.RefreshToken) (*model.Tokens,
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling input: %v", err)
 	}
-	url := fmt.Sprintf("%s%s%s", client.Environment.BASE_URL, client.Environment.AUTH_PORT, client.Environment.REFRESH_TOKEN_URL)
+	url := fmt.Sprintf("%s%s%s", client.AuthClientEnv.BASE_URL, client.AuthClientEnv.AUTH_PORT, client.AuthClientEnv.REFRESH_TOKEN_URL)
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {

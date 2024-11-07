@@ -2,13 +2,12 @@ package model
 
 type Restaurant struct {
 	RestaurantId          uint   `gorm:"primaryKey;autoIncrement" json:"restaurant_id"`
-	RestaurantName        string `gorm:"size:255" json:"restaurant_name"`
-	RestaurantAddress     string `gorm:"size:255" json:"restaurant_address"`
-	RestaurantPhoneNumber string `gorm:"uniqueIndex;size:100" json:"restaurant_phone_number"`
-	RestaurantEmail       string `gorm:"uniqueIndex;size:100" json:"restaurant_email"`
-	Password              string `gorm:"size:100" json:"password"`
-	RestaurantStatus      string `gorm:"size:50" json:"restaurant_status"`
-	Items                 []Item `gorm:"foreignKey:RestaurantId" json:"items"`
+	RestaurantName        string `json:"restaurant_name"`
+	RestaurantAddress     string `json:"restaurant_address"`
+	RestaurantPhoneNumber string `json:"restaurant_phone_number"`
+	RestaurantEmail       string `json:"restaurant_email"`
+	Password              string `json:"password"`
+	RestaurantStatus      string `json:"restaurant_status"`
 }
 
 type Credentials struct {
