@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	"github.com/gin-gonic/gin"
@@ -102,4 +103,28 @@ func VerifyRole(c *gin.Context) (string, error) {
 		return "", fmt.Errorf("activeRole is not a string")
 	}
 	return activeRoleStr, nil
+}
+
+func IsCustomerOrAdminRole(activeRoleStr string) bool {
+	if strings.ToLower(activeRoleStr) == "customer" || strings.ToLower(activeRoleStr) == "admin" {
+		return true
+	} else {
+		return false
+	}
+}
+
+func IsRestaurantOrAdminRole(activeRoleStr string) bool {
+	if strings.ToLower(activeRoleStr) == "restaurant" || strings.ToLower(activeRoleStr) == "admin" {
+		return true
+	} else {
+		return false
+	}
+}
+
+func IsDriverOrAdminRole(activeRoleStr string) bool {
+	if strings.ToLower(activeRoleStr) == "delivery driver" || strings.ToLower(activeRoleStr) == "admin" {
+		return true
+	} else {
+		return false
+	}
 }

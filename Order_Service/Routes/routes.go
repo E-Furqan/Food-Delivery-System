@@ -17,9 +17,7 @@ func Order_routes(orderController *OrderControllers.OrderController, middle *Mid
 	orderRoute.Use(middle.AuthMiddleware())
 	{
 
-		orderRoute.GET("/view/user/orders", orderController.GetOrdersOfUser)
-		orderRoute.GET("/view/restaurant/orders", orderController.GetOrdersOfRestaurant)
-		orderRoute.GET("/view/driver/orders", orderController.GetOrdersOfDeliveryDriver)
+		orderRoute.GET("/view/orders", orderController.GetOrders)
 		orderRoute.GET("/view/without/driver/orders", orderController.ViewOrdersWithoutRider)
 		orderRoute.GET("/generate/invoice", orderController.GenerateInvoice)
 		orderRoute.GET("/view/order", orderController.ViewOrderDetails)

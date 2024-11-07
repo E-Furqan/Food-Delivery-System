@@ -199,9 +199,14 @@ func (orderCtrl *OrderController) AssignDeliveryDriver(c *gin.Context) {
 // @Param Filter body model.Filter true "Sorting details"
 // @Success 200 {array} model.Order "List of Orders"
 // @Failure 400 {object} model.ErrorResponse "Error occurred"
-// @Router /order/view/{UserType}/orders [get]
+// @Router /order/view/orders [get]
 // @Security ApiKeyAuth
-func (orderCtrl *OrderController) GetOrders(c *gin.Context, UserType string) {
+func (orderCtrl *OrderController) GetOrders(c *gin.Context) {
+
+	activeRoleStr, err := utils.VerifyRole(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+	}
 
 	Id, exists := c.Get("ID")
 	if !exists {
@@ -217,14 +222,14 @@ func (orderCtrl *OrderController) GetOrders(c *gin.Context, UserType string) {
 	}
 
 	var order []model.Order
-	var err error
 
-	if UserType == "user" {
+	if utils.IsCustomerOrAdminRole(activeRoleStr) {
 		err = orderCtrl.Repo.GetOrders(&order, IdValue, Filter.ColumnName, Filter.SortOrder, "user_id")
-	} else if UserType == "restaurant" {
+
+	} else if utils.IsRestaurantOrAdminRole(activeRoleStr) {
 		err = orderCtrl.Repo.GetOrders(&order, IdValue, Filter.ColumnName, Filter.SortOrder, "restaurant_id")
 
-	} else if UserType == "delivery driver" {
+	} else if utils.IsDriverOrAdminRole(activeRoleStr) {
 		err = orderCtrl.Repo.GetOrders(&order, IdValue, Filter.ColumnName, Filter.SortOrder, "delivery_driver")
 	}
 
@@ -234,79 +239,6 @@ func (orderCtrl *OrderController) GetOrders(c *gin.Context, UserType string) {
 	}
 
 	c.JSON(http.StatusOK, order)
-}
-
-// GetOrdersOfUser retrieves orders for a user or admin.
-//
-// @Summary Get user orders
-// @Description Allows only customers or admins to view their orders.
-// @Tags Order Service
-// @Param activeRole header string true "Active Role of the User"
-// @Success 200 {array} model.Order "List of Orders"
-// @Failure 400 {object} model.ErrorResponse "Only customer or admin can view the orders"
-// @Router /order/view/user/orders [get]
-// @Security ApiKeyAuth
-func (orderCtrl *OrderController) GetOrdersOfUser(c *gin.Context) {
-
-	activeRoleStr, err := utils.VerifyRole(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-	}
-
-	if strings.ToLower(activeRoleStr) != "customer" && strings.ToLower(activeRoleStr) != "admin" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "only customer or admin can view the orders"})
-		return
-	}
-	orderCtrl.GetOrders(c, "user")
-}
-
-// GetOrdersOfUser retrieves orders for a restaurant or admin.
-//
-// @Summary Get restaurant orders
-// @Description Allows only restaurant or admins to view their orders.
-// @Tags Order Service
-// @Param activeRole header string true "Active Role of the User"
-// @Success 200 {array} model.Order "List of Orders"
-// @Failure 400 {object} model.ErrorResponse "Only restaurant or admin can view the orders"
-// @Router /order/view/restaurant/orders [get]
-// @Security ApiKeyAuth
-func (orderCtrl *OrderController) GetOrdersOfRestaurant(c *gin.Context) {
-
-	activeRoleStr, err := utils.VerifyRole(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-	}
-
-	if strings.ToLower(activeRoleStr) != "restaurant" && strings.ToLower(activeRoleStr) != "admin" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "only restaurant and admin can view the orders"})
-		return
-	}
-	orderCtrl.GetOrders(c, "restaurant")
-}
-
-// GetOrdersOfUser retrieves orders for a driver or admin.
-//
-// @Summary Get driver orders
-// @Description Allows only driver or admins to view their orders.
-// @Tags Order Service
-// @Param activeRole header string true "Active Role of the User"
-// @Success 200 {array} model.Order "List of Orders"
-// @Failure 400 {object} model.ErrorResponse "Only driver or admin can view the orders"
-// @Router /order/view/driver/orders [get]
-// @Security ApiKeyAuth
-func (orderCtrl *OrderController) GetOrdersOfDeliveryDriver(c *gin.Context) {
-
-	activeRoleStr, err := utils.VerifyRole(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-	}
-
-	if strings.ToLower(activeRoleStr) != "delivery driver" && strings.ToLower(activeRoleStr) != "admin" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "only delivery driver and admin can view the orders"})
-		return
-	}
-
-	orderCtrl.GetOrders(c, "delivery driver")
 }
 
 // PlaceOrder godoc
