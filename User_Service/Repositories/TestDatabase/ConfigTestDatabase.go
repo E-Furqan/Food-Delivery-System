@@ -14,7 +14,7 @@ import (
 var DB *gorm.DB
 
 func ConfigTestDatabaseConnection() *gorm.DB {
-	envVar := environmentVariable.ReadEnv()
+	envVar := environmentVariable.ReadDatabaseEnv()
 
 	err := godotenv.Load()
 	if err != nil {

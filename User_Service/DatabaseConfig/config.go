@@ -4,19 +4,18 @@ import (
 	"fmt"
 	"log"
 
-	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 type DatabaseConfig struct {
-	environmentVariable.Environment
+	model.DatabaseEnv
 }
 
-func NewDatabase(env environmentVariable.Environment) *DatabaseConfig {
+func NewDatabase(env model.DatabaseEnv) *DatabaseConfig {
 	return &DatabaseConfig{
-		Environment: env,
+		DatabaseEnv: env,
 	}
 }
 
@@ -25,7 +24,7 @@ var DB *gorm.DB
 func (DatabaseConfig *DatabaseConfig) Connection() *gorm.DB {
 
 	var connection_string = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		DatabaseConfig.Environment.DATABASE_HOST, DatabaseConfig.Environment.DATABASE_PORT, DatabaseConfig.Environment.DATABASE_USER, DatabaseConfig.Environment.DATABASE_PASSWORD, DatabaseConfig.Environment.DATABASE_NAME)
+		DatabaseConfig.DatabaseEnv.DATABASE_HOST, DatabaseConfig.DatabaseEnv.DATABASE_PORT, DatabaseConfig.DatabaseEnv.DATABASE_USER, DatabaseConfig.DatabaseEnv.DATABASE_PASSWORD, DatabaseConfig.DatabaseEnv.DATABASE_NAME)
 
 	DB, err := gorm.Open(postgres.Open(connection_string), &gorm.Config{})
 	log.Print(connection_string)

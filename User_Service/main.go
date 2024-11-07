@@ -14,22 +14,28 @@ import (
 )
 
 func main() {
-	envVar := environmentVariable.ReadEnv()
-	databaseConfig := config.NewDatabase(envVar)
+	DatabaseEnv := environmentVariable.ReadDatabaseEnv()
+	OrderClientEnv := environmentVariable.ReadOrderClientEnv()
+	AuthClientEnv := environmentVariable.ReadAuthClientEnv()
+	MiddlewareEnv := environmentVariable.ReadMiddlewareEnv()
 
+	databaseConfig := config.NewDatabase(DatabaseEnv)
 	db := databaseConfig.Connection()
-
 	repo := database.NewRepository(db)
-	OrdClient := OrderClient.NewClient(envVar)
-	AuthClient := AuthClient.NewClient(envVar)
+
+	OrdClient := OrderClient.NewClient(OrderClientEnv)
+	AuthClient := AuthClient.NewClient(AuthClientEnv)
 
 	ctrl := UserControllers.NewController(repo, OrdClient, AuthClient)
 	rCtrl := RoleController.NewController(repo, AuthClient)
-	middle := Middleware.NewMiddleware(AuthClient, &envVar)
+
+	middle := Middleware.NewMiddleware(AuthClient, &MiddlewareEnv)
 
 	server := gin.Default()
+
 	rCtrl.AddDefaultRoles(nil)
 
 	route.User_routes(ctrl, rCtrl, middle, server)
-	server.Run(":" + envVar.USER_SERVICE_PORT)
+
+	server.Run(":8083")
 }

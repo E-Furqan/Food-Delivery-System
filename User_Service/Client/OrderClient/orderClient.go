@@ -7,17 +7,16 @@ import (
 	"log"
 	"net/http"
 
-	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 )
 
 type OrderClient struct {
-	environmentVariable.Environment
+	model.OrderClientEnv
 }
 
-func NewClient(env environmentVariable.Environment) *OrderClient {
+func NewClient(env model.OrderClientEnv) *OrderClient {
 	return &OrderClient{
-		Environment: env,
+		OrderClientEnv: env,
 	}
 }
 
@@ -28,7 +27,7 @@ func (orderClient *OrderClient) UpdateOrderStatus(input model.UpdateOrder, token
 		return nil, fmt.Errorf("error marshaling input: %v", err)
 	}
 
-	url := fmt.Sprintf("%s%s%s", orderClient.Environment.BASE_URL, orderClient.Environment.ORDER_PORT, orderClient.Environment.UPDATE_ORDER_STATUS_URL)
+	url := fmt.Sprintf("%s%s%s", orderClient.OrderClientEnv.BASE_URL, orderClient.OrderClientEnv.ORDER_PORT, orderClient.OrderClientEnv.UPDATE_ORDER_STATUS_URL)
 	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %v", err)
@@ -62,7 +61,7 @@ func (orderClient *OrderClient) AssignDriver(input model.UpdateOrder, token stri
 		return fmt.Errorf("error marshaling input: %v", err)
 	}
 
-	url := fmt.Sprintf("%s%s%s", orderClient.Environment.BASE_URL, orderClient.Environment.ORDER_PORT, orderClient.Environment.ASSIGN_DRIVER_URL)
+	url := fmt.Sprintf("%s%s%s", orderClient.OrderClientEnv.BASE_URL, orderClient.OrderClientEnv.ORDER_PORT, orderClient.OrderClientEnv.ASSIGN_DRIVER_URL)
 	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return fmt.Errorf("error creating request: %v", err)
@@ -89,7 +88,7 @@ func (orderClient *OrderClient) ViewUserOrders(input model.UpdateOrder) (*[]mode
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling input: %v", err)
 	}
-	url := fmt.Sprintf("%s%s%s", orderClient.Environment.BASE_URL, orderClient.Environment.ORDER_PORT, orderClient.Environment.USER_ORDERS_URL)
+	url := fmt.Sprintf("%s%s%s", orderClient.OrderClientEnv.BASE_URL, orderClient.OrderClientEnv.ORDER_PORT, orderClient.OrderClientEnv.USER_ORDERS_URL)
 	log.Print(url)
 	req, err := http.NewRequest("GET", url, bytes.NewBuffer(jsonData))
 	if err != nil {
@@ -121,7 +120,7 @@ func (orderClient *OrderClient) ViewDriverOrders(input model.UpdateOrder) (*[]mo
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling input: %v", err)
 	}
-	url := fmt.Sprintf("%s%s%s", orderClient.Environment.BASE_URL, orderClient.Environment.ORDER_PORT, orderClient.Environment.DRIVER_ORDERS_URL)
+	url := fmt.Sprintf("%s%s%s", orderClient.OrderClientEnv.BASE_URL, orderClient.OrderClientEnv.ORDER_PORT, orderClient.OrderClientEnv.DRIVER_ORDERS_URL)
 	log.Print(url)
 	req, err := http.NewRequest("GET", url, bytes.NewBuffer(jsonData))
 	if err != nil {
@@ -147,45 +146,13 @@ func (orderClient *OrderClient) ViewDriverOrders(input model.UpdateOrder) (*[]mo
 	return &orders, nil
 }
 
-func (orderClient *OrderClient) ViewOrdersDetails(input model.UpdateOrder, token string) (*model.UpdateOrder, error) {
-
-	jsonData, err := json.Marshal(input)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling input: %v", err)
-	}
-	url := fmt.Sprintf("%s%s%s", orderClient.Environment.BASE_URL, orderClient.Environment.ORDER_PORT, orderClient.Environment.VIEW_ORDER_DETAIL_URL)
-	req, err := http.NewRequest("GET", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		return nil, fmt.Errorf("error creating request: %v", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+token)
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("error sending request: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("received non-200 response: %v", resp.Status)
-	}
-
-	var orders model.UpdateOrder
-	if err := json.NewDecoder(resp.Body).Decode(&orders); err != nil {
-		return nil, fmt.Errorf("error decoding response: %v", err)
-	}
-
-	return &orders, nil
-}
-
 func (orderClient *OrderClient) ViewOrdersWithoutRider(input model.UpdateOrder) (*[]model.UpdateOrder, error) {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling input: %v", err)
 	}
-	url := fmt.Sprintf("%s%s%s", orderClient.Environment.BASE_URL, orderClient.Environment.ORDER_PORT, orderClient.Environment.VIEW_ORDER_WITHOUT_DRIVER_URL)
+	url := fmt.Sprintf("%s%s%s", orderClient.OrderClientEnv.BASE_URL, orderClient.OrderClientEnv.ORDER_PORT, orderClient.OrderClientEnv.VIEW_ORDER_WITHOUT_DRIVER_URL)
 	log.Print(url)
 	req, err := http.NewRequest("GET", url, bytes.NewBuffer(jsonData))
 	if err != nil {
