@@ -1,13 +1,6 @@
-package payload
+package model
 
-import (
-	"github.com/golang-jwt/jwt"
-)
-
-type Environment struct {
-	JWT_SECRET      string
-	RefreshTokenKey string
-}
+import "github.com/golang-jwt/jwt"
 
 type Input struct {
 	ClaimId    uint   `json:"claim_id"`
@@ -28,10 +21,4 @@ type GeneralClaim struct {
 
 func (u *GeneralClaim) SetExpirationTime(expiration int64) {
 	u.ExpiresAt = expiration
-}
-
-type Tokens struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-	Expiration   int64  `json:"expires_at"`
 }

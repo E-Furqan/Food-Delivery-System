@@ -4,15 +4,15 @@ import (
 	"net/http"
 	"time"
 
-	payload "github.com/E-Furqan/Food-Delivery-System/Authentication_Service/Payload"
+	model "github.com/E-Furqan/Food-Delivery-System/Authentication_Service/Model"
 	utils "github.com/E-Furqan/Food-Delivery-System/Authentication_Service/Utils"
 	"github.com/gin-gonic/gin"
 )
 
 func GenerateTokens(c *gin.Context) {
-	var input payload.Input
-	var accessClaims payload.Claims
-	var refreshClaims payload.Claims
+	var input model.Input
+	var accessClaims model.Claims
+	var refreshClaims model.Claims
 
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -27,7 +27,7 @@ func GenerateTokens(c *gin.Context) {
 		return
 	}
 
-	var tokens payload.Tokens
+	var tokens model.Tokens
 	tokens.AccessToken = accessTokenString
 	tokens.RefreshToken = refreshTokenString
 	tokens.Expiration = time.Now().Add(24 * time.Hour).Unix()
@@ -37,7 +37,7 @@ func GenerateTokens(c *gin.Context) {
 }
 
 func ReFreshToken(c *gin.Context) {
-	var input payload.Tokens
+	var input model.Tokens
 
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -51,7 +51,7 @@ func ReFreshToken(c *gin.Context) {
 		return
 	}
 
-	var tokens payload.Tokens
+	var tokens model.Tokens
 	tokens.AccessToken = accessToken
 	tokens.RefreshToken = input.RefreshToken
 	tokens.Expiration = time.Now().Add(30 * time.Minute).Unix()

@@ -3,14 +3,15 @@ package environmentVariable
 import (
 	"log"
 
-	payload "github.com/E-Furqan/Food-Delivery-System/Authentication_Service/Payload"
+	model "github.com/E-Furqan/Food-Delivery-System/Authentication_Service/Model"
+
 	utils "github.com/E-Furqan/Food-Delivery-System/Authentication_Service/Utils"
 	"github.com/joho/godotenv"
 )
 
-var envVar payload.Environment
+var envVar model.AuthSecrets
 
-func ReadEnv() payload.Environment {
+func ReadEnv() model.AuthSecrets {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
