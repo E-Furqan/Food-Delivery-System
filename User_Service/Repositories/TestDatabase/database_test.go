@@ -220,6 +220,9 @@ func TestGetUser(t *testing.T) {
 	assert.Equal(t, fetchUser.RoleStatus, mockUser.RoleStatus)
 	assert.Equal(t, fetchUser.ActiveRole, mockUser.ActiveRole)
 
+	err = repo.GetUser("user", mockUser.UserId, &fetchUser)
+	assert.Error(t, err)
+
 	cleanupDB()
 }
 
@@ -301,6 +304,13 @@ func TestFetchUsersWithRoles(t *testing.T) {
 
 	assert.Contains(t, users[0].Roles, role1)
 	assert.Contains(t, users[1].Roles, role2)
+
+	users1, err := repo.FetchUsersWithRoles("", "")
+	assert.NoError(t, err)
+	assert.Equal(t, 2, len(users1))
+
+	assert.Contains(t, users1[0].Roles, role1)
+	assert.Contains(t, users1[1].Roles, role2)
 
 	cleanupDB()
 }
@@ -430,7 +440,9 @@ func TestBulkCreateRoles(t *testing.T) {
 	cleanupDB()
 
 	roles := []model.Role{
-		{RoleType: "User"},
+		{
+			RoleId:   1,
+			RoleType: "User"},
 		{RoleType: "Admin"},
 		{RoleType: "Manager"},
 	}
@@ -449,7 +461,14 @@ func TestBulkCreateRoles(t *testing.T) {
 		assert.NoError(t, err, "Role should exist in the database")
 		assert.Equal(t, role.RoleType, fetchedRole.RoleType)
 	}
-
+	roles1 := []model.Role{
+		{
+			RoleId:   1,
+			RoleType: "User",
+		},
+	}
+	err = repo.BulkCreateRoles(roles1)
+	assert.Error(t, err)
 	cleanupDB()
 }
 
