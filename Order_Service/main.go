@@ -13,15 +13,23 @@ import (
 
 func main() {
 
-	envVar := environmentVariable.ReadEnv()
-	config := config.NewDatabase(envVar)
-	db := config.Connection()
-	middle := Middleware.NewMiddleware(&envVar)
-	ResClient := RestaurantClient.NewClient(&envVar)
+	DatabaseConfigEnv := environmentVariable.ReadDatabaseConfigEnv()
+	RestaurantClientEnv := environmentVariable.ReadRestaurantClientEnv()
+	MiddlewareEnv := environmentVariable.ReadMiddlewareEnv()
 
+	config := config.NewDatabase(DatabaseConfigEnv)
+	db := config.Connection()
 	repo := database.NewRepository(db)
+
+	middle := Middleware.NewMiddleware(&MiddlewareEnv)
+
+	ResClient := RestaurantClient.NewClient(&RestaurantClientEnv)
+
 	OrderController := OrderControllers.NewController(repo, ResClient)
+
 	server := gin.Default()
+
 	Routes.Order_routes(OrderController, middle, server)
+
 	server.Run(":8081")
 }

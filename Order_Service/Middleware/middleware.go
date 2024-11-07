@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"strings"
 
-	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 	"github.com/gin-gonic/gin"
@@ -12,10 +11,10 @@ import (
 )
 
 type Middleware struct {
-	envVar *environmentVariable.Environment
+	envVar *model.MiddlewareEnv
 }
 
-func NewMiddleware(envVar *environmentVariable.Environment) *Middleware {
+func NewMiddleware(envVar *model.MiddlewareEnv) *Middleware {
 	return &Middleware{
 		envVar: envVar,
 	}

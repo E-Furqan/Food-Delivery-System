@@ -6,15 +6,14 @@ import (
 	"fmt"
 	"net/http"
 
-	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 )
 
 type RestaurantClient struct {
-	envVar *environmentVariable.Environment
+	envVar *model.RestaurantClientEnv
 }
 
-func NewClient(envVar *environmentVariable.Environment) *RestaurantClient {
+func NewClient(envVar *model.RestaurantClientEnv) *RestaurantClient {
 	return &RestaurantClient{
 		envVar: envVar,
 	}
