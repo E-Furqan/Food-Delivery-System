@@ -21,7 +21,6 @@ func main() {
 
 	databaseConfig := config.NewDatabase(DatabaseEnv)
 	db := databaseConfig.Connection()
-	databaseConfig.RunMigrations()
 
 	OrdClient := OrderClient.NewClient(OrderClientEnv)
 	AuthClient := AuthClient.NewClient(AuthClientEnv)

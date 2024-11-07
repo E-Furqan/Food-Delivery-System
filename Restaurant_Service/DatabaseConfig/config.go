@@ -3,13 +3,12 @@ package config
 import (
 	"fmt"
 	"log"
-	"path/filepath"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
-	"github.com/golang-migrate/migrate"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -57,31 +56,37 @@ func (DatabaseConfig *DatabaseConfig) Connection() *gorm.DB {
 	return DB
 }
 
-func (DatabaseConfig *DatabaseConfig) RunMigrations() {
-	// Use Docker service name for the database connection
-	connectionString := "postgres://furqan:furqan@restaurant_service_db_1:5432/Restaurant?sslmode=disable"
+// func (DatabaseConfig *DatabaseConfig) RunMigrations() {
+// 	// Use Docker service name for the database connection
+// 	var connection_string = fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
+// 		DatabaseConfig.DatabaseEnv.DATABASE_USER,
+// 		DatabaseConfig.DatabaseEnv.DATABASE_PASSWORD,
+// 		DatabaseConfig.DatabaseEnv.DATABASE_HOST,
+// 		DatabaseConfig.DatabaseEnv.DATABASE_PORT,
+// 		DatabaseConfig.DatabaseEnv.DATABASE_NAME)
 
-	absPath, err := filepath.Abs("./Migration")
-	if err != nil {
-		log.Printf("Error getting absolute path: %v", err)
-	}
-	log.Printf("pringint %s", absPath)
-	absPath = "file://" + absPath
-	log.Printf("Using migration path: %s", absPath)
-	log.Printf("Using connectionString: %s", connectionString)
+// 	// absPath, err := filepath.Abs("./Migration")
+// 	// if err != nil {
+// 	// 	log.Printf("Error getting absolute path: %v", err)
+// 	// }
+// 	absPath := "/app/Migration"
+// 	// absPath = "file://" + absPath
 
-	m, err := migrate.New(
-		absPath, // Ensure the source has file:// scheme
-		connectionString,
-	)
-	if err != nil {
-		log.Fatalf("Migration instance error: %v", err)
-	}
+// 	log.Printf("Using migration path: %s", absPath)
+// 	log.Printf("Using connectionString: %s", connection_string)
 
-	err = m.Up()
-	if err != nil && err != migrate.ErrNoChange {
-		log.Fatalf("Migration failed: %v", err)
-	}
+// 	m, err := migrate.New(
+// 		absPath,
+// 		connection_string,
+// 	)
+// 	if err != nil {
+// 		log.Fatalf("Migration instance error: %v", err)
+// 	}
 
-	log.Println("Migrations applied successfully")
-}
+// 	err = m.Up()
+// 	if err != nil && err != migrate.ErrNoChange {
+// 		log.Fatalf("Migration failed: %v", err)
+// 	}
+
+// 	log.Println("Migrations applied successfully")
+// }

@@ -13,7 +13,7 @@ func ReadDatabaseEnv() model.DatabaseEnv {
 	var envVar model.DatabaseEnv
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+		log.Printf("Error loading .env file: %v", err)
 	}
 
 	envVar.DATABASE_HOST = utils.GetEnv("DATABASE_HOST", "db")
@@ -23,7 +23,7 @@ func ReadDatabaseEnv() model.DatabaseEnv {
 	portStr := utils.GetEnv("PORT", "5432")
 	envVar.DATABASE_PORT, err = strconv.Atoi(portStr)
 	if err != nil {
-		log.Fatalf("Error converting PORT to integer: %v", err)
+		log.Printf("Error converting PORT to integer: %v", err)
 		envVar.DATABASE_PORT = 5432
 	}
 	return envVar
