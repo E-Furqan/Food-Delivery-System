@@ -54,7 +54,7 @@ func (repo *Repository) LoadRestaurantWithItems(Restaurant *model.Restaurant) er
 
 	tx := repo.DB.Begin()
 
-	err := tx.Preload("Items").First(Restaurant, Restaurant.RestaurantId).Error
+	err := tx.Model(Restaurant).Association("Items").Find(&Restaurant.Items)
 	if err != nil {
 		log.Printf("Error loading Restaurant with Item: %v", err)
 		tx.Rollback()

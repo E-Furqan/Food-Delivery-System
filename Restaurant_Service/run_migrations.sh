@@ -15,8 +15,8 @@ done
 
 # Run migrations
 echo "Running migrations..."
-psql -h $DATABASE_HOST -U "$DATABASE_USER" -d "$DATABASE_NAME" -f /app/Migration/1_create_restaurants_table.sql
-psql -h $DATABASE_HOST -U "$DATABASE_USER" -d "$DATABASE_NAME" -f /app/Migration/2_create_items_table.sql
+psql -h $DATABASE_HOST -U "$DATABASE_USER" -d "$DATABASE_NAME" -f /app/Migration/001_create_restaurants_table.up.sql
+psql -h $DATABASE_HOST -U "$DATABASE_USER" -d "$DATABASE_NAME" -f /app/Migration/002_create_items_table.up.sql
 
 # Start the main service
 echo "Starting application..."

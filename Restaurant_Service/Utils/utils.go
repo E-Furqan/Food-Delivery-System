@@ -2,7 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"net/http"
 	"os"
 	"strings"
 
@@ -41,17 +40,15 @@ func GetEnv(key string, defaultVal string) string {
 	return defaultVal
 }
 
-func GetAuthToken(c *gin.Context) string {
+func GetAuthToken(c *gin.Context) (string, error) {
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {
-		GenerateResponse(http.StatusUnauthorized, c, "Message", "authorization token not provided", "error", nil)
-		return ""
+		return "", fmt.Errorf("authorization token not provided")
 	}
 	tokenParts := strings.Split(authHeader, " ")
 	if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
-		GenerateResponse(http.StatusUnauthorized, c, "Message", "invalid authorization header format", "error", nil)
-		return ""
+		return "", fmt.Errorf("invalid authorization header format")
 	}
 	token := tokenParts[1]
-	return token
+	return token, nil
 }

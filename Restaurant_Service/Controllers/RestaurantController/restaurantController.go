@@ -10,7 +10,6 @@ import (
 	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 	"github.com/gin-gonic/gin"
-	"github.com/lib/pq"
 )
 
 type RestaurantController struct {
@@ -38,12 +37,7 @@ func (ctrl *RestaurantController) Register(c *gin.Context) {
 
 	err := ctrl.Repo.CreateRestaurant(&registrationData)
 	if err != nil {
-		pqErr, ok := err.(*pq.Error)
-		if ok {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": pqErr.Message})
-		} else {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -100,7 +94,6 @@ func (ctrl *RestaurantController) GetAllRestaurants(c *gin.Context) {
 
 func (ctrl *RestaurantController) UpdateRestaurantStatus(c *gin.Context) {
 	RestaurantID, err := utils.Verification(c)
-
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Restaurant not authenticated"})
 		return
@@ -174,7 +167,12 @@ func (ctrl *RestaurantController) UpdateOrderStatus(c *gin.Context) {
 		return
 	}
 	order.RestaurantId = RestaurantIDValue
-	token := utils.GetAuthToken(c)
+
+	token, err := utils.GetAuthToken(c)
+	if err != nil {
+		utils.GenerateResponse(http.StatusUnauthorized, c, "error", err.Error(), "", nil)
+		return
+	}
 
 	if err := ctrl.OrderClient.UpdateOrderStatus(order, token); err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Post request failed", "Error", err.Error())
@@ -199,15 +197,20 @@ func (ctrl *RestaurantController) ViewRestaurantOrders(c *gin.Context) {
 		return
 	}
 
-	token := utils.GetAuthToken(c)
-	var restaurantId model.Input
+	token, err := utils.GetAuthToken(c)
+	if err != nil {
+		utils.GenerateResponse(http.StatusUnauthorized, c, "error", err.Error(), "", nil)
+		return
+	}
 
+	var restaurantId model.Input
 	restaurantId.RestaurantId = Restaurant.RestaurantId
 	Orders, err := ctrl.OrderClient.ViewRestaurantOrders(restaurantId, token)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	var filter model.OrderFilter
 	if err := c.ShouldBindJSON(&filter); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -215,7 +218,6 @@ func (ctrl *RestaurantController) ViewRestaurantOrders(c *gin.Context) {
 	}
 
 	var filteredOrders []model.OrderDetails
-
 	for _, order := range *Orders {
 		if filter.Filter == "all" || filter.Filter == "" || strings.EqualFold(order.OrderStatus, filter.Filter) {
 			filteredOrders = append(filteredOrders, order)

@@ -8,6 +8,7 @@ type Restaurant struct {
 	RestaurantEmail       string `json:"restaurant_email"`
 	Password              string `json:"password"`
 	RestaurantStatus      string `json:"restaurant_status"`
+	Items                 []Item `json:"items"`
 }
 
 type Credentials struct {

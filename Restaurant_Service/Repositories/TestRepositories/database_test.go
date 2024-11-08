@@ -64,6 +64,9 @@ func TestCreateRestaurant(t *testing.T) {
 	assert.Equal(t, mockRestaurant.Password, restaurant.Password)
 	assert.Equal(t, mockRestaurant.RestaurantStatus, restaurant.RestaurantStatus)
 
+	err = repo.CreateRestaurant(&mockRestaurant)
+	assert.Error(t, err)
+
 	cleanupDB()
 }
 
@@ -94,6 +97,9 @@ func TestGetRestaurant(t *testing.T) {
 	assert.Equal(t, mockRestaurant.RestaurantEmail, restaurant.RestaurantEmail)
 	assert.Equal(t, mockRestaurant.Password, restaurant.Password)
 	assert.Equal(t, mockRestaurant.RestaurantStatus, restaurant.RestaurantStatus)
+
+	err = repo.GetRestaurant("restaurant_id", 96, &restaurant)
+	assert.Error(t, err)
 
 	cleanupDB()
 }
@@ -133,15 +139,15 @@ func TestLoadRestaurantWithItems(t *testing.T) {
 	err = repo.LoadRestaurantWithItems(&mockRestaurant)
 	assert.NoError(t, err)
 
-	// assert.NotEmpty(t, mockRestaurant.Items)
-	// assert.Equal(t, len(mockItems), len(mockRestaurant.Items))
+	assert.NotEmpty(t, mockRestaurant.Items)
+	assert.Equal(t, len(mockItems), len(mockRestaurant.Items))
 
-	// for i, item := range mockRestaurant.Items {
-	// 	assert.Equal(t, mockItems[i].ItemName, item.ItemName)
-	// 	assert.Equal(t, mockItems[i].ItemDescription, item.ItemDescription)
-	// 	assert.Equal(t, mockItems[i].ItemPrice, item.ItemPrice)
-	// 	assert.Equal(t, mockItems[i].RestaurantId, item.RestaurantId)
-	// }
+	for i, item := range mockRestaurant.Items {
+		assert.Equal(t, mockItems[i].ItemName, item.ItemName)
+		assert.Equal(t, mockItems[i].ItemDescription, item.ItemDescription)
+		assert.Equal(t, mockItems[i].ItemPrice, item.ItemPrice)
+		assert.Equal(t, mockItems[i].RestaurantId, item.RestaurantId)
+	}
 
 	cleanupDB()
 }

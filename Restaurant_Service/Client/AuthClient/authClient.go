@@ -25,6 +25,7 @@ func (client *AuthClient) GenerateToken(input model.RestaurantClaim) (*model.Tok
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling input: %v", err)
 	}
+
 	url := fmt.Sprintf("%s%s%s", client.AuthClientEnv.BASE_URL, client.AuthClientEnv.AUTH_PORT, client.AuthClientEnv.GENERATE_TOKEN_URL)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
