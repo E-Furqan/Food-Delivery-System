@@ -39,6 +39,7 @@ func cleanupDB() {
 func TestGetOrders(t *testing.T) {
 	repo := setupRepository()
 	cleanupDB()
+
 	mockOrder := model.Order{
 		UserId:           1,
 		RestaurantID:     1,
@@ -68,13 +69,25 @@ func TestGetOrders(t *testing.T) {
 
 	err = repo.GetOrders(&orders, mockOrder.UserId, "order_id", "asc", "user_id")
 	assert.NoError(t, err)
-
 	assert.Len(t, orders, 1)
 	assert.Equal(t, mockOrder.OrderID, orders[0].OrderID)
 	assert.Equal(t, mockOrder.OrderStatus, orders[0].OrderStatus)
 	assert.Equal(t, mockOrder.TotalBill, orders[0].TotalBill)
 	assert.Len(t, orders[0].Item, 1)
 	assert.Equal(t, mockItem.ItemId, orders[0].Item[0].ItemId)
+
+	err = repo.GetOrders(&orders, mockOrder.UserId, "order_id", "invalid_sort_order", "user_id")
+	assert.NoError(t, err)
+
+	err = repo.GetOrders(&orders, mockOrder.UserId, "invalid_column", "asc", "user_id")
+	assert.NoError(t, err)
+
+	err = repo.GetOrders(&orders, 9999, "order_id", "asc", "user_id")
+	assert.NoError(t, err)
+	assert.Len(t, orders, 0)
+
+	err = repo.GetOrders(&orders, mockOrder.UserId, "order_id", "asc", "invalid_search_column")
+	assert.Error(t, err)
 
 	cleanupDB()
 }
@@ -117,6 +130,11 @@ func TestGetOrder(t *testing.T) {
 	assert.Equal(t, mockOrder.TotalBill, order.TotalBill)
 	assert.Len(t, order.Item, 1)
 	assert.Equal(t, mockItem.ItemId, order.Item[0].ItemId)
+	cleanupDB()
+	var order1 model.Order
+	err = repo.GetOrder(&order1, 8989898)
+	assert.NoError(t, err)
+	assert.Equal(t, uint(0), order1.OrderID)
 
 	cleanupDB()
 }

@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"log"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 
@@ -35,6 +36,10 @@ func (repo *Repository) GetOrders(order *[]model.Order, ID uint, columnName stri
 		columnName = "order_id"
 	}
 
+	if !validColumns[searchColumn] {
+		return fmt.Errorf("invalid search column: %s", searchColumn)
+	}
+
 	tx := repo.DB.Begin()
 	err := repo.DB.Where((fmt.Sprintf("%s = ?", searchColumn)), ID).Preload("Item").Order(fmt.Sprintf("%s %s", columnName, SortOrder)).Find(order).Error
 	if err != nil {
@@ -52,6 +57,9 @@ func (repo *Repository) GetOrders(order *[]model.Order, ID uint, columnName stri
 func (repo *Repository) GetOrder(order *model.Order, OrderId uint) error {
 	tx := repo.DB.Begin()
 	err := tx.Where("order_id = ?", OrderId).Preload("Item").First(order).Error
+	log.Printf("errror: %s", err)
+	log.Print("order: ", order)
+	log.Printf("OrderId: %v", OrderId)
 	if err != nil {
 		tx.Rollback()
 		return nil

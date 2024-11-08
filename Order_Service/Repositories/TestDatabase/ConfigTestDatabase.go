@@ -18,11 +18,11 @@ func TestDatabaseConnection() *gorm.DB {
 
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+		log.Printf("Error loading .env file: %v", err)
 	}
 
 	var connection_string = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		envVar.DATABASE_HOST, envVar.DATABASE_PORT, envVar.DATABASE_USER, envVar.DATABASE_PASSWORD, "testorder")
+		"0.0.0.0", 5431, envVar.DATABASE_USER, envVar.DATABASE_PASSWORD, "testorder")
 
 	DB, err = gorm.Open(postgres.Open(connection_string), &gorm.Config{})
 	if err != nil {
