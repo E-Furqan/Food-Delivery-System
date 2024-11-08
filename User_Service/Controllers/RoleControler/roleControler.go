@@ -24,7 +24,7 @@ func NewController(repo *database.Repository, AuthClient *AuthClient.AuthClient)
 
 func (rCtrl *RoleController) AddRolesByAdmin(c *gin.Context) {
 
-	_, err := utils.VerifyActiveRole(c)
+	_, err := utils.VerifyActiveAdminRole(c)
 	if err != nil {
 		utils.GenerateResponse(http.StatusUnauthorized, c, "Message", "user not authenticated", "error", err.Error())
 		return
@@ -51,7 +51,7 @@ func (rCtrl *RoleController) AddRolesByAdmin(c *gin.Context) {
 
 func (rCtrl *RoleController) GetRoles(c *gin.Context) {
 
-	_, err := utils.VerifyActiveRole(c)
+	_, err := utils.VerifyActiveAdminRole(c)
 	if err != nil {
 		utils.GenerateResponse(http.StatusUnauthorized, c, "Message", "user not authenticated", "error", err.Error())
 		return
@@ -68,7 +68,7 @@ func (rCtrl *RoleController) GetRoles(c *gin.Context) {
 
 func (rCtrl *RoleController) DeleteRole(c *gin.Context) {
 
-	_, err := utils.VerifyActiveRole(c)
+	_, err := utils.VerifyActiveAdminRole(c)
 	if err != nil {
 		utils.GenerateResponse(http.StatusUnauthorized, c, "Message", "user not authenticated", "error", err.Error())
 		return

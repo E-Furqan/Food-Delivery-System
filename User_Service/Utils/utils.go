@@ -2,7 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"net/http"
 	"os"
 	"strings"
 
@@ -36,10 +35,10 @@ func VerifyUserId(c *gin.Context) (any, error) {
 	return userId, nil
 }
 
-func VerifyActiveRole(c *gin.Context) (any, error) {
-	activeRole, exists := c.Get("activeRole")
-	if !exists {
-		return activeRole, fmt.Errorf("invalid Role Type")
+func VerifyActiveAdminRole(c *gin.Context) (any, error) {
+	activeRole, err := FetchActiveRole(c)
+	if err != nil {
+		return activeRole, err
 	}
 
 	if activeRole != "Admin" {
@@ -63,17 +62,36 @@ func GetEnv(key string, defaultVal string) string {
 	return defaultVal
 }
 
-func GetAuthToken(c *gin.Context) string {
+func GetAuthToken(c *gin.Context) (string, error) {
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {
-		GenerateResponse(http.StatusUnauthorized, c, "Message", "authorization token not provided", "error", nil)
-		return ""
+		return "", fmt.Errorf("authorization token not provided")
 	}
+
 	tokenParts := strings.Split(authHeader, " ")
 	if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
-		GenerateResponse(http.StatusUnauthorized, c, "Message", "invalid authorization header format", "error", nil)
-		return ""
+		return "", fmt.Errorf("invalid authorization header format")
 	}
+
 	token := tokenParts[1]
-	return token
+	return token, nil
+}
+
+func FetchActiveRole(c *gin.Context) (any, error) {
+
+	activeRole, exists := c.Get("activeRole")
+	if !exists {
+		return nil, fmt.Errorf("user role does not exist")
+	}
+
+	return activeRole, nil
+}
+
+func VerifyIfDriver(activeRole any) error {
+
+	if activeRole != "Delivery driver" {
+		return fmt.Errorf("insufficient permission")
+	}
+
+	return nil
 }

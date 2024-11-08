@@ -90,14 +90,9 @@ func (ctrl *Controller) Login(c *gin.Context) {
 
 func (ctrl *Controller) GetUsers(c *gin.Context) {
 
-	activeRole, exists := c.Get("activeRole")
-	if !exists {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "User not authenticated", "", nil)
-		return
-	}
-
-	if activeRole != "Admin" {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "You do not have the privileges to view users.", "", nil)
+	_, err := utils.VerifyActiveAdminRole(c)
+	if err != nil {
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Message", "user not authenticated", "error", err.Error())
 		return
 	}
 
@@ -110,7 +105,7 @@ func (ctrl *Controller) GetUsers(c *gin.Context) {
 		return
 	}
 
-	userData, err := ctrl.Repo.FetchUsersWithRoles(OrderInfo.ColumnName, OrderInfo.OrderType)
+	userData, err = ctrl.Repo.FetchUsersWithRoles(OrderInfo.ColumnName, OrderInfo.OrderType)
 
 	if err != nil {
 		utils.GenerateResponse(http.StatusInternalServerError, c, "error", err.Error(), "", nil)
@@ -224,18 +219,14 @@ func (ctrl *Controller) Profile(c *gin.Context) {
 }
 
 func (ctrl *Controller) SearchForUser(c *gin.Context) {
-	role, exists := c.Get("activeRole")
-	if !exists {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "User not authenticated", "", nil)
-		return
-	}
-	if role != "Admin" {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "You do not have the privileges to Search for users.", "", nil)
+	_, err := utils.VerifyActiveAdminRole(c)
+	if err != nil {
+		utils.GenerateResponse(http.StatusUnauthorized, c, "Message", "user not authenticated", "error", err.Error())
 		return
 	}
 
 	var input model.UserSearch
-	err := c.ShouldBindJSON(&input)
+	err = c.ShouldBindJSON(&input)
 	if err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "error", err.Error(), "", nil)
 		return
@@ -286,7 +277,11 @@ func (ctrl *Controller) UpdateOrderStatus(c *gin.Context) {
 		return
 	}
 
-	token := utils.GetAuthToken(c)
+	token, err := utils.GetAuthToken(c)
+	if err != nil {
+		utils.GenerateResponse(http.StatusUnauthorized, c, "error", err.Error(), "", nil)
+		return
+	}
 
 	user := model.User{}
 	err = ctrl.Repo.GetUser("user_id", UserId, &user)
@@ -335,13 +330,14 @@ func (ctrl *Controller) ViewDriverOrders(c *gin.Context) {
 		return
 	}
 
-	activeRole, exists := c.Get("activeRole")
-	if !exists {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "User role does not exist", "", nil)
+	activeRole, err := utils.FetchActiveRole(c)
+	if err != nil {
+		utils.GenerateResponse(http.StatusUnauthorized, c, "error", err.Error(), "", nil)
 		return
 	}
 
-	if activeRole != "Delivery driver" {
+	err = utils.VerifyIfDriver(activeRole)
+	if err != nil {
 		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "insufficient permission", "", nil)
 		return
 	}
@@ -373,13 +369,14 @@ func (ctrl *Controller) ViewOrdersWithoutDriver(c *gin.Context) {
 		return
 	}
 
-	activeRole, exists := c.Get("activeRole")
-	if !exists {
-		utils.GenerateResponse(http.StatusBadRequest, c, "error", "User role does not exist", "", nil)
+	activeRole, err := utils.FetchActiveRole(c)
+	if err != nil {
+		utils.GenerateResponse(http.StatusUnauthorized, c, "error", err.Error(), "", nil)
 		return
 	}
 
-	if activeRole != "Delivery driver" {
+	err = utils.VerifyIfDriver(activeRole)
+	if err != nil {
 		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "insufficient permission", "", nil)
 		return
 	}
@@ -410,18 +407,23 @@ func (ctrl *Controller) AssignDriver(c *gin.Context) {
 		return
 	}
 
-	activeRole, exists := c.Get("activeRole")
-	if !exists {
-		utils.GenerateResponse(http.StatusNotFound, c, "error", "User role does not exist", "", nil)
+	activeRole, err := utils.FetchActiveRole(c)
+	if err != nil {
+		utils.GenerateResponse(http.StatusUnauthorized, c, "error", err.Error(), "", nil)
 		return
 	}
 
-	if activeRole != "Delivery driver" {
+	err = utils.VerifyIfDriver(activeRole)
+	if err != nil {
 		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "insufficient permission", "", nil)
 		return
 	}
 
-	token := utils.GetAuthToken(c)
+	token, err := utils.GetAuthToken(c)
+	if err != nil {
+		utils.GenerateResponse(http.StatusUnauthorized, c, "error", err.Error(), "", nil)
+		return
+	}
 
 	var driver model.User
 	err = ctrl.Repo.GetUser("user_id", UserId, &driver)
