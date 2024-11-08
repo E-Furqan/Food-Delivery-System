@@ -26,7 +26,7 @@ func NewController(repo *database.Repository, OrderClient *OrderClient.OrderClie
 		AuthClient:  AuthClient,
 	}
 }
-kingkong
+
 func (ctrl *Controller) Register(c *gin.Context) {
 
 	var registrationData model.User
