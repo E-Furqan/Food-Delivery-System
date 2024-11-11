@@ -4,18 +4,9 @@ import (
 	"net/http"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
-	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 	"github.com/gin-gonic/gin"
 )
-
-type ItemController struct {
-	Repo *database.Repository
-}
-
-func NewController(repo *database.Repository) *ItemController {
-	return &ItemController{Repo: repo}
-}
 
 func (ItemController *ItemController) AddItemsInMenu(c *gin.Context) {
 
