@@ -21,16 +21,19 @@ func main() {
 
 	databaseConfig := config.NewDatabase(DatabaseEnv)
 	db := databaseConfig.Connection()
+	repo := database.NewRepository(db)
 
 	OrdClient := OrderClient.NewClient(OrderClientEnv)
 	AuthClient := AuthClient.NewClient(AuthClientEnv)
 
-	repo := database.NewRepository(db)
-	ctrl := RestaurantController.NewController(repo, OrdClient, AuthClient)
-	ItemController := ItemController.NewController(repo)
+	var ctrl RestaurantController.RestaurantControllerInterface
+	var ItemCtrl ItemController.ItemControllerInterface
+	ctrl = RestaurantController.NewController(repo, OrdClient, AuthClient)
+	ItemCtrl = ItemController.NewController(repo)
+
 	middle := Middleware.NewMiddleware(AuthClient, &MiddlewareEnv)
 
 	server := gin.Default()
-	route.Restaurant_routes(ctrl, ItemController, middle, server)
+	route.Restaurant_routes(ctrl, ItemCtrl, middle, server)
 	server.Run(":8082")
 }
