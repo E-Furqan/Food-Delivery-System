@@ -9,16 +9,6 @@ import (
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 )
 
-type AuthClient struct {
-	model.AuthClientEnv
-}
-
-func NewClient(env model.AuthClientEnv) *AuthClient {
-	return &AuthClient{
-		AuthClientEnv: env,
-	}
-}
-
 func (client *AuthClient) GenerateToken(input model.RestaurantClaim) (*model.Tokens, error) {
 
 	jsonData, err := json.Marshal(input)

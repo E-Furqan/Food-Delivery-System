@@ -21,10 +21,11 @@ func main() {
 
 	databaseConfig := config.NewDatabase(DatabaseEnv)
 	db := databaseConfig.Connection()
-	repo := database.NewRepository(db)
 
-	OrdClient := OrderClient.NewClient(OrderClientEnv)
-	AuthClient := AuthClient.NewClient(AuthClientEnv)
+	var repo database.RepositoryInterface = database.NewRepository(db)
+
+	var OrdClient OrderClient.OrdClientInterface = OrderClient.NewClient(OrderClientEnv)
+	var AuthClient AuthClient.AuthClientInterface = AuthClient.NewClient(AuthClientEnv)
 
 	var RestaurantCtrl RestaurantController.RestaurantControllerInterface
 	var ItemCtrl ItemController.ItemControllerInterface

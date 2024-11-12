@@ -12,11 +12,11 @@ import (
 )
 
 type Middleware struct {
-	AuthClient *AuthClient.AuthClient
+	AuthClient AuthClient.AuthClientInterface
 	envVar     *model.MiddlewareEnv
 }
 
-func NewMiddleware(AuthClient *AuthClient.AuthClient, envVar *model.MiddlewareEnv) *Middleware {
+func NewMiddleware(AuthClient AuthClient.AuthClientInterface, envVar *model.MiddlewareEnv) *Middleware {
 	return &Middleware{
 		AuthClient: AuthClient,
 		envVar:     envVar,

@@ -6,10 +6,10 @@ import (
 )
 
 type ItemController struct {
-	Repo *database.Repository
+	Repo database.RepositoryInterface
 }
 
-func NewController(repo *database.Repository) *ItemController {
+func NewController(repo database.RepositoryInterface) *ItemController {
 	return &ItemController{Repo: repo}
 }
 
