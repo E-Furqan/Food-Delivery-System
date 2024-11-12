@@ -26,14 +26,14 @@ func main() {
 	OrdClient := OrderClient.NewClient(OrderClientEnv)
 	AuthClient := AuthClient.NewClient(AuthClientEnv)
 
-	var ctrl RestaurantController.RestaurantControllerInterface
+	var RestaurantCtrl RestaurantController.RestaurantControllerInterface
 	var ItemCtrl ItemController.ItemControllerInterface
-	ctrl = RestaurantController.NewController(repo, OrdClient, AuthClient)
+	RestaurantCtrl = RestaurantController.NewController(repo, OrdClient, AuthClient)
 	ItemCtrl = ItemController.NewController(repo)
 
-	middle := Middleware.NewMiddleware(AuthClient, &MiddlewareEnv)
+	middleware := Middleware.NewMiddleware(AuthClient, &MiddlewareEnv)
 
 	server := gin.Default()
-	route.Restaurant_routes(ctrl, ItemCtrl, middle, server)
+	route.Restaurant_routes(RestaurantCtrl, ItemCtrl, middleware, server)
 	server.Run(":8082")
 }
