@@ -5,27 +5,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/E-Furqan/Food-Delivery-System/Client/AuthClient"
-	"github.com/E-Furqan/Food-Delivery-System/Client/OrderClient"
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
-	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 	"github.com/gin-gonic/gin"
 )
-
-type Controller struct {
-	Repo        *database.Repository
-	OrderClient *OrderClient.OrderClient
-	AuthClient  *AuthClient.AuthClient
-}
-
-func NewController(repo *database.Repository, OrderClient *OrderClient.OrderClient, AuthClient *AuthClient.AuthClient) *Controller {
-	return &Controller{
-		Repo:        repo,
-		OrderClient: OrderClient,
-		AuthClient:  AuthClient,
-	}
-}
 
 func (ctrl *Controller) Register(c *gin.Context) {
 

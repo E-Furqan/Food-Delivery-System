@@ -1,14 +1,14 @@
 package route
 
 import (
-	roleController "github.com/E-Furqan/Food-Delivery-System/Controllers/RoleControler"
+	RoleController "github.com/E-Furqan/Food-Delivery-System/Controllers/RoleControler"
 	UserControllers "github.com/E-Furqan/Food-Delivery-System/Controllers/UserController"
 	"github.com/E-Furqan/Food-Delivery-System/Middleware"
 
 	"github.com/gin-gonic/gin"
 )
 
-func User_routes(ctrl *UserControllers.Controller, rCtrl *roleController.RoleController, middleware *Middleware.Middleware, server *gin.Engine) {
+func User_routes(ctrl UserControllers.UserControllerInterface, rCtrl RoleController.RoleControllerInterface, middleware *Middleware.Middleware, server *gin.Engine) {
 
 	user := server.Group("/user")
 	user.POST("/register", ctrl.Register)

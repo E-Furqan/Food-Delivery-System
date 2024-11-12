@@ -1,26 +1,13 @@
-package roleController
+package RoleController
 
 import (
 	"log"
 	"net/http"
 
-	"github.com/E-Furqan/Food-Delivery-System/Client/AuthClient"
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
-	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 	"github.com/gin-gonic/gin"
 )
-
-type RoleController struct {
-	Repo       *database.Repository
-	AuthClient *AuthClient.AuthClient
-}
-
-func NewController(repo *database.Repository, AuthClient *AuthClient.AuthClient) *RoleController {
-	return &RoleController{
-		Repo:       repo,
-		AuthClient: AuthClient}
-}
 
 func (rCtrl *RoleController) AddRolesByAdmin(c *gin.Context) {
 

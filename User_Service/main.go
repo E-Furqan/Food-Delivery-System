@@ -26,8 +26,11 @@ func main() {
 	OrdClient := OrderClient.NewClient(OrderClientEnv)
 	AuthClient := AuthClient.NewClient(AuthClientEnv)
 
-	ctrl := UserControllers.NewController(repo, OrdClient, AuthClient)
-	rCtrl := RoleController.NewController(repo, AuthClient)
+	var uCtrl UserControllers.UserControllerInterface
+	var rCtrl RoleController.RoleControllerInterface
+
+	uCtrl = UserControllers.NewController(repo, OrdClient, AuthClient)
+	rCtrl = RoleController.NewController(repo, AuthClient)
 
 	middle := Middleware.NewMiddleware(AuthClient, &MiddlewareEnv)
 
@@ -35,7 +38,7 @@ func main() {
 
 	rCtrl.AddDefaultRoles(nil)
 
-	route.User_routes(ctrl, rCtrl, middle, server)
+	route.User_routes(uCtrl, rCtrl, middle, server)
 
 	server.Run(":8083")
 }
