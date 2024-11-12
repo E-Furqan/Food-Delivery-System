@@ -22,7 +22,7 @@ func main() {
 
 	var repo database.RepositoryInterface = database.NewRepository(db)
 
-	middle := Middleware.NewMiddleware(&MiddlewareEnv)
+	var middle Middleware.MiddlewareInterface = Middleware.NewMiddleware(&MiddlewareEnv)
 
 	var ResClient RestaurantClient.RestaurantClientInterface = RestaurantClient.NewClient(&RestaurantClientEnv)
 	var OrderCtrl OrderControllers.OrderControllerInterface = OrderControllers.NewController(repo, ResClient)

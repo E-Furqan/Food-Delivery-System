@@ -10,16 +10,6 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-type Middleware struct {
-	envVar *model.MiddlewareEnv
-}
-
-func NewMiddleware(envVar *model.MiddlewareEnv) *Middleware {
-	return &Middleware{
-		envVar: envVar,
-	}
-}
-
 func (middle *Middleware) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString := c.GetHeader("Authorization")
