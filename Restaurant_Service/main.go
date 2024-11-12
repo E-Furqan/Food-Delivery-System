@@ -32,7 +32,7 @@ func main() {
 	RestaurantCtrl = RestaurantController.NewController(repo, OrdClient, AuthClient)
 	ItemCtrl = ItemController.NewController(repo)
 
-	middleware := Middleware.NewMiddleware(AuthClient, &MiddlewareEnv)
+	var middleware Middleware.MiddlewareInterface = Middleware.NewMiddleware(AuthClient, &MiddlewareEnv)
 
 	server := gin.Default()
 	route.Restaurant_routes(RestaurantCtrl, ItemCtrl, middleware, server)

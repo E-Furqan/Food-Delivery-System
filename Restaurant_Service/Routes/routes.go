@@ -9,7 +9,7 @@ import (
 
 func Restaurant_routes(RestaurantController RestaurantController.RestaurantControllerInterface,
 	ItemController ItemController.ItemControllerInterface,
-	middleware *Middleware.Middleware, server *gin.Engine) {
+	middleware Middleware.MiddlewareInterface, server *gin.Engine) {
 
 	restaurantRoute := server.Group("/restaurant")
 	restaurantRoute.POST("/register", RestaurantController.Register)
