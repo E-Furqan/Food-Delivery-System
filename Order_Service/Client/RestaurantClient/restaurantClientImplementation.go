@@ -9,16 +9,6 @@ import (
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 )
 
-type RestaurantClient struct {
-	envVar *model.RestaurantClientEnv
-}
-
-func NewClient(envVar *model.RestaurantClientEnv) *RestaurantClient {
-	return &RestaurantClient{
-		envVar: envVar,
-	}
-}
-
 func (client *RestaurantClient) GetItems(getItems model.GetItems) ([]model.Items, error) {
 
 	body, err := json.Marshal(getItems)

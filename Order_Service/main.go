@@ -19,17 +19,17 @@ func main() {
 
 	config := config.NewDatabase(DatabaseConfigEnv)
 	db := config.Connection()
-	repo := database.NewRepository(db)
+
+	var repo database.RepositoryInterface = database.NewRepository(db)
 
 	middle := Middleware.NewMiddleware(&MiddlewareEnv)
 
-	ResClient := RestaurantClient.NewClient(&RestaurantClientEnv)
-
-	OrderController := OrderControllers.NewController(repo, ResClient)
+	var ResClient RestaurantClient.RestaurantClientInterface = RestaurantClient.NewClient(&RestaurantClientEnv)
+	var OrderCtrl OrderControllers.OrderControllerInterface = OrderControllers.NewController(repo, ResClient)
 
 	server := gin.Default()
 
-	Routes.Order_routes(OrderController, middle, server)
+	Routes.Order_routes(OrderCtrl, middle, server)
 
 	server.Run(":8081")
 }

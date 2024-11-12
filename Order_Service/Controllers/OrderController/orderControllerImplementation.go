@@ -6,24 +6,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/E-Furqan/Food-Delivery-System/Client/RestaurantClient"
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
-	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 	"github.com/gin-gonic/gin"
 )
-
-type OrderController struct {
-	Repo      *database.Repository
-	ResClient *RestaurantClient.RestaurantClient
-}
-
-func NewController(repo *database.Repository, ResClient *RestaurantClient.RestaurantClient) *OrderController {
-	return &OrderController{
-		Repo:      repo,
-		ResClient: ResClient,
-	}
-}
 
 // UpdateOrderStatus godoc
 // @Summary Update the status of an order

@@ -9,7 +9,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func Order_routes(orderController *OrderControllers.OrderController, middle *Middleware.Middleware, server *gin.Engine) {
+func Order_routes(orderController OrderControllers.OrderControllerInterface, middle *Middleware.Middleware, server *gin.Engine) {
 
 	orderRoute := server.Group("/order")
 	server.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
