@@ -8,12 +8,12 @@ import (
 )
 
 type Controller struct {
-	Repo        *database.Repository
-	OrderClient *OrderClient.OrderClient
-	AuthClient  *AuthClient.AuthClient
+	Repo        database.RepositoryInterface
+	OrderClient OrderClient.OrdClientInterface
+	AuthClient  AuthClient.AuthClientInterface
 }
 
-func NewController(repo *database.Repository, OrderClient *OrderClient.OrderClient, AuthClient *AuthClient.AuthClient) *Controller {
+func NewController(repo database.RepositoryInterface, OrderClient OrderClient.OrdClientInterface, AuthClient AuthClient.AuthClientInterface) *Controller {
 	return &Controller{
 		Repo:        repo,
 		OrderClient: OrderClient,

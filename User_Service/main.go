@@ -21,10 +21,11 @@ func main() {
 
 	databaseConfig := config.NewDatabase(DatabaseEnv)
 	db := databaseConfig.Connection()
-	repo := database.NewRepository(db)
 
-	OrdClient := OrderClient.NewClient(OrderClientEnv)
-	AuthClient := AuthClient.NewClient(AuthClientEnv)
+	var repo database.RepositoryInterface = database.NewRepository(db)
+
+	var OrdClient OrderClient.OrdClientInterface = OrderClient.NewClient(OrderClientEnv)
+	var AuthClient AuthClient.AuthClientInterface = AuthClient.NewClient(AuthClientEnv)
 
 	var uCtrl UserControllers.UserControllerInterface
 	var rCtrl RoleController.RoleControllerInterface
@@ -32,7 +33,7 @@ func main() {
 	uCtrl = UserControllers.NewController(repo, OrdClient, AuthClient)
 	rCtrl = RoleController.NewController(repo, AuthClient)
 
-	middle := Middleware.NewMiddleware(AuthClient, &MiddlewareEnv)
+	var middle Middleware.MiddlewareInterface = Middleware.NewMiddleware(AuthClient, &MiddlewareEnv)
 
 	server := gin.Default()
 

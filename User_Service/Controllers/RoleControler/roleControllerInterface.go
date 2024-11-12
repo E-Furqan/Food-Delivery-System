@@ -7,11 +7,11 @@ import (
 )
 
 type RoleController struct {
-	Repo       *database.Repository
-	AuthClient *AuthClient.AuthClient
+	Repo       database.RepositoryInterface
+	AuthClient AuthClient.AuthClientInterface
 }
 
-func NewController(repo *database.Repository, AuthClient *AuthClient.AuthClient) *RoleController {
+func NewController(repo database.RepositoryInterface, AuthClient AuthClient.AuthClientInterface) *RoleController {
 	return &RoleController{
 		Repo:       repo,
 		AuthClient: AuthClient}

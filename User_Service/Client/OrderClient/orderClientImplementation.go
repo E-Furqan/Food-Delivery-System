@@ -10,16 +10,6 @@ import (
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 )
 
-type OrderClient struct {
-	model.OrderClientEnv
-}
-
-func NewClient(env model.OrderClientEnv) *OrderClient {
-	return &OrderClient{
-		OrderClientEnv: env,
-	}
-}
-
 func (orderClient *OrderClient) UpdateOrderStatus(input model.UpdateOrder, token string) (*model.UpdateOrder, error) {
 
 	jsonData, err := json.Marshal(input)
