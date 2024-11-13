@@ -151,13 +151,7 @@ func (ctrl *RestaurantController) UpdateOrderStatus(c *gin.Context) {
 	}
 	order.RestaurantId = RestaurantIDValue
 
-	token, err := utils.GetAuthToken(c)
-	if err != nil {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "error", err.Error(), "", nil)
-		return
-	}
-
-	if err := ctrl.OrderClient.UpdateOrderStatus(order, token); err != nil {
+	if err := ctrl.OrderClient.UpdateOrderStatus(order, c); err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Post request failed", "Error", err.Error())
 		return
 	}
@@ -180,15 +174,9 @@ func (ctrl *RestaurantController) ViewRestaurantOrders(c *gin.Context) {
 		return
 	}
 
-	token, err := utils.GetAuthToken(c)
-	if err != nil {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "error", err.Error(), "", nil)
-		return
-	}
-
 	var restaurantId model.Input
 	restaurantId.RestaurantId = Restaurant.RestaurantId
-	Orders, err := ctrl.OrderClient.ViewRestaurantOrders(restaurantId, token)
+	Orders, err := ctrl.OrderClient.ViewRestaurantOrders(restaurantId, c)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

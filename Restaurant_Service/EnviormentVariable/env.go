@@ -33,15 +33,14 @@ func ReadOrderClientEnv() model.OrderClientEnv {
 	var envVar model.OrderClientEnv
 	envVar.BASE_URL = utils.GetEnv("BASE_URL", "http://localhost")
 	envVar.UPDATE_ORDER_STATUS_URL = utils.GetEnv("UPDATE_ORDER_STATUS_URL", "/order/update/status")
-	envVar.ORDER_PORT = utils.GetEnv("ORDER_PORT", ":8081")
+	envVar.ORDER_PORT = utils.GetEnv("ORDER_PORT", "8081")
 	envVar.RESTAURANT_ORDERS_URL = utils.GetEnv("RESTAURANT_ORDERS_URL", "/order/view/orders")
-	envVar.VIEW_ORDER_DETAIL_URL = utils.GetEnv("VIEW_ORDER_DETAIL_URL", "/order/view/order")
 	return envVar
 }
 
 func ReadAuthClientEnv() model.AuthClientEnv {
 	var envVar model.AuthClientEnv
-	envVar.AUTH_PORT = utils.GetEnv("AUTH_PORT", ":8084")
+	envVar.AUTH_PORT = utils.GetEnv("AUTH_PORT", "8084")
 	envVar.GENERATE_TOKEN_URL = utils.GetEnv("GENERATE_TOKEN_URL", "/auth/generate/token")
 	envVar.REFRESH_TOKEN_URL = utils.GetEnv("REFRESH_TOKEN_URL", "/auth/refresh/token")
 	return envVar

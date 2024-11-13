@@ -1,6 +1,9 @@
 package OrderClient
 
-import model "github.com/E-Furqan/Food-Delivery-System/Models"
+import (
+	model "github.com/E-Furqan/Food-Delivery-System/Models"
+	"github.com/gin-gonic/gin"
+)
 
 type OrderClient struct {
 	model.OrderClientEnv
@@ -13,7 +16,7 @@ func NewClient(env model.OrderClientEnv) *OrderClient {
 }
 
 type OrdClientInterface interface {
-	UpdateOrderStatus(input model.OrderDetails, token string) error
-	ViewRestaurantOrders(input model.Input, token string) (*[]model.OrderDetails, error)
-	ViewOrdersDetails(input model.OrderDetails, token string) (*model.OrderDetails, error)
+	UpdateOrderStatus(input model.OrderDetails, c *gin.Context) error
+	ViewRestaurantOrders(input model.Input, c *gin.Context) (*[]model.OrderDetails, error)
+	ViewOrdersDetails(input model.OrderDetails, c *gin.Context) (*model.OrderDetails, error)
 }

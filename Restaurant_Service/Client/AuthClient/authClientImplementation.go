@@ -1,72 +1,83 @@
 package AuthClient
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
+	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 )
 
-func (client *AuthClient) GenerateToken(input model.RestaurantClaim) (*model.Tokens, error) {
+func (authClient *AuthClient) GenerateToken(input model.RestaurantClaim) (*model.Tokens, error) {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling input: %v", err)
 	}
 
-	url := fmt.Sprintf("%s%s%s", client.AuthClientEnv.BASE_URL, client.AuthClientEnv.AUTH_PORT, client.AuthClientEnv.GENERATE_TOKEN_URL)
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	url, err := utils.CreateUrl(authClient.AuthClientEnv.BASE_URL, authClient.AuthClientEnv.AUTH_PORT, authClient.AuthClientEnv.GENERATE_TOKEN_URL)
 	if err != nil {
-		return nil, fmt.Errorf("error creating request: %v", err)
+		return nil, fmt.Errorf("error: %v", err)
 	}
-	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := http.DefaultClient.Do(req)
+	req, err := utils.CreateRequest(url, jsonData, "POST")
+	if err != nil {
+		return nil, fmt.Errorf("error: %v", err)
+	}
+
+	HttpClient := utils.CreateHTTPClient()
+	resp, err := HttpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("error sending request: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("received non-200 response: %v", resp.Status)
+		return nil, fmt.Errorf("failed to generate token: received HTTP %d", resp.StatusCode)
 	}
 
 	var tokens model.Tokens
-	if err := json.NewDecoder(resp.Body).Decode(&tokens); err != nil {
+	limit := int64(1 << 20) //limiting the size of response to 1MB
+	if err := json.NewDecoder(io.LimitReader(resp.Body, limit)).Decode(&tokens); err != nil {
 		return nil, fmt.Errorf("error decoding response: %v", err)
 	}
 
 	return &tokens, nil
 }
 
-func (client *AuthClient) RefreshToken(input model.RefreshToken) (*model.Tokens, error) {
+func (authClient *AuthClient) RefreshToken(input model.RefreshToken) (*model.Tokens, error) {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling input: %v", err)
 	}
-	url := fmt.Sprintf("%s%s%s", client.AuthClientEnv.BASE_URL, client.AuthClientEnv.AUTH_PORT, client.AuthClientEnv.REFRESH_TOKEN_URL)
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	url, err := utils.CreateUrl(authClient.AuthClientEnv.BASE_URL, authClient.AuthClientEnv.AUTH_PORT, authClient.AuthClientEnv.REFRESH_TOKEN_URL)
 	if err != nil {
-		return nil, fmt.Errorf("error creating request: %v", err)
+		return nil, fmt.Errorf("error: %v", err)
 	}
-	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := http.DefaultClient.Do(req)
+	req, err := utils.CreateRequest(url, jsonData, "POST")
+	if err != nil {
+		return nil, fmt.Errorf("error: %v", err)
+	}
+
+	HttpClient := utils.CreateHTTPClient()
+	resp, err := HttpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("error sending request: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("received non-200 response: %v", resp.Status)
+		return nil, fmt.Errorf("failed to refresh token: received HTTP %d", resp.StatusCode)
 	}
 
 	var tokens model.Tokens
-	if err := json.NewDecoder(resp.Body).Decode(&tokens); err != nil {
+	limit := int64(1 << 20) //limiting the size of response to 1MB
+	if err := json.NewDecoder(io.LimitReader(resp.Body, limit)).Decode(&tokens); err != nil {
 		return nil, fmt.Errorf("error decoding response: %v", err)
 	}
 
