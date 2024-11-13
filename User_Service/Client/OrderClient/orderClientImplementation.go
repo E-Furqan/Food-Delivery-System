@@ -1,135 +1,161 @@
 package OrderClient
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
+	"io"
 	"net/http"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
+	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
+	"github.com/gin-gonic/gin"
 )
 
-func (orderClient *OrderClient) UpdateOrderStatus(input model.UpdateOrder, token string) (*model.UpdateOrder, error) {
+func (orderClient *OrderClient) UpdateOrderStatus(input model.UpdateOrder, c *gin.Context) (*model.UpdateOrder, error) {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling input: %v", err)
 	}
 
-	url := fmt.Sprintf("%s%s%s", orderClient.OrderClientEnv.BASE_URL, orderClient.OrderClientEnv.ORDER_PORT, orderClient.OrderClientEnv.UPDATE_ORDER_STATUS_URL)
-	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonData))
+	url, err := utils.CreateUrl(orderClient.OrderClientEnv.BASE_URL,
+		orderClient.OrderClientEnv.ORDER_PORT,
+		orderClient.OrderClientEnv.UPDATE_ORDER_STATUS_URL)
 	if err != nil {
-		return nil, fmt.Errorf("error creating request: %v", err)
+		return nil, fmt.Errorf("error: %v", err)
 	}
 
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+token)
+	req, err := utils.CreateAuthorizedRequest(url, jsonData, c, "PATCH")
+	if err != nil {
+		return nil, fmt.Errorf("error: %v", err)
+	}
 
-	resp, err := http.DefaultClient.Do(req)
+	client := utils.CreateHTTPClient()
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("error sending request: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("received non-200 response: %v", resp.Status)
+		return nil, fmt.Errorf("failed to update order status: received HTTP %d", resp.StatusCode)
 	}
 
 	var orders model.UpdateOrder
-	if err := json.NewDecoder(resp.Body).Decode(&orders); err != nil {
+	limit := int64(1 << 20)
+	if err := json.NewDecoder(io.LimitReader(resp.Body, limit)).Decode(&orders); err != nil {
 		return nil, fmt.Errorf("error decoding response: %v", err)
 	}
 
 	return &orders, nil
 }
 
-func (orderClient *OrderClient) AssignDriver(input model.UpdateOrder, token string) error {
+func (orderClient *OrderClient) AssignDriver(input model.UpdateOrder, c *gin.Context) error {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
 		return fmt.Errorf("error marshaling input: %v", err)
 	}
 
-	url := fmt.Sprintf("%s%s%s", orderClient.OrderClientEnv.BASE_URL, orderClient.OrderClientEnv.ORDER_PORT, orderClient.OrderClientEnv.ASSIGN_DRIVER_URL)
-	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		return fmt.Errorf("error creating request: %v", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+token)
+	url, err := utils.CreateUrl(orderClient.OrderClientEnv.BASE_URL,
+		orderClient.OrderClientEnv.ORDER_PORT,
+		orderClient.OrderClientEnv.ASSIGN_DRIVER_URL)
 
-	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("error: %v", err)
+	}
+
+	req, err := utils.CreateAuthorizedRequest(url, jsonData, c, "PATCH")
+	if err != nil {
+		return fmt.Errorf("error: %v", err)
+	}
+
+	client := utils.CreateHTTPClient()
+	resp, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("error sending request: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("received non-200 response: %v", resp.Status)
+		return fmt.Errorf("failed to update order status: received HTTP %d", resp.StatusCode)
 	}
 
 	return nil
 }
 
-func (orderClient *OrderClient) ViewOrders(input model.UpdateOrder) (*[]model.UpdateOrder, error) {
+func (orderClient *OrderClient) ViewOrders(input model.UpdateOrder, c *gin.Context) (*[]model.UpdateOrder, error) {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling input: %v", err)
 	}
-	url := fmt.Sprintf("%s%s%s", orderClient.OrderClientEnv.BASE_URL, orderClient.OrderClientEnv.ORDER_PORT, orderClient.OrderClientEnv.VIEW_ORDERS_URL)
-	log.Print(url)
-	req, err := http.NewRequest("GET", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		return nil, fmt.Errorf("error creating request: %v", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := http.DefaultClient.Do(req)
+	url, err := utils.CreateUrl(orderClient.OrderClientEnv.BASE_URL,
+		orderClient.OrderClientEnv.ORDER_PORT,
+		orderClient.OrderClientEnv.VIEW_ORDERS_URL)
+	if err != nil {
+		return nil, fmt.Errorf("error: %v", err)
+	}
+
+	req, err := utils.CreateAuthorizedRequest(url, jsonData, c, "GET")
+	if err != nil {
+		return nil, fmt.Errorf("error: %v", err)
+	}
+
+	client := utils.CreateHTTPClient()
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("error sending request: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("received non-200 response: %v", resp.Status)
+		return nil, fmt.Errorf("failed to update order status: received HTTP %d", resp.StatusCode)
 	}
 
 	var orders []model.UpdateOrder
-	if err := json.NewDecoder(resp.Body).Decode(&orders); err != nil {
+	limit := int64(1 << 22) //limiting the size of response to 4MB
+	if err := json.NewDecoder(io.LimitReader(resp.Body, limit)).Decode(&orders); err != nil {
 		return nil, fmt.Errorf("error decoding response: %v", err)
 	}
 
 	return &orders, nil
 }
 
-func (orderClient *OrderClient) ViewOrdersWithoutRider(input model.UpdateOrder) (*[]model.UpdateOrder, error) {
+func (orderClient *OrderClient) ViewOrdersWithoutDriver(input model.UpdateOrder, c *gin.Context) (*[]model.UpdateOrder, error) {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling input: %v", err)
 	}
-	url := fmt.Sprintf("%s%s%s", orderClient.OrderClientEnv.BASE_URL, orderClient.OrderClientEnv.ORDER_PORT, orderClient.OrderClientEnv.VIEW_ORDER_WITHOUT_DRIVER_URL)
-	log.Print(url)
-	req, err := http.NewRequest("GET", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		return nil, fmt.Errorf("error creating request: %v", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := http.DefaultClient.Do(req)
+	url, err := utils.CreateUrl(orderClient.OrderClientEnv.BASE_URL,
+		orderClient.OrderClientEnv.ORDER_PORT,
+		orderClient.OrderClientEnv.ASSIGN_DRIVER_URL)
+	if err != nil {
+		return nil, fmt.Errorf("error: %v", err)
+	}
+
+	req, err := utils.CreateAuthorizedRequest(url, jsonData, c, "GET")
+	if err != nil {
+		return nil, fmt.Errorf("error: %v", err)
+	}
+
+	client := utils.CreateHTTPClient()
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("error sending request: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("received non-200 response: %v", resp.Status)
+		return nil, fmt.Errorf("failed to view orders without driver: received HTTP %d", resp.StatusCode)
 	}
 
 	var orders []model.UpdateOrder
-	if err := json.NewDecoder(resp.Body).Decode(&orders); err != nil {
+	limit := int64(1 << 22) //limiting the size of response to 4MB
+	if err := json.NewDecoder(io.LimitReader(resp.Body, limit)).Decode(&orders); err != nil {
 		return nil, fmt.Errorf("error decoding response: %v", err)
 	}
 

@@ -1,12 +1,13 @@
 package AuthClient
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
+	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 )
 
 func (client *AuthClient) GenerateToken(input model.UserClaim) (*model.Tokens, error) {
@@ -15,12 +16,18 @@ func (client *AuthClient) GenerateToken(input model.UserClaim) (*model.Tokens, e
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling input: %v", err)
 	}
-	url := fmt.Sprintf("%s%s%s", client.AuthClientEnv.BASE_URL, client.AuthClientEnv.AUTH_PORT, client.AuthClientEnv.GENERATE_TOKEN_URL)
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+
+	url, err := utils.CreateUrl(client.AuthClientEnv.BASE_URL,
+		client.AuthClientEnv.AUTH_PORT,
+		client.AuthClientEnv.GENERATE_TOKEN_URL)
 	if err != nil {
-		return nil, fmt.Errorf("error creating request: %v", err)
+		return nil, fmt.Errorf("error: %v", err)
 	}
-	req.Header.Set("Content-Type", "application/json")
+
+	req, err := utils.CreateRequest(url, jsonData, "POST")
+	if err != nil {
+		return nil, fmt.Errorf("error: %v", err)
+	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -33,7 +40,8 @@ func (client *AuthClient) GenerateToken(input model.UserClaim) (*model.Tokens, e
 	}
 
 	var tokens model.Tokens
-	if err := json.NewDecoder(resp.Body).Decode(&tokens); err != nil {
+	limit := int64(1 << 20)
+	if err := json.NewDecoder(io.LimitReader(resp.Body, limit)).Decode(&tokens); err != nil {
 		return nil, fmt.Errorf("error decoding response: %v", err)
 	}
 
@@ -46,12 +54,18 @@ func (client *AuthClient) RefreshToken(input model.RefreshToken) (*model.Tokens,
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling input: %v", err)
 	}
-	url := fmt.Sprintf("%s%s%s", client.AuthClientEnv.BASE_URL, client.AuthClientEnv.AUTH_PORT, client.AuthClientEnv.REFRESH_TOKEN_URL)
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+
+	url, err := utils.CreateUrl(client.AuthClientEnv.BASE_URL,
+		client.AuthClientEnv.AUTH_PORT,
+		client.AuthClientEnv.REFRESH_TOKEN_URL)
 	if err != nil {
-		return nil, fmt.Errorf("error creating request: %v", err)
+		return nil, fmt.Errorf("error: %v", err)
 	}
-	req.Header.Set("Content-Type", "application/json")
+
+	req, err := utils.CreateRequest(url, jsonData, "POST")
+	if err != nil {
+		return nil, fmt.Errorf("error: %v", err)
+	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -64,7 +78,8 @@ func (client *AuthClient) RefreshToken(input model.RefreshToken) (*model.Tokens,
 	}
 
 	var tokens model.Tokens
-	if err := json.NewDecoder(resp.Body).Decode(&tokens); err != nil {
+	limit := int64(1 << 20)
+	if err := json.NewDecoder(io.LimitReader(resp.Body, limit)).Decode(&tokens); err != nil {
 		return nil, fmt.Errorf("error decoding response: %v", err)
 	}
 

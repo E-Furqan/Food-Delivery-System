@@ -44,7 +44,7 @@ func ReadOrderClientEnv() model.OrderClientEnv {
 	OrderClientEnv.VIEW_ORDERS_URL = utils.GetEnv("USER_ORDERS_URL", "/order/view/orders")
 	OrderClientEnv.VIEW_ORDER_WITHOUT_DRIVER_URL = utils.GetEnv("VIEW_ORDER_WITHOUT_DRIVER_URL", "/order/view/without/driver/orders")
 	OrderClientEnv.ASSIGN_DRIVER_URL = utils.GetEnv("ASSIGN_DRIVER_URL", "/order/assign/diver")
-	OrderClientEnv.ORDER_PORT = utils.GetEnv("ORDER_PORT", ":8081")
+	OrderClientEnv.ORDER_PORT = utils.GetEnv("ORDER_PORT", "8081")
 
 	return OrderClientEnv
 }
@@ -61,7 +61,7 @@ func ReadAuthClientEnv() model.AuthClientEnv {
 	AuthClientEnv.GENERATE_TOKEN_URL = utils.GetEnv("GENERATE_TOKEN_URL", "/auth/generate/token")
 	AuthClientEnv.REFRESH_TOKEN_URL = utils.GetEnv("REFRESH_TOKEN_URL", "/auth/refresh/token")
 
-	AuthClientEnv.AUTH_PORT = utils.GetEnv("AUTH_PORT", ":8084")
+	AuthClientEnv.AUTH_PORT = utils.GetEnv("AUTH_PORT", "8084")
 	return AuthClientEnv
 }
 

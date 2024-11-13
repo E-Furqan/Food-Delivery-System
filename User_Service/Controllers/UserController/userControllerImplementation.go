@@ -242,7 +242,7 @@ func (ctrl *Controller) ViewUserOrders(c *gin.Context) {
 	var userId model.UpdateOrder
 
 	userId.UserID = User.UserId
-	Orders, err := ctrl.OrderClient.ViewOrders(userId)
+	Orders, err := ctrl.OrderClient.ViewOrders(userId, c)
 	if err != nil {
 		utils.GenerateResponse(http.StatusInternalServerError, c, "error", err.Error(), "", nil)
 		return
@@ -260,12 +260,6 @@ func (ctrl *Controller) UpdateOrderStatus(c *gin.Context) {
 		return
 	}
 
-	token, err := utils.GetAuthToken(c)
-	if err != nil {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "error", err.Error(), "", nil)
-		return
-	}
-
 	user := model.User{}
 	err = ctrl.Repo.GetUser("user_id", UserId, &user)
 	if err != nil {
@@ -278,7 +272,7 @@ func (ctrl *Controller) UpdateOrderStatus(c *gin.Context) {
 		utils.GenerateResponse(http.StatusBadRequest, c, "error", err.Error(), "", nil)
 		return
 	}
-	updatedOrder, err := ctrl.OrderClient.UpdateOrderStatus(order, token)
+	updatedOrder, err := ctrl.OrderClient.UpdateOrderStatus(order, c)
 	if err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Patch request failed", "error", err.Error())
 		return
@@ -334,7 +328,7 @@ func (ctrl *Controller) ViewDriverOrders(c *gin.Context) {
 
 	var userId model.UpdateOrder
 	userId.DeliverDriverID = User.UserId
-	Orders, err := ctrl.OrderClient.ViewOrders(userId)
+	Orders, err := ctrl.OrderClient.ViewOrders(userId, c)
 	if err != nil {
 		utils.GenerateResponse(http.StatusBadGateway, c, "error", err.Error(), "", nil)
 		return
@@ -372,7 +366,7 @@ func (ctrl *Controller) ViewOrdersWithoutDriver(c *gin.Context) {
 	}
 
 	var userId model.UpdateOrder
-	Orders, err := ctrl.OrderClient.ViewOrdersWithoutRider(userId)
+	Orders, err := ctrl.OrderClient.ViewOrdersWithoutDriver(userId, c)
 	if err != nil {
 		utils.GenerateResponse(http.StatusBadGateway, c, "error", err.Error(), "", nil)
 		return
@@ -402,12 +396,6 @@ func (ctrl *Controller) AssignDriver(c *gin.Context) {
 		return
 	}
 
-	token, err := utils.GetAuthToken(c)
-	if err != nil {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "error", err.Error(), "", nil)
-		return
-	}
-
 	var driver model.User
 	err = ctrl.Repo.GetUser("user_id", UserId, &driver)
 	if err != nil {
@@ -421,7 +409,7 @@ func (ctrl *Controller) AssignDriver(c *gin.Context) {
 		return
 	}
 
-	if err := ctrl.OrderClient.AssignDriver(orderId, token); err != nil {
+	if err := ctrl.OrderClient.AssignDriver(orderId, c); err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Patch request failed", "error", err.Error())
 		return
 	}
