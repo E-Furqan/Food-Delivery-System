@@ -1,12 +1,1 @@
 .env
-Order_Service
-Restaurant_Service
-User_Service
-Restaurant_Service/DatabaseConfig/config.go
-Restaurant_Service/EnviormentVariable/env.go
-Restaurant_Service/Routes/routes.go
-Restaurant_Service/Utils/utils.go
-Restaurant_Service/compose.yml
-Restaurant_Service/go.mod
-Restaurant_Service/go.sum
-Restaurant_Service/main.go 
