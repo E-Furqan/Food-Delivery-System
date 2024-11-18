@@ -47,7 +47,7 @@ func ReFreshToken(c *gin.Context) {
 	accessToken, err := utils.RefreshToken(input.RefreshToken, c)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate the token"})
 		return
 	}
 
