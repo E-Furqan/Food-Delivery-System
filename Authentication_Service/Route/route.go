@@ -8,6 +8,6 @@ import (
 func Auth_routes(server *gin.Engine) {
 
 	auth := server.Group("/auth")
-	auth.POST("/generate/token", AuthController.GenerateTokens)
+	auth.POST("/generate/token", AuthController.Login)
 	auth.POST("/refresh/token", AuthController.ReFreshToken)
 }
