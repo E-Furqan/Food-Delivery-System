@@ -1,16 +1,26 @@
 package utils
 
 import (
-	"log"
+	"bytes"
+	"errors"
+	"fmt"
 	"net/http"
+<<<<<<< HEAD:Authentication_Service/Utils/utils.go
 	"os"
 	"time"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Authentication_Service/Model"
+=======
+	"net/url"
+	"os"
+	"strings"
+
+>>>>>>> b0a1439a54cf96a16dcaeb351bfed09905ab01c9:Restaurant_Service/Utils/utils.go
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 )
 
+<<<<<<< HEAD:Authentication_Service/Utils/utils.go
 var jwtKey []byte
 var refreshTokenKey []byte
 
@@ -20,13 +30,19 @@ func SetEnvValue(envVar model.AuthSecrets) {
 }
 
 func GenerateTokens(accessClaims model.Claims, refreshClaims model.Claims) (string, string, error) {
-
-	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims)
-	accessTokenString, err := accessToken.SignedString(jwtKey)
-	if err != nil {
-		log.Printf("Error generating access token: %v", err)
-		return "", "", err
+=======
+func Verification(c *gin.Context) (any, error) {
+	RestaurantID, exists := c.Get("RestaurantID")
+	if !exists {
+		return 0, fmt.Errorf("restaurant id does not exist")
 	}
+>>>>>>> b0a1439a54cf96a16dcaeb351bfed09905ab01c9:Restaurant_Service/Utils/utils.go
+
+	RestaurantID, ok := RestaurantID.(uint)
+	if !ok {
+		return 0, fmt.Errorf("invalid restaurant id")
+	}
+<<<<<<< HEAD:Authentication_Service/Utils/utils.go
 
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
 	refreshTokenString, err := refreshToken.SignedString(refreshTokenKey)
@@ -76,6 +92,9 @@ func RefreshToken(refreshToken string, c *gin.Context) (string, error) {
 	}
 
 	return accessToken, nil
+=======
+	return RestaurantID, nil
+>>>>>>> b0a1439a54cf96a16dcaeb351bfed09905ab01c9:Restaurant_Service/Utils/utils.go
 }
 
 func CreateClaim(input model.Input) (model.Claims, model.Claims) {
@@ -102,4 +121,82 @@ func GetEnv(key string, defaultVal string) string {
 		return value
 	}
 	return defaultVal
+}
+
+func GetEnv(key string, defaultVal string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultVal
+}
+
+func GetAuthToken(c *gin.Context) (string, error) {
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		return "", fmt.Errorf("authorization token not provided")
+	}
+	tokenParts := strings.Split(authHeader, " ")
+	if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
+		return "", fmt.Errorf("invalid authorization header format")
+	}
+	token := tokenParts[1]
+	return token, nil
+}
+
+func CreateAuthorizedRequest(url string, jsonData []byte, c *gin.Context, MethodType string) (*http.Request, error) {
+
+	req, err := http.NewRequest(MethodType, url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, fmt.Errorf("error creating request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	token, err := GetAuthToken(c)
+	if err != nil {
+		GenerateResponse(http.StatusUnauthorized, c, "error", err.Error(), "", nil)
+		return nil, fmt.Errorf("error retrieving auth token of user: %v", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+token)
+	return req, nil
+}
+
+func CreateRequest(url string, jsonData []byte, MethodType string) (*http.Request, error) {
+	req, err := http.NewRequest(MethodType, url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, fmt.Errorf("error creating request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	return req, nil
+}
+
+func CreateHTTPClient() *http.Client {
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+	return client
+}
+
+func CreateUrl(BaseUrl string, Port string, APIUrl string) (string, error) {
+
+	if !strings.HasPrefix(BaseUrl, "http://") && !strings.HasPrefix(BaseUrl, "https://") {
+		return "", errors.New("BaseUrl must start with http:// or https://")
+	}
+
+	if _, err := url.ParseRequestURI(Port); err != nil {
+		return "", fmt.Errorf("invalid Port: %v", err)
+	}
+
+	baseURL, err := url.Parse(BaseUrl)
+	if err != nil {
+		return "", fmt.Errorf("invalid BaseUrl: %v", err)
+	}
+	baseURL.Host = fmt.Sprintf("%s:%s", baseURL.Hostname(), Port)
+
+	escapedAPIUrl := url.PathEscape(APIUrl)
+
+	finalURL := fmt.Sprintf("%s%s", baseURL.String(), escapedAPIUrl)
+	return finalURL, nil
 }

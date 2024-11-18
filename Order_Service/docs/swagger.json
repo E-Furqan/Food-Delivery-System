@@ -1,0 +1,645 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {}
+    },
+    "paths": {
+        "/order/assign/diver": {
+            "patch": {
+                "description": "Assigns a delivery driver to an order if the order doesn't already have a driver, and the role of the user is \"delivery driver\"",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order Service"
+                ],
+                "summary": "Assign a delivery driver to an order",
+                "parameters": [
+                    {
+                        "description": "Assign delivery driver request",
+                        "name": "assignDeliveryDriverRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.AssignDeliveryDriver"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Assigned delivery driver to the order",
+                        "schema": {
+                            "$ref": "#/definitions/model.Order"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Order not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/order/generate/invoice": {
+            "get": {
+                "description": "Generates an invoice for the order based on order ID and user validation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order Service"
+                ],
+                "summary": "Generate an invoice for a specific order",
+                "parameters": [
+                    {
+                        "description": "Order ID JSON",
+                        "name": "orderId",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.ID"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "invoice",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/order/place/order": {
+            "post": {
+                "description": "Allows a customer to place an order, including selecting items from a restaurant and calculating the total bill",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order Service"
+                ],
+                "summary": "Place an order as a customer",
+                "parameters": [
+                    {
+                        "description": "Place order request",
+                        "name": "placeOrderRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.CombineOrderItem"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Order placed successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/order/update/status": {
+            "patch": {
+                "description": "Updates the status of an order based on the role of the user (customer, restaurant, or delivery driver)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order Service"
+                ],
+                "summary": "Update the status of an order",
+                "parameters": [
+                    {
+                        "description": "Order status update request",
+                        "name": "orderStatusUpdateRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.OrderStatusUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated order details",
+                        "schema": {
+                            "$ref": "#/definitions/model.Order"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Order not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/order/view/driver/orders": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Allows only driver or admins to view their orders.",
+                "tags": [
+                    "Order Service"
+                ],
+                "summary": "Get driver orders",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Active Role of the User",
+                        "name": "activeRole",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of Orders",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Order"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Only driver or admin can view the orders",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/order/view/order": {
+            "get": {
+                "description": "Retrieves detailed information about an order by order ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order Service"
+                ],
+                "summary": "View details of a specific order",
+                "parameters": [
+                    {
+                        "description": "Order ID JSON",
+                        "name": "orderId",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.ID"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Order details",
+                        "schema": {
+                            "$ref": "#/definitions/model.Order"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Order not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/order/view/restaurant/orders": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Allows only restaurant or admins to view their orders.",
+                "tags": [
+                    "Order Service"
+                ],
+                "summary": "Get restaurant orders",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Active Role of the User",
+                        "name": "activeRole",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of Orders",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Order"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Only restaurant or admin can view the orders",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/order/view/user/orders": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Allows only customers or admins to view their orders.",
+                "tags": [
+                    "Order Service"
+                ],
+                "summary": "Get user orders",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Active Role of the User",
+                        "name": "activeRole",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of Orders",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Order"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Only customer or admin can view the orders",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/order/view/{UserType}/orders": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves orders filtered by user type, sorted by specified column and order.",
+                "tags": [
+                    "Order Service"
+                ],
+                "summary": "Get orders based on user type (user, restaurant, or delivery driver)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID from Claims",
+                        "name": "ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Type of user: user, restaurant, or delivery driver",
+                        "name": "UserType",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Sorting details",
+                        "name": "Filter",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Filter"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of Orders",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Order"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error occurred",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/view/without/driver/orders": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves orders that have not been assigned a delivery driver. Only accessible to users with roles \"delivery driver\" or \"admin\".",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order Service"
+                ],
+                "summary": "Get orders without assigned delivery driver",
+                "responses": {
+                    "200": {
+                        "description": "List of orders without assigned delivery driver",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Order"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request, role ID missing or unauthorized access",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Orders not found",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "model.AssignDeliveryDriver": {
+            "type": "object",
+            "properties": {
+                "activeRole": {
+                    "type": "string"
+                },
+                "delivery_driver": {
+                    "type": "integer"
+                },
+                "order_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.CombineOrderItem": {
+            "type": "object",
+            "properties": {
+                "delivery_driver": {
+                    "type": "integer"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.OrderItemPayload"
+                    }
+                },
+                "order_id": {
+                    "type": "integer"
+                },
+                "restaurant_id": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Filter": {
+            "type": "object",
+            "properties": {
+                "column_name": {
+                    "type": "string"
+                },
+                "sort_order": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.ID": {
+            "type": "object",
+            "properties": {
+                "delivery_driver": {
+                    "type": "integer"
+                },
+                "order_id": {
+                    "type": "integer"
+                },
+                "restaurant_id": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.Item": {
+            "type": "object",
+            "properties": {
+                "item_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.Order": {
+            "type": "object",
+            "properties": {
+                "delivery_driver": {
+                    "type": "integer"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Item"
+                    }
+                },
+                "order_id": {
+                    "type": "integer"
+                },
+                "order_status": {
+                    "type": "string"
+                },
+                "restaurant_id": {
+                    "type": "integer"
+                },
+                "time": {
+                    "type": "string"
+                },
+                "total_bill": {
+                    "type": "number"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.OrderItemPayload": {
+            "type": "object",
+            "properties": {
+                "item_id": {
+                    "type": "integer"
+                },
+                "quantity": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.OrderStatusUpdateRequest": {
+            "type": "object",
+            "properties": {
+                "activeRole": {
+                    "type": "string"
+                },
+                "delivery_driver": {
+                    "type": "integer"
+                },
+                "order_id": {
+                    "type": "integer"
+                },
+                "order_status": {
+                    "type": "string"
+                },
+                "restaurant_id": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        }
+    }
+}
