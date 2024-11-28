@@ -12,7 +12,6 @@ import (
 func (client *RestaurantClient) GetItems(getItems model.GetItems) ([]model.Items, error) {
 
 	body, err := json.Marshal(getItems)
-
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling request body: %v", err)
 	}
