@@ -28,7 +28,7 @@ var DB *gorm.DB
 func (DatabaseConfig *DatabaseConfig) Connection() *gorm.DB {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+		log.Printf("Error loading .env file: %v", err)
 	}
 
 	var connection_string = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",

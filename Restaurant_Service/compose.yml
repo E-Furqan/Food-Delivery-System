@@ -12,7 +12,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      - DATABASE_HOST=db
+      - DATABASE_HOST=restaurant_service_db_1
       - DATABASE_PORT=5432
       - DATABASE_USER=furqan
       - DATABASE_PASSWORD=furqan

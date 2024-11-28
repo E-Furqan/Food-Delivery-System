@@ -11,7 +11,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      - DATABASE_HOST=db
+      - DATABASE_HOST=user_service_db_1
       - DATABASE_PORT=5432
       - DATABASE_USER=furqan
       - DATABASE_PASSWORD=furqan
@@ -23,7 +23,7 @@ services:
       POSTGRES_PASSWORD: furqan
       POSTGRES_DB: User
     ports:
-      - "5432:5432"
+      - "5433:5432"
     networks:
       - user_network
     healthcheck:
