@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:14
+    container_name: testorder_service_app_container
+    environment:
+      POSTGRES_USER: furqan
+      POSTGRES_PASSWORD: furqan
+      POSTGRES_DB: testorder
+    ports:
+      - "5431:5432"
+    volumes:
+      - postgres_data:/backup
+    networks:
+      - backend
+
+volumes:
+  postgres_data:
+
+networks:
+  backend:
