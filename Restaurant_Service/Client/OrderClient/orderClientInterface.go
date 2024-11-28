@@ -18,5 +18,4 @@ func NewClient(env model.OrderClientEnv) *OrderClient {
 type OrdClientInterface interface {
 	UpdateOrderStatus(input model.OrderDetails, c *gin.Context) error
 	ViewRestaurantOrders(input model.Input, c *gin.Context) (*[]model.OrderDetails, error)
-	ViewOrdersDetails(input model.OrderDetails, c *gin.Context) (*model.OrderDetails, error)
 }
