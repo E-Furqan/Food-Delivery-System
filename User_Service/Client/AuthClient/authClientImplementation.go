@@ -20,6 +20,7 @@ func (client *AuthClient) GenerateToken(input model.UserClaim) (*model.Tokens, e
 	url, err := utils.CreateUrl(client.AuthClientEnv.BASE_URL,
 		client.AuthClientEnv.AUTH_PORT,
 		client.AuthClientEnv.GENERATE_TOKEN_URL)
+
 	if err != nil {
 		return nil, fmt.Errorf("error: %v", err)
 	}
