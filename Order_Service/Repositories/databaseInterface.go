@@ -28,4 +28,9 @@ type RepositoryInterface interface {
 	FetchAverageOrderValueOfRestaurant(input uint) (model.RestaurantAverageOrderValue, error)
 	FetchAverageOrderValueBetweenTime(startTime string, endTime string) (model.TimeAverageOrderValue, error)
 	FetchCompletedDeliversOfRider() ([]model.CompletedDelivers, error)
+	FetchCancelledOrdersWithItemDetails(Limit int, offset int) ([]model.OrderDetails, error)
+	FetchUserOrdersWithItemDetails(userID, limit, offset int) ([]model.OrderDetails, error)
+	FetchTopPurchasedItems() ([]model.MostPurchasedItem, error)
+	FetchCompletedOrdersCountByRestaurant(timeRange model.TimeRange) ([]model.RestaurantCompletedOrdersCount, error)
+	FetchOrderStatusFrequencies() ([]model.OrderStatusFrequency, error)
 }

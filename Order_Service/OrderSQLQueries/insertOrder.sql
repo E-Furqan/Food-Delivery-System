@@ -15,6 +15,25 @@ VALUES
 
 
 
+
+
+INSERT INTO items (item_id)
+VALUES
+    (1),
+    (2),    
+    (3),
+    (4),
+    (5),
+    (6),
+    (7),
+    (9),
+    (10),
+    (11),
+    (13),
+    (14),
+    (15);
+
+
 -- Inserting Items for the Orders
 INSERT INTO order_items (order_id, item_id, quantity)
 VALUES
@@ -37,24 +56,6 @@ VALUES
   (4, 13, 3), -- Beef Taco
   (4, 14, 1), -- Chicken Quesadilla
   (4, 15, 2); -- Fish Taco
-
-
-
-INSERT INTO items (item_id)
-VALUES
-    (1),
-    (2),    
-    (3),
-    (4),
-    (5),
-    (6),
-    (7),
-    (9),
-    (10),
-    (11),
-    (13),
-    (14),
-    (15);
 
 
 

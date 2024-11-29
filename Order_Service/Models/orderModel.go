@@ -48,30 +48,78 @@ type ProcessOrder struct {
 	OrderStatus string `json:"order_status"`
 }
 
+type TimeRange struct {
+	StartTime string `json:"start_time" binding:"required"`
+	EndTime   string `json:"end_time" binding:"required"`
+}
+
+// AverageOrderValue godoc
+// @Description Model for average order value input
 type AverageOrderValue struct {
-	StartTime  string `json:"start_time"`
-	EndTime    string `json:"end_time"`
+	TimeRange
 	FilterType string `json:"filter_type"`
 }
 
+// UserAverageOrderValue godoc
+// @Description Model for average user order value output
 type UserAverageOrderValue struct {
 	UserId            uint    `json:"user_id"`
 	AverageOrderValue float64 `json:"average_order_value"`
 }
 
+// RestaurantAverageOrderValue godoc
+// @Description Model for average restaurant order value output
 type RestaurantAverageOrderValue struct {
 	RestaurantId      uint    `json:"restaurant_id"`
 	AverageOrderValue float64 `json:"average_order_value"`
 }
 
+// TimeAverageOrderValue godoc
+// @Description Model for average order value within a time range output
 type TimeAverageOrderValue struct {
 	Time              time.Time `json:"time"`
 	AverageOrderValue float64   `json:"average_order_value"`
 }
 
+// CompletedDelivers godoc
+// @Description Model for completed delivers output
 type CompletedDelivers struct {
 	DeliveryDriver    uint `json:"delivery_driver"`
 	CompletedDelivers int  `json:"completed_delivers"`
+}
+
+// OrderDetails godoc
+// @Description Model for canceled order details output
+type OrderDetails struct {
+	OrderID        uint      `json:"order_id"`
+	UserId         uint      `json:"user_id"`
+	RestaurantID   uint      `json:"restaurant_id"`
+	ItemDetails    string    `json:"item_details"`
+	TotalBill      float64   `json:"total_bill"`
+	DeliveryDriver uint      `json:"delivery_driver"`
+	OrderStatus    string    `json:"order_status"`
+	OrderTime      time.Time `json:"order_time"`
+}
+
+type PageNumber struct {
+	PageNumber int `json:"page_number" binding:"required"`
+	Limit      int `json:"limit" binding:"required"`
+}
+
+type MostPurchasedItem struct {
+	RestaurantID  uint `json:"restaurant_id"`
+	ItemID        uint `json:"item_id"`
+	PurchaseCount int  `json:"purchase_count"`
+}
+
+type RestaurantCompletedOrdersCount struct {
+	RestaurantID    uint `json:"restaurant_id"`
+	CompletedOrders int  `json:"completed_orders"`
+}
+
+type OrderStatusFrequency struct {
+	OrderStatus     string `json:"order_status"`
+	StatusFrequency int    `json:"status_frequency"`
 }
 
 var UserOrderStatuses = []string{

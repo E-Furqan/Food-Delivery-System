@@ -28,4 +28,9 @@ type OrderControllerInterface interface {
 	GenerateInvoice(c *gin.Context)
 	FetchAverageOrderValue(c *gin.Context)
 	FetchCompletedDeliversRider(c *gin.Context)
+	FetchCancelOrdersDetails(c *gin.Context)
+	FetchCustomerOrdersDetails(c *gin.Context)
+	FetchTopPurchasedItems(c *gin.Context)
+	FetchCompletedOrdersCountByRestaurant(c *gin.Context)
+	FetchOrderStatusFrequencies(c *gin.Context)
 }

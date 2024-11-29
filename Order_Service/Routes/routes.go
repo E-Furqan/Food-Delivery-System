@@ -14,10 +14,15 @@ func Order_routes(orderController OrderControllers.OrderControllerInterface,
 
 	orderRoute := server.Group("/order")
 	server.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	orderRoute.GET("/completed/delivers", orderController.FetchCompletedDeliversRider)
+
 	orderRoute.Use(middle.AuthMiddleware())
 	{
-
+		orderRoute.GET("/status/frequency", orderController.FetchOrderStatusFrequencies)
+		orderRoute.GET("/completed/restaurant/orders", orderController.FetchCompletedOrdersCountByRestaurant)
+		orderRoute.GET("/top/items", orderController.FetchTopPurchasedItems)
+		orderRoute.GET("/customer/orders/details", orderController.FetchCustomerOrdersDetails)
+		orderRoute.GET("/cancel/orders/details", orderController.FetchCancelOrdersDetails)
+		orderRoute.GET("/completed/delivers", orderController.FetchCompletedDeliversRider)
 		orderRoute.GET("/Average/order/value", orderController.FetchAverageOrderValue)
 		orderRoute.GET("/view/orders", orderController.GetOrders)
 		orderRoute.GET("/view/without/driver/orders", orderController.ViewOrdersWithoutRider)

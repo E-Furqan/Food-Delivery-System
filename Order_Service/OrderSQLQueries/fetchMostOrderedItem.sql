@@ -1,7 +1,7 @@
 SELECT 
+    orders.restaurant_id,
     order_items.item_id, 
-    COUNT(*) AS purchaseCount, 
-    orders.restaurant_id
+    COUNT(*) AS purchaseCount
 FROM 
     order_items
 INNER JOIN 

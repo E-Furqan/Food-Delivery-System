@@ -244,3 +244,87 @@ func (repo *Repository) FetchCompletedDeliversOfRider() ([]model.CompletedDelive
 	log.Print(result[0].DeliveryDriver)
 	return result, nil
 }
+
+func (repo *Repository) FetchCancelledOrdersWithItemDetails(Limit int, offset int) ([]model.OrderDetails, error) {
+	var result []model.OrderDetails
+
+	err := repo.DB.Table("orders").
+		Select("orders.order_id, orders.user_id, orders.restaurant_id, STRING_AGG(order_items.item_id || ':' || order_items.quantity, ', ') AS item_details, orders.total_bill, orders.delivery_driver, orders.order_status, orders.time AS Order_time").
+		Joins("inner join order_items on orders.order_id = order_items.order_id").
+		Where("orders.order_status = ?", "Cancelled").
+		Group("orders.order_id, orders.user_id, orders.restaurant_id, orders.total_bill, orders.delivery_driver, orders.order_status, orders.time").
+		Limit(Limit).
+		Offset(offset).
+		Scan(&result).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (repo *Repository) FetchUserOrdersWithItemDetails(userID, limit, offset int) ([]model.OrderDetails, error) {
+	var result []model.OrderDetails
+
+	err := repo.DB.Table("orders").
+		Select("orders.order_id, orders.user_id, orders.restaurant_id, STRING_AGG(order_items.item_id || ':' || order_items.quantity, ', ') AS item_details, orders.total_bill, orders.delivery_driver, orders.order_status, orders.time AS Order_time").
+		Joins("inner join order_items on orders.order_id = order_items.order_id").
+		Where("orders.user_id = ?", 1).
+		Group("orders.order_id, orders.user_id, orders.restaurant_id, orders.total_bill, orders.delivery_driver, orders.order_status, orders.time").
+		Limit(limit).
+		Offset(offset).
+		Scan(&result).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (repo *Repository) FetchTopPurchasedItems() ([]model.MostPurchasedItem, error) {
+	var result []model.MostPurchasedItem
+	err := repo.DB.Table("order_items").
+		Select("orders.restaurant_id,order_items.item_id, COUNT(*) AS purchase_count ").
+		Joins("INNER JOIN orders ON orders.order_id = order_items.order_id").
+		Group("order_items.item_id, orders.restaurant_id").
+		Order("purchase_count DESC").
+		Limit(5).
+		Scan(&result).Error
+
+	if err != nil {
+		return []model.MostPurchasedItem{}, err
+
+	}
+	return result, nil
+}
+
+func (repo *Repository) FetchCompletedOrdersCountByRestaurant(timeRange model.TimeRange) ([]model.RestaurantCompletedOrdersCount, error) {
+	var result []model.RestaurantCompletedOrdersCount
+	err := repo.DB.Table("orders").
+		Select("restaurant_id, COUNT(*) AS completed_orders").
+		Where("order_status = ? AND time BETWEEN ? AND ?", "Completed", timeRange.StartTime, timeRange.EndTime).
+		Group("restaurant_id").
+		Scan(&result).Error
+
+	if err != nil {
+		return []model.RestaurantCompletedOrdersCount{}, err
+	}
+
+	return result, nil
+
+}
+
+func (repo *Repository) FetchOrderStatusFrequencies() ([]model.OrderStatusFrequency, error) {
+	var result []model.OrderStatusFrequency
+	err := repo.DB.Table("orders").
+		Select("order_status, COUNT(*) AS status_frequency").
+		Group("order_status").
+		Order("status_frequency DESC").
+		Scan(&result).Error
+
+	if err != nil {
+		return []model.OrderStatusFrequency{}, err
+	}
+
+	return result, nil
+}
