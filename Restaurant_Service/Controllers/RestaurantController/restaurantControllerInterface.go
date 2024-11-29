@@ -29,4 +29,5 @@ type RestaurantControllerInterface interface {
 	ViewMenu(c *gin.Context)
 	UpdateOrderStatus(c *gin.Context)
 	ViewRestaurantOrders(c *gin.Context)
+	FetchOpenRestaurant(c *gin.Context)
 }

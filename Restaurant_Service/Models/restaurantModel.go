@@ -37,3 +37,7 @@ type OrderDetails struct {
 	OrderStatus  string `json:"order_status"`
 	RestaurantId uint   `json:"restaurant_id"`
 }
+
+type OpenRestaurantCount struct {
+	OpenRestaurantCount string `json:"open_restaurant_count"`
+}
