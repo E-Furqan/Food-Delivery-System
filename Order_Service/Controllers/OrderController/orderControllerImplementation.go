@@ -119,64 +119,6 @@ func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, order)
 }
 
-// AssignDeliveryDriver godoc
-// @Summary Assign a delivery driver to an order
-// @Description Assigns a delivery driver to an order if the order doesn't already have a driver, and the role of the user is "delivery driver"
-// @Tags Order Service
-// @Accept  json
-// @Produce  json
-// @Param assignDeliveryDriverRequest body model.AssignDeliveryDriver true "Assign delivery driver request"
-// @Success 200 {object} model.Order "Assigned delivery driver to the order"
-// @Failure 400 {object} map[string]interface{} "Bad Request"
-// @Failure 401 {object} map[string]interface{} "Unauthorized"
-// @Failure 404 {object} map[string]interface{} "Order not found"
-// @Router /order/assign/diver [patch]
-func (orderCtrl *OrderController) AssignDeliveryDriver(c *gin.Context) {
-	Id, exists := c.Get("ClaimId")
-	if !exists {
-		c.JSON(http.StatusBadRequest, "userId id does not exist")
-		return
-	}
-	IDint := Id.(uint)
-
-	activeRoleStr, err := utils.FetchRoleFromClaims(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-		return
-	}
-
-	var request model.AssignDeliveryDriver
-	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	if strings.ToLower(activeRoleStr) != "delivery driver" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role"})
-		return
-	}
-
-	var order model.Order
-
-	err = orderCtrl.Repo.GetOrder(&order, request.OrderID)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Order not found"})
-		return
-	}
-
-	if order.DeliveryDriver != 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Order already have a driver"})
-		return
-	}
-	order.DeliveryDriver = IDint
-	if err := orderCtrl.Repo.Update(&order); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, order)
-}
-
 // GetOrders retrieves orders based on the user type.
 //
 // @Summary Get orders based on user type (user, restaurant, or delivery driver)
@@ -474,50 +416,6 @@ func (orderCtrl *OrderController) FetchAverageOrderValue(c *gin.Context) {
 	}
 }
 
-// FetchCompletedDeliversRider godoc
-// @Summary Fetch completed deliveries by riders
-// @Description Retrieves the number of completed deliveries for each rider. This endpoint is restricted to admins only.
-// @Tags Order Service
-// @Accept  json
-// @Produce  json
-// @Security ApiKeyAuth
-// @Success 200 {array} model.CompletedDelivers "List of completed deliveries by riders"
-// @Failure 400 {object} map[string]interface{} "Bad Request"
-// @Failure 401 {object} map[string]interface{} "Unauthorized"
-// @Failure 500 {object} map[string]interface{} "Internal Server Error"
-// @Router /order/completed/delivers/rider [get]
-// @Summary Fetch completed deliveries by riders
-// @Description Retrieves the number of completed deliveries for each rider
-// @Tags Order Service
-// @Accept  json
-// @Produce  json
-// @Success 200 {array} model.CompletedDelivers "List of completed deliveries by riders"
-// @Failure 500 {object} map[string]interface{} "Internal Server Error"
-// @Router /order/completed/delivers/rider [get]
-// @Security ApiKeyAuth
-func (orderCtrl *OrderController) FetchCompletedDeliversRider(c *gin.Context) {
-
-	activeRoleStr, err := utils.FetchRoleFromClaims(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-		return
-	}
-
-	isAdmin := utils.IsAdminRole(activeRoleStr)
-	if !isAdmin {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Only admins can get completed delivers by riders analysis"})
-		return
-	}
-
-	result, err := orderCtrl.Repo.FetchCompletedDeliversOfRider()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, result)
-}
-
 // FetchCancelOrdersDetails godoc
 // @Summary Fetch cancelled orders details
 // @Description Retrieves the details of cancelled orders including item information
@@ -561,48 +459,30 @@ func (orderCtrl *OrderController) FetchCancelOrdersDetails(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-// FetchCustomerOrdersDetails godoc
-// @Summary Fetch orders details for a specific customer
-// @Description Retrieves the details of orders placed by a specific customer, including item information
+// FetchOrderStatusFrequencies godoc
+// @Summary Fetch Order Status Frequencies
+// @Description Retrieves the frequency of each order status (e.g., Completed, Pending, Cancelled) across all orders.
 // @Tags Order Service
 // @Accept json
 // @Produce json
-// @Param pageNumber body model.PageNumber true "Pagination information"
-// @Success 200 {array} model.OrderDetails "List of orders placed by the customer with item details"
-// @Failure 400 {object} map[string]interface{} "Bad Request: Invalid page number or limit"
-// @Failure 401 {object} map[string]interface{} "Unauthorized: User not authorized to access the resource"
-// @Failure 404 {object} map[string]interface{} "Not Found: Customer not found"
+// @Success 200 {array} model.OrderStatusFrequency "List of order statuses with their frequencies"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
 // @Failure 500 {object} map[string]interface{} "Internal Server Error"
-// @Router /order/customer/orders [get]
-// @Security ApiKeyAuth
-func (orderCtrl *OrderController) FetchCustomerOrdersDetails(c *gin.Context) {
-
+// @Router /order/status-frequencies [get]
+func (orderCtrl *OrderController) FetchOrderStatusFrequencies(c *gin.Context) {
 	activeRoleStr, err := utils.FetchRoleFromClaims(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
-	isAdmin := utils.IsCustomerOrAdminRole(activeRoleStr)
+	isAdmin := utils.IsAdminRole(activeRoleStr)
 	if !isAdmin {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Only admins can get completed delivers by riders analysis"})
 		return
 	}
 
-	ID, err := utils.FetchIDFromClaim(c)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, "ClaimId is not a valid uint")
-		return
-	}
-
-	var PageNumber model.PageNumber
-	if err := c.ShouldBindJSON(&PageNumber); err != nil {
-		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
-		return
-	}
-
-	offset := (PageNumber.PageNumber - 1) * PageNumber.Limit
-	result, err := orderCtrl.Repo.FetchUserOrdersWithItemDetails(int(ID), PageNumber.Limit, offset)
+	result, err := orderCtrl.Repo.FetchOrderStatusFrequencies()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -611,62 +491,39 @@ func (orderCtrl *OrderController) FetchCustomerOrdersDetails(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-func (orderCtrl *OrderController) FetchTopPurchasedItems(c *gin.Context) {
-
-	result, err := orderCtrl.Repo.FetchTopPurchasedItems()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, result)
-}
-
-func (orderCtrl *OrderController) FetchCompletedOrdersCountByRestaurant(c *gin.Context) {
-
+// FetchOrdersByTimeFrame godoc
+// @Summary Fetch orders by a specified time frame
+// @Description Fetch the total number of orders grouped by time (day, week, month, year) based on a given time frame
+// @Tags orders
+// @Accept json
+// @Produce json
+// @Param request body model.TimeFrame true "Time frame to fetch orders by"
+// @Success 200 {array} map[string]interface{} "List of orders grouped by time frame"
+// @Failure 400 {object} gin.H "Error message"
+// @Router /orders/by-timeframe [get]
+func (orderCtrl *OrderController) FetchOrdersByTimeFrame(c *gin.Context) {
 	activeRoleStr, err := utils.FetchRoleFromClaims(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
-	isAdminOrRestaurant := utils.IsRestaurantOrAdminRole(activeRoleStr)
-	if !isAdminOrRestaurant {
+	isAdmin := utils.IsAdminRole(activeRoleStr)
+	if !isAdmin {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Only admins can get completed delivers by riders analysis"})
 		return
 	}
 
-	var TimeRange model.TimeRange
-	if err := c.ShouldBindJSON(&TimeRange); err != nil {
-		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+	var request model.TimeFrame
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	result, err := orderCtrl.Repo.FetchCompletedOrdersCountByRestaurant(TimeRange)
+	result, err := utils.FetchOrdersByTimeFrameHelper(orderCtrl.Repo, request)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, result)
-}
-
-func (orderCtrl *OrderController) FetchOrderStatusFrequencies(c *gin.Context) {
-	// activeRoleStr, err := utils.FetchRoleFromClaims(c)
-	// if err != nil {
-	// 	c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-	// 	return
-	// }
-
-	// isAdmin := utils.IsAdminRole(activeRoleStr)
-	// if !isAdmin {
-	// 	c.JSON(http.StatusUnauthorized, gin.H{"error": "Only admins can get completed delivers by riders analysis"})
-	// 	return
-	// }
-
-	result, err := orderCtrl.Repo.FetchOrderStatusFrequencies()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 

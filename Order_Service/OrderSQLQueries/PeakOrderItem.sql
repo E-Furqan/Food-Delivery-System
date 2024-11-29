@@ -6,7 +6,7 @@ select
 from
     orders
 where 
-    time between '2024-11-28' and '2024-11-29'
+    time between '2024-11-28' and '2024-11-30'
 group by 
     hours_of_date
 order by 

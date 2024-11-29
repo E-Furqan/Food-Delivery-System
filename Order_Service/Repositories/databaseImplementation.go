@@ -328,3 +328,97 @@ func (repo *Repository) FetchOrderStatusFrequencies() ([]model.OrderStatusFreque
 
 	return result, nil
 }
+
+func (repo *Repository) FetchTopFiveCustomers() ([]model.UserOrderFrequency, error) {
+	var result []model.UserOrderFrequency
+	err := repo.DB.Table("orders").
+		Select("user_id, COUNT(*) AS order_frequency").
+		Group("user_id").
+		Order("order_frequency DESC").
+		Limit(5).
+		Scan(&result).Error
+
+	if err != nil {
+		return []model.UserOrderFrequency{}, err
+	}
+
+	return result, nil
+}
+
+func (repo *Repository) FetchRestaurantsRevenue() ([]model.RestaurantRevenue, error) {
+	var result []model.RestaurantRevenue
+	err := repo.DB.Table("orders").
+		Select("restaurant_id , sum(total_bill) as revenue").
+		Group("restaurant_id").
+		Order("revenue DESC").
+		Scan(&result).Error
+
+	if err != nil {
+		return []model.RestaurantRevenue{}, err
+	}
+
+	return result, nil
+}
+
+func (repo *Repository) FetchOrdersByDay(timeRange model.TimeFrame) ([]model.OrdersByDay, error) {
+	var results []model.OrdersByDay
+	err := repo.DB.Table("orders").
+		Select("TO_CHAR(time, 'HH12:MI') AS hours_of_date,COUNT(total_bill) AS total_orders").
+		Where("time BETWEEN ? AND ?", timeRange.StartDate, timeRange.EndDate).
+		Group("hours_of_date").
+		Order("total_orders DESC").
+		Scan(&results).Error
+
+	if err != nil {
+		return []model.OrdersByDay{}, err
+	}
+
+	return results, nil
+}
+func (repo *Repository) FetchOrdersByWeek(timeRange model.TimeFrame) ([]model.OrdersByWeek, error) {
+	var results []model.OrdersByWeek
+	err := repo.DB.Table("orders").
+		Select("TO_CHAR(time, 'DD') AS date_of_week,COUNT(total_bill) AS total_orders").
+		Where("time BETWEEN ? AND ?", timeRange.StartDate, timeRange.EndDate).
+		Group("date_of_week").
+		Order("total_orders DESC").
+		Scan(&results).Error
+
+	if err != nil {
+		return []model.OrdersByWeek{}, err
+	}
+
+	return results, nil
+}
+
+func (repo *Repository) FetchOrdersByMonth(timeRange model.TimeFrame) ([]model.OrderByMonth, error) {
+	var results []model.OrderByMonth
+	err := repo.DB.Table("orders").
+		Select("EXTRACT(WEEK FROM time) - EXTRACT(WEEK FROM DATE_TRUNC('month', time)) + 1 AS week_of_month,COUNT(total_bill) AS total_orders").
+		Where("time BETWEEN ? AND ?", timeRange.StartDate, timeRange.EndDate).
+		Group("week_of_month").
+		Order("total_orders DESC").
+		Scan(&results).Error
+
+	if err != nil {
+		return []model.OrderByMonth{}, err
+	}
+
+	return results, nil
+}
+
+func (repo *Repository) FetchOrdersByYear(timeRange model.TimeFrame) ([]model.OrderByYear, error) {
+	var results []model.OrderByYear
+	err := repo.DB.Table("orders").
+		Select("TO_CHAR(time, 'MM') AS month_of_year,COUNT(total_bill) AS total_orders").
+		Where("time BETWEEN ? AND ?", timeRange.StartDate, timeRange.EndDate).
+		Group("month_of_year").
+		Order("total_orders DESC").
+		Scan(&results).Error
+
+	if err != nil {
+		return []model.OrderByYear{}, err
+	}
+
+	return results, nil
+}

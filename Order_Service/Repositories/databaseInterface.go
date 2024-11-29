@@ -33,4 +33,10 @@ type RepositoryInterface interface {
 	FetchTopPurchasedItems() ([]model.MostPurchasedItem, error)
 	FetchCompletedOrdersCountByRestaurant(timeRange model.TimeRange) ([]model.RestaurantCompletedOrdersCount, error)
 	FetchOrderStatusFrequencies() ([]model.OrderStatusFrequency, error)
+	FetchTopFiveCustomers() ([]model.UserOrderFrequency, error)
+	FetchRestaurantsRevenue() ([]model.RestaurantRevenue, error)
+	FetchOrdersByDay(timeRange model.TimeFrame) ([]model.OrdersByDay, error)
+	FetchOrdersByWeek(timeRange model.TimeFrame) ([]model.OrdersByWeek, error)
+	FetchOrdersByMonth(timeRange model.TimeFrame) ([]model.OrderByMonth, error)
+	FetchOrdersByYear(timeRange model.TimeFrame) ([]model.OrderByYear, error)
 }

@@ -48,11 +48,6 @@ type ProcessOrder struct {
 	OrderStatus string `json:"order_status"`
 }
 
-type TimeRange struct {
-	StartTime string `json:"start_time" binding:"required"`
-	EndTime   string `json:"end_time" binding:"required"`
-}
-
 // AverageOrderValue godoc
 // @Description Model for average order value input
 type AverageOrderValue struct {
@@ -120,6 +115,46 @@ type RestaurantCompletedOrdersCount struct {
 type OrderStatusFrequency struct {
 	OrderStatus     string `json:"order_status"`
 	StatusFrequency int    `json:"status_frequency"`
+}
+
+type UserOrderFrequency struct {
+	UserId         uint `json:"user_id"`
+	OrderFrequency int  `json:"order_frequency"`
+}
+
+type RestaurantRevenue struct {
+	RestaurantID uint    `json:"restaurant_id"`
+	Revenue      float64 `json:"revenue"`
+}
+type TimeRange struct {
+	StartTime string `json:"start_time" binding:"required"`
+	EndTime   string `json:"end_time" binding:"required"`
+}
+
+type TimeFrame struct {
+	TimeFrame string `json:"time_frame" binding:"required"`
+	StartDate string `json:"start_date" binding:"required"`
+	EndDate   string `json:"end_date" binding:"required"`
+}
+
+type OrdersByDay struct {
+	HoursOfDate string `json:"hours_of_date"`
+	TotalOrders int    `json:"total_orders"`
+}
+
+type OrdersByWeek struct {
+	DateOfWeek  string `json:"date_of_week"`
+	TotalOrders int    `json:"total_orders"`
+}
+
+type OrderByMonth struct {
+	WeekOfMonth string `json:"week_of_month"`
+	TotalOrders int    `json:"total_orders"`
+}
+
+type OrderByYear struct {
+	MonthOfYear string `json:"month_of_year"`
+	TotalOrders int    `json:"total_orders"`
 }
 
 var UserOrderStatuses = []string{

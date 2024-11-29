@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
+	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
 	"github.com/gin-gonic/gin"
 )
 
@@ -142,10 +143,43 @@ func IsDriverOrAdminRole(activeRoleStr string) bool {
 		return false
 	}
 }
+
 func IsAdminRole(activeRoleStr string) bool {
 	if strings.ToLower(activeRoleStr) == "admin" {
 		return true
 	} else {
 		return false
+	}
+}
+
+func FetchOrdersByTimeFrameHelper(Repo database.RepositoryInterface, request model.TimeFrame) (interface{}, error) {
+	switch request.TimeFrame {
+	case "day":
+		result, err := Repo.FetchOrdersByDay(request)
+		if err != nil {
+			return nil, err
+		}
+		return result, nil
+	case "week":
+		result, err := Repo.FetchOrdersByWeek(request)
+		if err != nil {
+			return nil, err
+		}
+		return result, nil
+	case "month":
+		result, err := Repo.FetchOrdersByMonth(request)
+		if err != nil {
+			return nil, err
+		}
+		return result, nil
+	case "year":
+		result, err := Repo.FetchOrdersByYear(request)
+		if err != nil {
+			return nil, err
+		}
+		return result, nil
+	default:
+
+		return nil, fmt.Errorf("invalid time frame. Choose from 'day', 'week', 'month', or 'year'")
 	}
 }
