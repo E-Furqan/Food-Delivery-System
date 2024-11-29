@@ -44,3 +44,11 @@ type UpdateOrder struct {
 	DeliverDriverID uint   `json:"delivery_driver"`
 	OrderStatus     string `json:"order_status"`
 }
+
+type UserRoleFilter struct {
+	FilterType string `json:"filter_type" binding:"required"`
+}
+
+type ActiveUserCount struct {
+	ActiveUserCount string `json:"active_user_count"`
+}

@@ -14,7 +14,7 @@ func User_routes(ctrl UserControllers.UserControllerInterface, rCtrl RoleControl
 	user.POST("/register", ctrl.Register)
 	user.POST("/login", ctrl.Login)
 	user.POST("/refresh/token", middleware.RefreshToken)
-
+	user.GET("/fetch/active/user", ctrl.FetchActiveUser)
 	user.Use(middleware.AuthMiddleware())
 	{
 		user.POST("/assign/driver", ctrl.AssignDriver)

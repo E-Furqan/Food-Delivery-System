@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
+	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
 	"github.com/gin-gonic/gin"
 )
 
@@ -156,4 +157,29 @@ func CreateUrl(BaseUrl string, Port string, APIUrl string) (string, error) {
 
 	finalURL := fmt.Sprintf("%s%s", baseURL.String(), escapedAPIUrl)
 	return finalURL, nil
+}
+
+func FetchActiveUserCountHelper(RoleFilter model.UserRoleFilter, Repo database.RepositoryInterface) (model.ActiveUserCount, error) {
+	switch RoleFilter.FilterType {
+	case "customer":
+		result, err := Repo.FetchActiveUserCount("Customer")
+		if err != nil {
+			return model.ActiveUserCount{}, err
+		}
+		return result, nil
+	case "delivery driver":
+		result, err := Repo.FetchActiveUserCount("Delivery driver")
+		if err != nil {
+			return model.ActiveUserCount{}, err
+		}
+		return result, nil
+	case "admin":
+		result, err := Repo.FetchActiveUserCount("Admin")
+		if err != nil {
+			return model.ActiveUserCount{}, err
+		}
+		return result, nil
+	default:
+		return model.ActiveUserCount{}, fmt.Errorf("invalid time frame. Choose from 'customer', 'delivery driver', 'month', or 'admin'")
+	}
 }

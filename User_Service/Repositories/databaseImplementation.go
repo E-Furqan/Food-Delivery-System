@@ -132,3 +132,16 @@ func (repo *Repository) UpdateUserActiveRole(user *model.User) error {
 func (repo *Repository) UpdateRoleStatus(user *model.User) error {
 	return repo.DB.Model(user).Where("user_id = ?", user.UserId).Update("role_status", user.RoleStatus).Error
 }
+
+func (repo *Repository) FetchActiveUserCount(userType string) (model.ActiveUserCount, error) {
+	var result model.ActiveUserCount
+	err := repo.DB.Table("users").
+		Select("COUNT(*) AS active_user_count").
+		Where("active_role = ? and role_status = 'Active'", userType).
+		Scan(&result).Error
+
+	if err != nil {
+		return model.ActiveUserCount{}, err
+	}
+	return result, nil
+}

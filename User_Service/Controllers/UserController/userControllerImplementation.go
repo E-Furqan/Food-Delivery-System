@@ -421,3 +421,19 @@ func (ctrl *Controller) AssignDriver(c *gin.Context) {
 		"Message": "Delivery driver assigned to the order",
 	})
 }
+
+func (ctrl *Controller) FetchActiveUser(c *gin.Context) {
+
+	var RoleFilter model.UserRoleFilter
+	if err := c.ShouldBindJSON(&RoleFilter); err != nil {
+		utils.GenerateResponse(http.StatusBadRequest, c, "error", err.Error(), "", nil)
+		return
+	}
+	result, err := utils.FetchActiveUserCountHelper(RoleFilter, ctrl.Repo)
+	if err != nil {
+		utils.GenerateResponse(http.StatusInternalServerError, c, "error", err.Error(), "", nil)
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
+}
