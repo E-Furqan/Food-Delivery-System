@@ -188,3 +188,59 @@ func (repo *Repository) FetchAllOrder(orders *[]model.Order) error {
 
 	return nil
 }
+
+func (repo *Repository) FetchAverageOrderValueOfUser(input uint) (model.UserAverageOrderValue, error) {
+	var result model.UserAverageOrderValue
+
+	err := repo.DB.Table("orders").
+		Select("user_id, AVG(total_bill) as average_order_value").
+		Where("user_id = ?", input).
+		Group("user_id").
+		Scan(&result).Error
+
+	if err != nil {
+		return model.UserAverageOrderValue{}, err
+	}
+	return result, nil
+}
+
+func (repo *Repository) FetchAverageOrderValueOfRestaurant(input uint) (model.RestaurantAverageOrderValue, error) {
+	var result model.RestaurantAverageOrderValue
+	err := repo.DB.Table("orders").
+		Select("restaurant_id, Avg(total_bill) as average_order_value").
+		Where("restaurant_id = ?", input).
+		Group("restaurant_id").
+		Scan(&result).Error
+	if err != nil {
+		return model.RestaurantAverageOrderValue{}, err
+	}
+	return result, nil
+}
+
+func (repo *Repository) FetchAverageOrderValueBetweenTime(startTime string, endTime string) (model.TimeAverageOrderValue, error) {
+	var result model.TimeAverageOrderValue
+	err := repo.DB.Table("orders").
+		Select("time, Avg(total_bill) as average_order_value").
+		Where("time between ? and ?", startTime, endTime).
+		Group("time").
+		Scan(&result).Error
+	if err != nil {
+		return model.TimeAverageOrderValue{}, err
+	}
+	return result, nil
+}
+
+func (repo *Repository) FetchCompletedDeliversOfRider() ([]model.CompletedDelivers, error) {
+	var result []model.CompletedDelivers
+	err := repo.DB.Table("orders").
+		Select("delivery_driver, count(*) as completed_delivers").
+		Where("order_status = 'Completed' AND delivery_driver != 0").
+		Group("delivery_driver").
+		Order("completed_delivers DESC").
+		Scan(&result).Error
+	if err != nil {
+		return []model.CompletedDelivers{}, err
+	}
+	log.Print(result[0].DeliveryDriver)
+	return result, nil
+}

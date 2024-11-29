@@ -30,9 +30,10 @@ func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 		return
 	}
 
-	activeRoleStr, err := utils.VerifyRole(c)
+	activeRoleStr, err := utils.FetchRoleFromClaims(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
 	}
 
 	var request model.OrderStatusUpdateRequest
@@ -93,7 +94,7 @@ func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 
 	case "delivery driver":
 
-		if order.DeliveryDriverID != Id {
+		if order.DeliveryDriver != Id {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "You don't have the permission to update order status"})
 			return
 		}
@@ -138,9 +139,10 @@ func (orderCtrl *OrderController) AssignDeliveryDriver(c *gin.Context) {
 	}
 	IDint := Id.(uint)
 
-	activeRoleStr, err := utils.VerifyRole(c)
+	activeRoleStr, err := utils.FetchRoleFromClaims(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
 	}
 
 	var request model.AssignDeliveryDriver
@@ -162,11 +164,11 @@ func (orderCtrl *OrderController) AssignDeliveryDriver(c *gin.Context) {
 		return
 	}
 
-	if order.DeliveryDriverID != 0 {
+	if order.DeliveryDriver != 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Order already have a driver"})
 		return
 	}
-	order.DeliveryDriverID = IDint
+	order.DeliveryDriver = IDint
 	if err := orderCtrl.Repo.Update(&order); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -189,9 +191,10 @@ func (orderCtrl *OrderController) AssignDeliveryDriver(c *gin.Context) {
 // @Security ApiKeyAuth
 func (orderCtrl *OrderController) GetOrders(c *gin.Context) {
 
-	activeRoleStr, err := utils.VerifyRole(c)
+	activeRoleStr, err := utils.FetchRoleFromClaims(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
 	}
 
 	Id, exists := c.Get("ID")
@@ -240,7 +243,7 @@ func (orderCtrl *OrderController) GetOrders(c *gin.Context) {
 // @Router /order/place/order [post]
 func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 
-	userRoleStr, err := utils.VerifyRole(c)
+	userRoleStr, err := utils.FetchRoleFromClaims(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 	}
@@ -327,9 +330,10 @@ func (orderCtrl *OrderController) ViewOrderDetails(c *gin.Context) {
 // @Security ApiKeyAuth
 func (orderCtrl *OrderController) ViewOrdersWithoutRider(c *gin.Context) {
 
-	activeRoleStr, err := utils.VerifyRole(c)
+	activeRoleStr, err := utils.FetchRoleFromClaims(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
 	}
 
 	if strings.ToLower(activeRoleStr) != "delivery driver" && strings.ToLower(activeRoleStr) != "admin" {
@@ -406,4 +410,76 @@ func (orderCtrl *OrderController) GenerateInvoice(c *gin.Context) {
 	invoice := utils.CreateInvoice(order, orderItems, items)
 
 	c.JSON(http.StatusOK, gin.H{"invoice": invoice})
+}
+
+func (orderCtrl *OrderController) FetchAverageOrderValue(c *gin.Context) {
+
+	var input model.AverageOrderValue
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	activeRoleStr, err := utils.FetchRoleFromClaims(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	ID, err := utils.FetchIDFromClaim(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, "ClaimId is not a valid uint")
+		return
+	}
+
+	if input.FilterType == "user" && utils.IsCustomerOrAdminRole(activeRoleStr) {
+		result, err := orderCtrl.Repo.FetchAverageOrderValueOfUser(ID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, result)
+		return
+
+	} else if input.FilterType == "restaurant" && utils.IsRestaurantOrAdminRole(activeRoleStr) {
+		result, err := orderCtrl.Repo.FetchAverageOrderValueOfRestaurant(ID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, result)
+		return
+
+	} else if input.FilterType == "time" && utils.IsAdminRole(activeRoleStr) {
+		result, err := orderCtrl.Repo.FetchAverageOrderValueBetweenTime(input.StartTime, input.EndTime)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, result)
+		return
+	}
+}
+
+func (orderCtrl *OrderController) FetchCompletedDeliversRider(c *gin.Context) {
+
+	// activeRoleStr, err := utils.FetchRoleFromClaims(c)
+	// if err != nil {
+	// 	c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+	// 	return
+	// }
+
+	// isAdmin := utils.IsAdminRole(activeRoleStr)
+	// if !isAdmin {
+	// 	c.JSON(http.StatusUnauthorized, gin.H{"error": "Only admins can get completed delivers by riders analysis"})
+	// 	return
+	// }
+
+	result, err := orderCtrl.Repo.FetchCompletedDeliversOfRider()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
 }

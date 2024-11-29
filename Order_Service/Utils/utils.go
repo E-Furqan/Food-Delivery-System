@@ -92,7 +92,7 @@ func CalculateBill(CombineOrderItem model.CombineOrderItem, items []model.Items)
 	return totalBill, nil
 }
 
-func VerifyRole(c *gin.Context) (string, error) {
+func FetchRoleFromClaims(c *gin.Context) (string, error) {
 	activeRole, exists := c.Get("activeRole")
 	if !exists {
 		return "", fmt.Errorf("userId role does not exist")
@@ -103,6 +103,20 @@ func VerifyRole(c *gin.Context) (string, error) {
 		return "", fmt.Errorf("activeRole is not a string")
 	}
 	return activeRoleStr, nil
+}
+
+func FetchIDFromClaim(c *gin.Context) (uint, error) {
+	Id, exists := c.Get("ClaimId")
+	if !exists {
+		return 0, fmt.Errorf("id id does not exist")
+	}
+
+	ID, ok := Id.(uint)
+	if !ok {
+		return 0, fmt.Errorf("claimId is not a valid uint")
+	}
+
+	return ID, nil
 }
 
 func IsCustomerOrAdminRole(activeRoleStr string) bool {
@@ -123,6 +137,13 @@ func IsRestaurantOrAdminRole(activeRoleStr string) bool {
 
 func IsDriverOrAdminRole(activeRoleStr string) bool {
 	if strings.ToLower(activeRoleStr) == "delivery driver" || strings.ToLower(activeRoleStr) == "admin" {
+		return true
+	} else {
+		return false
+	}
+}
+func IsAdminRole(activeRoleStr string) bool {
+	if strings.ToLower(activeRoleStr) == "admin" {
 		return true
 	} else {
 		return false

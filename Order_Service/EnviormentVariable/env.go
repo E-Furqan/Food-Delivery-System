@@ -18,11 +18,11 @@ func ReadDatabaseConfigEnv() model.DatabaseConfigEnv {
 		log.Printf("Error loading .env file: %v", err)
 	}
 
-	envVar.DATABASE_HOST = utils.GetEnv("DATABASE_HOST", "db")
+	envVar.DATABASE_HOST = utils.GetEnv("DATABASE_HOST", "localhost")
 	envVar.DATABASE_USER = utils.GetEnv("DATABASE_USER", "furqan")
 	envVar.DATABASE_PASSWORD = utils.GetEnv("DATABASE_PASSWORD", "furqan")
 	envVar.DATABASE_NAME = utils.GetEnv("DATABASE_NAME", "Order")
-	portStr := utils.GetEnv("DATABASE_PORT", "5432")
+	portStr := utils.GetEnv("DATABASE_PORT", "5431")
 	envVar.DATABASE_PORT, err = strconv.Atoi(portStr)
 	if err != nil {
 		log.Printf("Error converting PORT to integer: %v", err)

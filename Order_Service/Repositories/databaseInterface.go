@@ -24,4 +24,8 @@ type RepositoryInterface interface {
 	Update(order *model.Order) error
 	PlaceOrder(order *model.Order, CombineOrderItem *model.CombineOrderItem) error
 	FetchAllOrder(orders *[]model.Order) error
+	FetchAverageOrderValueOfUser(input uint) (model.UserAverageOrderValue, error)
+	FetchAverageOrderValueOfRestaurant(input uint) (model.RestaurantAverageOrderValue, error)
+	FetchAverageOrderValueBetweenTime(startTime string, endTime string) (model.TimeAverageOrderValue, error)
+	FetchCompletedDeliversOfRider() ([]model.CompletedDelivers, error)
 }

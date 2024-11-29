@@ -3,7 +3,7 @@ select
 from 
     orders
 where
-    order_status = 'Completed'
+    order_status = 'Completed' AND delivery_driver != 0
 group by 
     delivery_driver
 order by 

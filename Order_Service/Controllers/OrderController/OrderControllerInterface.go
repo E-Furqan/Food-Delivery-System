@@ -26,4 +26,6 @@ type OrderControllerInterface interface {
 	ViewOrderDetails(c *gin.Context)
 	ViewOrdersWithoutRider(c *gin.Context)
 	GenerateInvoice(c *gin.Context)
+	FetchAverageOrderValue(c *gin.Context)
+	FetchCompletedDeliversRider(c *gin.Context)
 }
