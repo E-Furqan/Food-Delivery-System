@@ -199,3 +199,14 @@ func (ctrl *RestaurantController) ViewRestaurantOrders(c *gin.Context) {
 		"Restaurant orders: ": filteredOrders,
 	})
 }
+
+func (ctrl *RestaurantController) FetchOpenRestaurant(c *gin.Context) {
+
+	result, err := ctrl.Repo.FetchOpenRestaurant()
+	if err != nil {
+		utils.GenerateResponse(http.StatusInternalServerError, c, "error", err.Error(), "", nil)
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
+}

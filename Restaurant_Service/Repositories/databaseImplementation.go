@@ -134,3 +134,16 @@ func (repo *Repository) UpdateRestaurantStatus(restaurant *model.Restaurant, inp
 
 	return tx.Commit().Error
 }
+
+func (repo *Repository) FetchOpenRestaurant() (model.OpenRestaurantCount, error) {
+	var result model.OpenRestaurantCount
+	err := repo.DB.Table("restaurants").
+		Select("COUNT(*) AS open_restaurant_count").
+		Where("restaurant_status='Open'").
+		Scan(&result).Error
+
+	if err != nil {
+		return model.OpenRestaurantCount{}, err
+	}
+	return result, nil
+}
