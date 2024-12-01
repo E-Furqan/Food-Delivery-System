@@ -30,9 +30,10 @@ func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 		return
 	}
 
-	activeRoleStr, err := utils.VerifyRole(c)
+	activeRoleStr, err := utils.FetchRoleFromClaims(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
 	}
 
 	var request model.OrderStatusUpdateRequest
@@ -93,7 +94,7 @@ func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 
 	case "delivery driver":
 
-		if order.DeliveryDriverID != Id {
+		if order.DeliveryDriver != Id {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "You don't have the permission to update order status"})
 			return
 		}
@@ -118,63 +119,6 @@ func (orderCtrl *OrderController) UpdateOrderStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, order)
 }
 
-// AssignDeliveryDriver godoc
-// @Summary Assign a delivery driver to an order
-// @Description Assigns a delivery driver to an order if the order doesn't already have a driver, and the role of the user is "delivery driver"
-// @Tags Order Service
-// @Accept  json
-// @Produce  json
-// @Param assignDeliveryDriverRequest body model.AssignDeliveryDriver true "Assign delivery driver request"
-// @Success 200 {object} model.Order "Assigned delivery driver to the order"
-// @Failure 400 {object} map[string]interface{} "Bad Request"
-// @Failure 401 {object} map[string]interface{} "Unauthorized"
-// @Failure 404 {object} map[string]interface{} "Order not found"
-// @Router /order/assign/diver [patch]
-func (orderCtrl *OrderController) AssignDeliveryDriver(c *gin.Context) {
-	Id, exists := c.Get("ClaimId")
-	if !exists {
-		c.JSON(http.StatusBadRequest, "userId id does not exist")
-		return
-	}
-	IDint := Id.(uint)
-
-	activeRoleStr, err := utils.VerifyRole(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-	}
-
-	var request model.AssignDeliveryDriver
-	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	if strings.ToLower(activeRoleStr) != "delivery driver" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role"})
-		return
-	}
-
-	var order model.Order
-
-	err = orderCtrl.Repo.GetOrder(&order, request.OrderID)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Order not found"})
-		return
-	}
-
-	if order.DeliveryDriverID != 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Order already have a driver"})
-		return
-	}
-	order.DeliveryDriverID = IDint
-	if err := orderCtrl.Repo.Update(&order); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, order)
-}
-
 // GetOrders retrieves orders based on the user type.
 //
 // @Summary Get orders based on user type (user, restaurant, or delivery driver)
@@ -189,9 +133,10 @@ func (orderCtrl *OrderController) AssignDeliveryDriver(c *gin.Context) {
 // @Security ApiKeyAuth
 func (orderCtrl *OrderController) GetOrders(c *gin.Context) {
 
-	activeRoleStr, err := utils.VerifyRole(c)
+	activeRoleStr, err := utils.FetchRoleFromClaims(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
 	}
 
 	Id, exists := c.Get("ID")
@@ -240,7 +185,7 @@ func (orderCtrl *OrderController) GetOrders(c *gin.Context) {
 // @Router /order/place/order [post]
 func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 
-	userRoleStr, err := utils.VerifyRole(c)
+	userRoleStr, err := utils.FetchRoleFromClaims(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 	}
@@ -327,9 +272,10 @@ func (orderCtrl *OrderController) ViewOrderDetails(c *gin.Context) {
 // @Security ApiKeyAuth
 func (orderCtrl *OrderController) ViewOrdersWithoutRider(c *gin.Context) {
 
-	activeRoleStr, err := utils.VerifyRole(c)
+	activeRoleStr, err := utils.FetchRoleFromClaims(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
 	}
 
 	if strings.ToLower(activeRoleStr) != "delivery driver" && strings.ToLower(activeRoleStr) != "admin" {
@@ -406,4 +352,180 @@ func (orderCtrl *OrderController) GenerateInvoice(c *gin.Context) {
 	invoice := utils.CreateInvoice(order, orderItems, items)
 
 	c.JSON(http.StatusOK, gin.H{"invoice": invoice})
+}
+
+// FetchAverageOrderValue godoc
+// @Summary Fetch average order value for a user, restaurant, or time period
+// @Description Retrieves the average order value based on user ID, restaurant ID, or a time period filter
+// @Tags Order Service
+// @Accept  json
+// @Produce  json
+// @Param input body model.AverageOrderValue true "Input parameters for filtering"
+// @Success 200 {object} map[string]interface{} "Average order value"
+// @Failure 400 {object} map[string]interface{} "Bad Request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 500 {object} map[string]interface{} "Internal Server Error"
+// @Router /order/average/order_value [get]
+// @Security ApiKeyAuth
+func (orderCtrl *OrderController) FetchAverageOrderValue(c *gin.Context) {
+
+	var input model.AverageOrderValue
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	activeRoleStr, err := utils.FetchRoleFromClaims(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	ID, err := utils.FetchIDFromClaim(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, "ClaimId is not a valid uint")
+		return
+	}
+
+	if input.FilterType == "user" && utils.IsCustomerOrAdminRole(activeRoleStr) {
+		result, err := orderCtrl.Repo.FetchAverageOrderValueOfUser(ID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, result)
+		return
+
+	} else if input.FilterType == "restaurant" && utils.IsRestaurantOrAdminRole(activeRoleStr) {
+		result, err := orderCtrl.Repo.FetchAverageOrderValueOfRestaurant(ID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, result)
+		return
+
+	} else if input.FilterType == "time" && utils.IsAdminRole(activeRoleStr) {
+		result, err := orderCtrl.Repo.FetchAverageOrderValueBetweenTime(input.StartTime, input.EndTime)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, result)
+		return
+	}
+}
+
+// FetchCancelOrdersDetails godoc
+// @Summary Fetch cancelled orders details
+// @Description Retrieves the details of cancelled orders including item information
+// @Tags Order Service
+// @Accept json
+// @Produce json
+// @Param pageNumber body model.PageNumber true "Pagination information"
+// @Success 200 {array} model.OrderDetails "List of cancelled orders with item details"
+// @Failure 400 {object} map[string]interface{} "Bad Request: Invalid page number or limit"
+// @Failure 401 {object} map[string]interface{} "Unauthorized: User not authorized to access the resource"
+// @Failure 500 {object} map[string]interface{} "Internal Server Error"
+// @Router /order/cancelled/orders [get]
+// @Security ApiKeyAuth
+func (orderCtrl *OrderController) FetchCancelOrdersDetails(c *gin.Context) {
+
+	activeRoleStr, err := utils.FetchRoleFromClaims(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	isAdmin := utils.IsAdminRole(activeRoleStr)
+	if !isAdmin {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Only admins can get completed delivers by riders analysis"})
+		return
+	}
+
+	var PageNumber model.PageNumber
+	if err := c.ShouldBindJSON(&PageNumber); err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		return
+	}
+
+	offset := (PageNumber.PageNumber - 1) * PageNumber.Limit
+	result, err := orderCtrl.Repo.FetchCancelledOrdersWithItemDetails(PageNumber.Limit, offset)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
+// FetchOrderStatusFrequencies godoc
+// @Summary Fetch Order Status Frequencies
+// @Description Retrieves the frequency of each order status (e.g., Completed, Pending, Cancelled) across all orders.
+// @Tags Order Service
+// @Accept json
+// @Produce json
+// @Success 200 {array} model.OrderStatusFrequency "List of order statuses with their frequencies"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 500 {object} map[string]interface{} "Internal Server Error"
+// @Router /order/status-frequencies [get]
+func (orderCtrl *OrderController) FetchOrderStatusFrequencies(c *gin.Context) {
+	activeRoleStr, err := utils.FetchRoleFromClaims(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	isAdmin := utils.IsAdminRole(activeRoleStr)
+	if !isAdmin {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Only admins can get completed delivers by riders analysis"})
+		return
+	}
+
+	result, err := orderCtrl.Repo.FetchOrderStatusFrequencies()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
+// FetchOrdersByTimeFrame godoc
+// @Summary Fetch orders by a specified time frame
+// @Description Fetch the total number of orders grouped by time (day, week, month, year) based on a given time frame
+// @Tags orders
+// @Accept json
+// @Produce json
+// @Param request body model.TimeFrame true "Time frame to fetch orders by"
+// @Success 200 {array} map[string]interface{} "List of orders grouped by time frame"
+// @Failure 400 {object} gin.H "Error message"
+// @Router /orders/by-timeframe [get]
+func (orderCtrl *OrderController) FetchOrdersByTimeFrame(c *gin.Context) {
+	activeRoleStr, err := utils.FetchRoleFromClaims(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	isAdmin := utils.IsAdminRole(activeRoleStr)
+	if !isAdmin {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Only admins can get completed delivers by riders analysis"})
+		return
+	}
+
+	var request model.TimeFrame
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	result, err := utils.FetchOrdersByTimeFrameHelper(orderCtrl.Repo, request)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
 }
