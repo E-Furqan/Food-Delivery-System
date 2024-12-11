@@ -11,7 +11,7 @@ import (
 func User_routes(ctrl UserControllers.UserControllerInterface, rCtrl RoleController.RoleControllerInterface, middleware Middleware.MiddlewareInterface, server *gin.Engine) {
 
 	user := server.Group("/user")
-	user.POST("/register", ctrl.Register)
+	user.POST("/register", ctrl.RegisterWorkflow)
 	user.POST("/login", ctrl.Login)
 	user.POST("/refresh/token", middleware.RefreshToken)
 

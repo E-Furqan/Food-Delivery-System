@@ -1,6 +1,7 @@
 package UserControllers
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"strings"
@@ -8,7 +9,44 @@ import (
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 	"github.com/gin-gonic/gin"
+	"go.temporal.io/api/enums/v1"
+	"go.temporal.io/sdk/client"
 )
+
+func (ctrl *Controller) RegisterWorkflow(c *gin.Context) {
+	var registrationData model.User
+
+	if err := c.ShouldBindJSON(&registrationData); err != nil {
+		utils.GenerateResponse(http.StatusBadRequest, c, "error", err.Error(), "", nil)
+		return
+	}
+	log.Print("register data:", registrationData)
+
+	client_var, err := client.Dial(client.Options{})
+	if err != nil {
+		utils.GenerateResponse(http.StatusBadRequest, c, "message", "unable to create Temporal client", "error", err)
+		return
+	}
+	if client_var == nil {
+		utils.GenerateResponse(http.StatusBadRequest, c, "message", "Temporal client is nil", "error", err)
+		return
+	}
+
+	options := client.StartWorkflowOptions{
+		ID:                    "registration-workflow " + registrationData.Username,
+		TaskQueue:             model.RegisterTaskQueue,
+		WorkflowIDReusePolicy: enums.WORKFLOW_ID_REUSE_POLICY_ALLOW_DUPLICATE,
+	}
+
+	_, err = client_var.ExecuteWorkflow(context.Background(), options, ctrl.WorkFlows.RegisterWorkflow, registrationData)
+	if err != nil {
+		utils.GenerateResponse(http.StatusBadRequest, c, "message", "error in workflow", "error", err)
+		return
+	}
+	log.Print("user created")
+
+	c.JSON(http.StatusOK, "user registered")
+}
 
 func (ctrl *Controller) Register(c *gin.Context) {
 
@@ -18,7 +56,7 @@ func (ctrl *Controller) Register(c *gin.Context) {
 		utils.GenerateResponse(http.StatusBadRequest, c, "error", err.Error(), "", nil)
 		return
 	}
-
+	log.Print(registrationData)
 	if len(registrationData.Roles) > 0 && registrationData.ActiveRole == "" {
 		var role model.Role
 		if err := ctrl.Repo.GetRole(registrationData.Roles[0].RoleId, &role); err != nil {
