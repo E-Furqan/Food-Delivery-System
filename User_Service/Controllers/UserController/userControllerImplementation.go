@@ -33,7 +33,7 @@ func (ctrl *Controller) RegisterWorkflow(c *gin.Context) {
 	}
 
 	options := client.StartWorkflowOptions{
-		ID:                    "registration-workflow " + registrationData.Username,
+		ID:                    "registration-workflow-" + registrationData.Username,
 		TaskQueue:             model.RegisterTaskQueue,
 		WorkflowIDReusePolicy: enums.WORKFLOW_ID_REUSE_POLICY_ALLOW_DUPLICATE,
 	}
