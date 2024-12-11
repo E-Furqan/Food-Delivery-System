@@ -8,6 +8,7 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.10.0
+	go.temporal.io/api v1.43.0
 	go.temporal.io/sdk v1.31.0
 	gorm.io/driver/postgres v1.5.9
 	gorm.io/gorm v1.25.12
@@ -52,7 +53,6 @@ require (
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
-	go.temporal.io/api v1.43.0 // indirect
 	golang.org/x/arch v0.8.0 // indirect
 	golang.org/x/crypto v0.28.0 // indirect
 	golang.org/x/exp v0.0.0-20231127185646-65229373498e // indirect
