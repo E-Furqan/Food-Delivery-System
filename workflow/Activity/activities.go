@@ -29,15 +29,6 @@ func (act *Activity) CreateUser(registrationData model.User) (model.User, error)
 	return registrationData, nil
 }
 
-// func (act *Activity) GetUser(UserID uint) (model.User, error) {
-// 	var User model.User
-// 	err := act.Repo.GetUser("user_id", UserID, &User)
-// 	if err != nil {
-// 		return model.User{}, err
-// 	}
-// 	return User, nil
-// }
-
 func (act *Activity) ViewOrders(UserId uint, token string) (*[]model.UpdateOrder, error) {
 	var userId model.UpdateOrder
 	userId.DeliverDriverID = UserId
