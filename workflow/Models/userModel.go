@@ -50,6 +50,7 @@ type UserRoleFilter struct {
 type ActiveUserCount struct {
 	ActiveUserCount string `json:"active_user_count"`
 }
+
 type ID struct {
 	OrderId         uint `json:"order_id"`
 	UserID          uint `json:"user_id"`
