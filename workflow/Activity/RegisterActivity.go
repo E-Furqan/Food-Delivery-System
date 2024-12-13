@@ -28,13 +28,3 @@ func (act *Activity) CreateUser(registrationData model.User) (model.User, error)
 
 	return registrationData, nil
 }
-
-func (act *Activity) ViewOrders(UserId uint, token string) (*[]model.UpdateOrder, error) {
-	var userId model.UpdateOrder
-	userId.DeliverDriverID = UserId
-	Orders, err := act.OrderClient.ViewOrders(userId, token)
-	if err != nil {
-		return &[]model.UpdateOrder{}, err
-	}
-	return Orders, nil
-}
