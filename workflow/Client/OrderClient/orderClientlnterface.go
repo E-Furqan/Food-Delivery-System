@@ -18,6 +18,5 @@ func NewClient(env model.OrderClientEnv) *OrderClient {
 type OrdClientInterface interface {
 	UpdateOrderStatus(input model.UpdateOrder, c *gin.Context) (*model.UpdateOrder, error)
 	AssignDriver(input model.UpdateOrder, c *gin.Context) error
-	ViewOrders(input model.UpdateOrder, c *gin.Context) (*[]model.UpdateOrder, error)
 	ViewOrdersWithoutDriver(input model.UpdateOrder, c *gin.Context) (*[]model.UpdateOrder, error)
 }
