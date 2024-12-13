@@ -65,16 +65,6 @@ func CreateAuthorizedRequest(url string, jsonData []byte, c *gin.Context, Method
 	return req, nil
 }
 
-// func CreateRequest(url string, jsonData []byte, MethodType string) (*http.Request, error) {
-// 	req, err := http.NewRequest(MethodType, url, bytes.NewBuffer(jsonData))
-// 	if err != nil {
-// 		return nil, fmt.Errorf("error creating request: %v", err)
-// 	}
-// 	req.Header.Set("Content-Type", "application/json")
-
-// 	return req, nil
-// }
-
 func CreateHTTPClient() *http.Client {
 	client := &http.Client{
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
