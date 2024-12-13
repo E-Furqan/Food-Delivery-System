@@ -21,6 +21,7 @@ func Order_routes(orderController OrderControllers.OrderControllerInterface,
 	orderRoute := server.Group("/order")
 	server.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	orderRoute.GET("/fetch/order/status", orderController.FetchOrderStatus)
+	orderRoute.POST("/create/order", orderController.CreateOrder)
 	orderRoute.Use(middle.AuthMiddleware())
 	{
 

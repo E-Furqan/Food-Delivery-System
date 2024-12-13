@@ -546,3 +546,22 @@ func (orderCtrl *OrderController) FetchOrderStatus(c *gin.Context) {
 
 	c.JSON(http.StatusOK, orderStatus)
 }
+
+func (orderCtrl *OrderController) CreateOrder(c *gin.Context) {
+	var CombineOrderItem model.CombineOrderItem
+
+	if err := c.ShouldBindJSON(&CombineOrderItem); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	order := utils.CreateOrderObj(CombineOrderItem, CombineOrderItem.TotalBill)
+	err := orderCtrl.Repo.PlaceOrder(&order, &CombineOrderItem)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, order.OrderID)
+}

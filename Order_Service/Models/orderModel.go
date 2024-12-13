@@ -40,7 +40,8 @@ type AssignDeliveryDriver struct {
 
 type CombineOrderItem struct {
 	ID
-	Items []OrderItemPayload
+	TotalBill float64 `json:"total_bill"`
+	Items     []OrderItemPayload
 }
 
 type ProcessOrder struct {

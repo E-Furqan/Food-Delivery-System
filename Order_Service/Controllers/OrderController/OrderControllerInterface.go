@@ -30,4 +30,5 @@ type OrderControllerInterface interface {
 	FetchOrderStatusFrequencies(c *gin.Context)
 	FetchOrdersByTimeFrame(c *gin.Context)
 	FetchOrderStatus(c *gin.Context)
+	CreateOrder(c *gin.Context)
 }
