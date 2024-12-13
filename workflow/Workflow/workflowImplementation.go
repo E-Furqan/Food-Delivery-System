@@ -58,6 +58,32 @@ func (wFlow *Workflow) ViewDriverOrdersWorkflow(ctx workflow.Context, driverID u
 		return err
 	}
 
-	log.Print("error user", err)
+	return nil
+}
+
+func (wFlow *Workflow) OrderPlacedWorkflow(ctx workflow.Context, order model.CombineOrderItem, token string) error {
+	option := workflow.ActivityOptions{
+		StartToCloseTimeout: time.Second * 5,
+		RetryPolicy: &temporal.RetryPolicy{
+			InitialInterval:    time.Second * 10,
+			MaximumInterval:    time.Second * 30,
+			MaximumAttempts:    3,
+			BackoffCoefficient: 2.0,
+		},
+	}
+	ctx = workflow.WithActivityOptions(ctx, option)
+	var updatedOrder model.CombineOrderItem
+	err := workflow.ExecuteActivity(ctx, wFlow.Act.GetItems, order, token).Get(ctx, updatedOrder)
+	if err != nil {
+		return err
+	}
+
+	var message string
+	err = workflow.ExecuteActivity(ctx, wFlow.Act.SendEmail, order.OrderStatus, token).Get(ctx, message)
+	if err != nil {
+		return err
+	}
+
+	log.Print("message", message)
 	return nil
 }

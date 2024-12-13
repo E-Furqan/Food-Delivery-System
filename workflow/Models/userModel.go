@@ -54,4 +54,5 @@ type ID struct {
 	OrderId         uint `json:"order_id"`
 	UserID          uint `json:"user_id"`
 	DeliverDriverID uint `json:"delivery_driver"`
+	RestaurantId    uint `json:"restaurant_id"`
 }

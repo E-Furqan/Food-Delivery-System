@@ -160,3 +160,42 @@ func (orderClient *OrderClient) ViewOrdersWithoutDriver(input model.UpdateOrder,
 
 	return &orders, nil
 }
+
+func (orderClient *OrderClient) FetchOrderStatus(orderID uint, token string) (*[]model.UpdateOrder, error) {
+
+	jsonData, err := json.Marshal(orderID)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling input: %v", err)
+	}
+
+	url, err := utils.CreateUrl(orderClient.OrderClientEnv.BASE_URL,
+		orderClient.OrderClientEnv.ORDER_PORT,
+		orderClient.OrderClientEnv.Fetch_OrderStats_URL)
+	if err != nil {
+		return nil, fmt.Errorf("error: %v", err)
+	}
+
+	req, err := utils.CreateAuthorizedRequest(url, jsonData, "GET", token)
+	if err != nil {
+		return nil, fmt.Errorf("error: %v", err)
+	}
+
+	client := utils.CreateHTTPClient()
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("error sending request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to update order status: received HTTP %d", resp.StatusCode)
+	}
+
+	var orders []model.UpdateOrder
+	limit := int64(1 << 22) //limiting the size of response to 4MB
+	if err := json.NewDecoder(io.LimitReader(resp.Body, limit)).Decode(&orders); err != nil {
+		return nil, fmt.Errorf("error decoding response: %v", err)
+	}
+
+	return &orders, nil
+}

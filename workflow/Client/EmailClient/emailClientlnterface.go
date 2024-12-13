@@ -1,17 +1,10 @@
 package EmailClient
 
-import (
-	model "github.com/E-Furqan/Food-Delivery-System/Models"
-)
-
 type EmailClient struct {
-	model.OrderClientEnv
 }
 
-func NewClient(env model.OrderClientEnv) *EmailClient {
-	return &EmailClient{
-		OrderClientEnv: env,
-	}
+func NewClient() *EmailClient {
+	return &EmailClient{}
 }
 
 type EmailClientInterface interface {

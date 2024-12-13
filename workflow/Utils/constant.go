@@ -1,5 +1,5 @@
 package utils
 
-var cancelled string = "cancelled"
-var accepted string = "accepted"
-var completed string = "completed"
+var Cancelled string = "cancelled"
+var Accepted string = "accepted"
+var Completed string = "completed"

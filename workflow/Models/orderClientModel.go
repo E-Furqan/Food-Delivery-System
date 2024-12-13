@@ -7,4 +7,5 @@ type OrderClientEnv struct {
 	ORDER_PORT                    string
 	VIEW_ORDERS_URL               string
 	ASSIGN_DRIVER_URL             string
+	Fetch_OrderStatus_URL         string
 }
