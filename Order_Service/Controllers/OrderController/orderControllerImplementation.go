@@ -529,3 +529,20 @@ func (orderCtrl *OrderController) FetchOrdersByTimeFrame(c *gin.Context) {
 
 	c.JSON(http.StatusOK, result)
 }
+
+func (orderCtrl *OrderController) FetchOrderStatus(c *gin.Context) {
+	var request model.ID
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	orderStatus, err := orderCtrl.Repo.FetchOrderStatus(request.OrderID)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, orderStatus)
+}

@@ -422,3 +422,17 @@ func (repo *Repository) FetchOrdersByYear(timeRange model.TimeFrame) ([]model.Or
 
 	return results, nil
 }
+
+func (repo *Repository) FetchOrderStatus(orderId uint) (model.ProcessOrder, error) {
+	var result model.ProcessOrder
+	err := repo.DB.Table("orders").
+		Select("order_status").
+		Where("order_id = ?", orderId).
+		Scan(&result).Error
+
+	if err != nil {
+		return model.ProcessOrder{}, err
+	}
+
+	return result, nil
+}

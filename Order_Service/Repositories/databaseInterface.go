@@ -39,4 +39,5 @@ type RepositoryInterface interface {
 	FetchOrdersByWeek(timeRange model.TimeFrame) ([]model.OrdersByWeek, error)
 	FetchOrdersByMonth(timeRange model.TimeFrame) ([]model.OrderByMonth, error)
 	FetchOrdersByYear(timeRange model.TimeFrame) ([]model.OrderByYear, error)
+	FetchOrderStatus(orderId uint) (model.ProcessOrder, error)
 }

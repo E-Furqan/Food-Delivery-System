@@ -29,4 +29,5 @@ type OrderControllerInterface interface {
 	FetchCancelOrdersDetails(c *gin.Context)
 	FetchOrderStatusFrequencies(c *gin.Context)
 	FetchOrdersByTimeFrame(c *gin.Context)
+	FetchOrderStatus(c *gin.Context)
 }
