@@ -63,7 +63,7 @@ func (ctrl *Controller) ViewDriverOrders(c *gin.Context) {
 	}
 
 	options := client.StartWorkflowOptions{
-		ID:                    "registration-workflow-" + fmt.Sprintf("%v", userID.UserID),
+		ID:                    "view-driver-order-workflow-" + fmt.Sprintf("%v", userID.DeliverDriverID),
 		TaskQueue:             model.RegisterTaskQueue,
 		WorkflowIDReusePolicy: enums.WORKFLOW_ID_REUSE_POLICY_ALLOW_DUPLICATE,
 	}

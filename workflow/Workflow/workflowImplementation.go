@@ -34,7 +34,7 @@ func (wFlow *Workflow) RegisterWorkflow(ctx workflow.Context, registrationData m
 	return nil
 }
 
-func (wFlow *Workflow) ViewDriverOrdersWorkflow(ctx workflow.Context, userID uint, token string) error {
+func (wFlow *Workflow) ViewDriverOrdersWorkflow(ctx workflow.Context, driverID uint, token string) error {
 	option := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Second * 5,
 		RetryPolicy: &temporal.RetryPolicy{
@@ -52,8 +52,8 @@ func (wFlow *Workflow) ViewDriverOrdersWorkflow(ctx workflow.Context, userID uin
 	// 	return err
 	// }
 	var UserOrders []model.UpdateOrder
-	log.Print("workflow implementation activity:", userID)
-	err := workflow.ExecuteActivity(ctx, wFlow.Act.ViewOrders, userID, token).Get(ctx, &UserOrders)
+	log.Print("workflow implementation activity:", driverID)
+	err := workflow.ExecuteActivity(ctx, wFlow.Act.ViewOrders, driverID, token).Get(ctx, &UserOrders)
 	if err != nil {
 		return err
 	}

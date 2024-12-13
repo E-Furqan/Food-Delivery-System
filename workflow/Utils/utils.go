@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -150,4 +151,26 @@ func CreateUrl(BaseUrl string, Port string, APIUrl string) (string, error) {
 
 	finalURL := fmt.Sprintf("%s%s", baseURL.String(), escapedAPIUrl)
 	return finalURL, nil
+}
+
+func EmailGenerator(orderID uint, orderStatus string) ([]byte, error) {
+	var subject, body string
+
+	switch strings.ToLower(orderStatus) {
+	case cancelled:
+		subject = "Subject: Order Cancellation\n"
+		body = fmt.Sprintf("We regret to inform you that your order with Order ID %v has been cancelled. If you have any questions, please contact support.", orderID)
+	case accepted:
+		subject = "Subject: Order Confirmation\n"
+		body = fmt.Sprintf("Great news! Your order with Order ID %v has been confirmed. Thank you for choosing us.", orderID)
+	case completed:
+		subject = "Subject: Order Completed\n"
+		body = fmt.Sprintf("Congratulations! Your order with Order ID %v has been successfully completed. We would appreciate it if you could leave a review. Thank you!", orderID)
+	default:
+		log.Println("Invalid order status provided.")
+		return []byte{}, fmt.Errorf("invalid order status: %s", orderStatus)
+	}
+
+	message := []byte(subject + "\n" + body)
+	return message, nil
 }
