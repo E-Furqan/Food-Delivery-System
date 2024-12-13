@@ -27,6 +27,6 @@ select
 from
     orders
 where 
-    time between '2024-11-28 10:53:38.27784+00' and '2024-11-28 11:58:38.27784+00'
+    time between '2024-11-28 10:53:38.27784+00' and '2024-12-28 11:58:38.27784+00'
 group by 
     time;
