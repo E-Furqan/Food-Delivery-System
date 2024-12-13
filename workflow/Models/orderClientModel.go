@@ -8,4 +8,5 @@ type OrderClientEnv struct {
 	VIEW_ORDERS_URL               string
 	ASSIGN_DRIVER_URL             string
 	Fetch_OrderStatus_URL         string
+	Create_Order_URL              string
 }
