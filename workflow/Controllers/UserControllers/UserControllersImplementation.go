@@ -13,7 +13,7 @@ import (
 	"go.temporal.io/sdk/client"
 )
 
-func (ctrl *Controller) RegisterWorkflow(c *gin.Context) {
+func (ctrl *Controller) RegisterUser(c *gin.Context) {
 	var registrationData model.User
 
 	if err := c.ShouldBindJSON(&registrationData); err != nil {
@@ -85,44 +85,4 @@ func (ctrl *Controller) ViewDriverOrders(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, "fetching drivers order in progress")
-}
-
-func (ctrl *Controller) ViewOrdersWithoutDriver(c *gin.Context) {
-	UserId, err := utils.FetchClaimsUserId(c)
-	if err != nil {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "Message", "user not authenticated", "error", err.Error())
-		return
-	}
-
-	activeRole, err := utils.FetchActiveRole(c)
-	if err != nil {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "error", err.Error(), "", nil)
-		return
-	}
-
-	err = utils.VerifyIfDriver(activeRole)
-	if err != nil {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "insufficient permission", "", nil)
-		return
-	}
-
-	var User model.User
-	err = ctrl.Repo.GetUser("user_id", UserId, &User)
-	if err != nil {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "error", "User does not exist", "", nil)
-		return
-	}
-
-	token, _ := utils.GetAuthToken(c)
-
-	var userId model.UpdateOrder
-	Orders, err := ctrl.OrderClient.ViewOrdersWithoutDriver(userId, token)
-	if err != nil {
-		utils.GenerateResponse(http.StatusBadGateway, c, "error", err.Error(), "", nil)
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"Driver orders: ": Orders,
-	})
 }

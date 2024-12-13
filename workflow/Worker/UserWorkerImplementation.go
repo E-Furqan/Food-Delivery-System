@@ -17,10 +17,12 @@ func (work *Worker) WorkerUserStart() {
 
 	w := worker.New(client_var, model.RegisterTaskQueue, worker.Options{})
 	w.RegisterWorkflow(work.WorkFlow.RegisterWorkflow)
+	w.RegisterWorkflow(work.WorkFlow.ViewDriverOrdersWorkflow)
 	w.RegisterActivity(work.Act.RegisterCheckRole)
 	w.RegisterActivity(work.Act.CreateUser)
+	w.RegisterActivity(work.Act.ViewOrders)
 	log.Print("worker started")
-	// Start listening to the Task Queuess
+	// Start listening to the Task Queues
 	err = w.Run(worker.InterruptCh())
 	if err != nil {
 		log.Fatalln("unable to start Worker", err)

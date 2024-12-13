@@ -23,6 +23,6 @@ func NewController(repo database.RepositoryInterface, OrderClient OrderClient.Or
 
 type UserControllerInterface interface {
 	// ViewUserOrders(c *gin.Context)
-	ViewUsersOrders(c *gin.Context)
-	ViewOrdersWithoutDriver(c *gin.Context)
+	ViewDriverOrders(c *gin.Context)
+	RegisterUser(c *gin.Context)
 }
