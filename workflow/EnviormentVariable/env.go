@@ -42,6 +42,7 @@ func ReadOrderClientEnv() model.OrderClientEnv {
 	OrderClientEnv.BASE_URL = utils.GetEnv("BASE_URL", "http://localhost")
 	OrderClientEnv.UPDATE_ORDER_STATUS_URL = utils.GetEnv("UPDATE_ORDER_STATUS_URL", "/order/update/status")
 	OrderClientEnv.Fetch_OrderStatus_URL = utils.GetEnv("UPDATE_ORDER_STATUS_URL", "/order/fetch/order/status")
+	OrderClientEnv.Create_Order_URL = utils.GetEnv("UPDATE_ORDER_STATUS_URL", "/order/create/order")
 	OrderClientEnv.VIEW_ORDERS_URL = utils.GetEnv("USER_ORDERS_URL", "/order/view/orders")
 	OrderClientEnv.VIEW_ORDER_WITHOUT_DRIVER_URL = utils.GetEnv("VIEW_ORDER_WITHOUT_DRIVER_URL", "/order/view/without/driver/orders")
 	OrderClientEnv.ASSIGN_DRIVER_URL = utils.GetEnv("ASSIGN_DRIVER_URL", "/order/assign/diver")

@@ -5,7 +5,7 @@ import (
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 )
 
-func (act *Activity) GetItems(order model.CombineOrderItem, token string) (string, error) {
+func (act *Activity) GetItems(order model.CombineOrderItem, token string) ([]model.Items, error) {
 	var GetItem model.GetItems
 	var itemCheck bool
 	GetItem.RestaurantId = order.RestaurantId
@@ -14,7 +14,7 @@ func (act *Activity) GetItems(order model.CombineOrderItem, token string) (strin
 
 	items, err := act.ResClient.GetItems(GetItem)
 	if err != nil {
-		return "", err
+		return []model.Items{}, err
 	}
 
 	itemCount := len(order.Items)
@@ -28,8 +28,9 @@ func (act *Activity) GetItems(order model.CombineOrderItem, token string) (strin
 	}
 
 	if !itemCheck {
+
 		act.SendEmail(order.OrderId, utils.Cancelled, token)
 	}
 
-	return "", nil
+	return items, nil
 }

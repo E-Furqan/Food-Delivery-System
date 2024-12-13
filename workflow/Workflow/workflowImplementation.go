@@ -72,14 +72,28 @@ func (wFlow *Workflow) OrderPlacedWorkflow(ctx workflow.Context, order model.Com
 		},
 	}
 	ctx = workflow.WithActivityOptions(ctx, option)
-	var updatedOrder model.CombineOrderItem
-	err := workflow.ExecuteActivity(ctx, wFlow.Act.GetItems, order, token).Get(ctx, updatedOrder)
+	var items []model.Items
+	err := workflow.ExecuteActivity(ctx, wFlow.Act.GetItems, order, token).Get(ctx, items)
 	if err != nil {
 		return err
 	}
 
+	var totalBill float64
+	err = workflow.ExecuteActivity(ctx, wFlow.Act.CalculateBill, order, items).Get(ctx, totalBill)
+	if err != nil {
+		return err
+	}
+	order.TotalBill = totalBill
+
+	var orderID uint
+	err = workflow.ExecuteActivity(ctx, wFlow.Act.CreateOrder, order, items).Get(ctx, orderID)
+	if err != nil {
+		return err
+	}
+	order.TotalBill = totalBill
+
 	var message string
-	err = workflow.ExecuteActivity(ctx, wFlow.Act.SendEmail, order.OrderStatus, token).Get(ctx, message)
+	err = workflow.ExecuteActivity(ctx, wFlow.Act.SendEmail, orderID, order.OrderStatus, token).Get(ctx, message)
 	if err != nil {
 		return err
 	}

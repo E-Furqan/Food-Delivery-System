@@ -200,9 +200,9 @@ func (orderClient *OrderClient) FetchOrderStatus(orderID uint, token string) (*m
 	return &orders, nil
 }
 
-func (orderClient *OrderClient) CreateOrder(orderID uint, token string) (*model.UpdateOrder, error) {
+func (orderClient *OrderClient) CreateOrder(order model.CombineOrderItem, token string) (*model.UpdateOrder, error) {
 
-	jsonData, err := json.Marshal(orderID)
+	jsonData, err := json.Marshal(order)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling input: %v", err)
 	}

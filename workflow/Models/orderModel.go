@@ -2,5 +2,6 @@ package model
 
 type CombineOrderItem struct {
 	UpdateOrder
-	Items []OrderItemPayload
+	TotalBill float64 `json:"total_bil"`
+	Items     []OrderItemPayload
 }

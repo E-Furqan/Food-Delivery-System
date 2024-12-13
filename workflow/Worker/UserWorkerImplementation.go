@@ -21,6 +21,11 @@ func (work *Worker) WorkerUserStart() {
 	w.RegisterActivity(work.Act.RegisterCheckRole)
 	w.RegisterActivity(work.Act.CreateUser)
 	w.RegisterActivity(work.Act.ViewOrders)
+	w.RegisterActivity(work.Act.GetItems)
+	w.RegisterActivity(work.Act.CalculateBill)
+	w.RegisterActivity(work.Act.SendEmail)
+	w.RegisterActivity(work.Act.CreateOrder)
+
 	log.Print("worker started")
 	// Start listening to the Task Queues
 	err = w.Run(worker.InterruptCh())
