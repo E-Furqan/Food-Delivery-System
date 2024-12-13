@@ -33,3 +33,31 @@ func (wFlow *Workflow) RegisterWorkflow(ctx workflow.Context, registrationData m
 	log.Print("error user", err)
 	return nil
 }
+
+func (wFlow *Workflow) ViewDriverOrdersWorkflow(ctx workflow.Context, userID uint, token string) error {
+	option := workflow.ActivityOptions{
+		StartToCloseTimeout: time.Second * 5,
+		RetryPolicy: &temporal.RetryPolicy{
+			InitialInterval:    time.Second * 10,
+			MaximumInterval:    time.Second * 30,
+			MaximumAttempts:    3,
+			BackoffCoefficient: 2.0,
+		},
+	}
+	ctx = workflow.WithActivityOptions(ctx, option)
+
+	// var user model.User
+	// err := workflow.ExecuteActivity(ctx, wFlow.Act.GetUser, userID).Get(ctx, &user)
+	// if err != nil {
+	// 	return err
+	// }
+	var UserOrders []model.UpdateOrder
+	log.Print("workflow implementation activity:", userID)
+	err := workflow.ExecuteActivity(ctx, wFlow.Act.ViewOrders, userID, token).Get(ctx, &UserOrders)
+	if err != nil {
+		return err
+	}
+
+	log.Print("error user", err)
+	return nil
+}

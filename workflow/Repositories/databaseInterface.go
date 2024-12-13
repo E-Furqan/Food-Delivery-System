@@ -18,4 +18,5 @@ func NewRepository(db *gorm.DB) *Repository {
 type RepositoryInterface interface {
 	CreateUser(user *model.User) error
 	GetRole(RoleId uint, role *model.Role) error
+	GetUser(columnName string, findParameter interface{}, user *model.User) error
 }

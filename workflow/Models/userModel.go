@@ -39,10 +39,8 @@ type UserClaim struct {
 }
 
 type UpdateOrder struct {
-	OrderId         uint   `json:"order_id"`
-	UserID          uint   `json:"user_id"`
-	DeliverDriverID uint   `json:"delivery_driver"`
-	OrderStatus     string `json:"order_status"`
+	ID
+	OrderStatus string `json:"order_status"`
 }
 
 type UserRoleFilter struct {
@@ -51,4 +49,9 @@ type UserRoleFilter struct {
 
 type ActiveUserCount struct {
 	ActiveUserCount string `json:"active_user_count"`
+}
+type ID struct {
+	OrderId         uint `json:"order_id"`
+	UserID          uint `json:"user_id"`
+	DeliverDriverID uint `json:"delivery_driver"`
 }

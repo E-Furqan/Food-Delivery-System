@@ -1,6 +1,7 @@
 package database
 
 import (
+	"fmt"
 	"log"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
@@ -26,5 +27,17 @@ func (repo *Repository) LoadUserWithRoles(user *model.User) error {
 func (repo *Repository) GetRole(RoleId uint, role *model.Role) error {
 
 	err := repo.DB.Where("role_id = ?", RoleId).First(role).Error
+	return err
+}
+
+func (repo *Repository) GetUser(columnName string, findParameter interface{}, user *model.User) error {
+	query := fmt.Sprintf("%s = ?", columnName)
+	err := repo.DB.Where(query, findParameter).First(user).Error
+	if err != nil {
+		log.Printf("Error : %s", err)
+		return err
+	}
+	err = repo.LoadUserWithRoles(user)
+
 	return err
 }

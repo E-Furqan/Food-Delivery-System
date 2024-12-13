@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -24,6 +25,38 @@ func GenerateResponse(httpStatusCode int, c *gin.Context, title1 string, message
 	}
 
 	c.JSON(httpStatusCode, response)
+}
+
+func FetchClaimsUserId(c *gin.Context) (any, error) {
+	userIdValue, exists := c.Get("userId")
+	if !exists {
+		return 0, fmt.Errorf("userId does not exist")
+	}
+	userId, ok := userIdValue.(uint)
+	if !ok {
+		return 0, fmt.Errorf("invalid userId")
+	}
+	return userId, nil
+}
+
+func VerifyActiveAdminRole(c *gin.Context) (any, error) {
+	activeRole, err := FetchActiveRole(c)
+	if err != nil {
+		return activeRole, err
+	}
+
+	if activeRole != "Admin" {
+		return activeRole, fmt.Errorf("insufficient permissions")
+	}
+
+	return activeRole, nil
+}
+
+func CreateUserClaim(user model.User) model.UserClaim {
+	var UserClaim model.UserClaim
+	UserClaim.UserId = user.UserId
+	UserClaim.ActiveRole = user.ActiveRole
+	return UserClaim
 }
 
 func GetEnv(key string, defaultVal string) string {
@@ -48,20 +81,43 @@ func GetAuthToken(c *gin.Context) (string, error) {
 	return token, nil
 }
 
-func CreateAuthorizedRequest(url string, jsonData []byte, c *gin.Context, MethodType string) (*http.Request, error) {
+func FetchActiveRole(c *gin.Context) (any, error) {
+
+	activeRole, exists := c.Get("activeRole")
+	if !exists {
+		return nil, fmt.Errorf("user role does not exist")
+	}
+
+	return activeRole, nil
+}
+
+func VerifyIfDriver(activeRole any) error {
+
+	if activeRole != "Delivery driver" {
+		return fmt.Errorf("insufficient permission")
+	}
+
+	return nil
+}
+
+func CreateAuthorizedRequest(url string, jsonData []byte, MethodType string, token string) (*http.Request, error) {
 
 	req, err := http.NewRequest(MethodType, url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %v", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
-
-	token, err := GetAuthToken(c)
-	if err != nil {
-		GenerateResponse(http.StatusUnauthorized, c, "error", err.Error(), "", nil)
-		return nil, fmt.Errorf("error retrieving auth token of user: %v", err)
-	}
 	req.Header.Set("Authorization", "Bearer "+token)
+	return req, nil
+}
+
+func CreateRequest(url string, jsonData []byte, MethodType string) (*http.Request, error) {
+	req, err := http.NewRequest(MethodType, url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, fmt.Errorf("error creating request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
 	return req, nil
 }
 

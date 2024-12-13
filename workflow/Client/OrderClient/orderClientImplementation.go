@@ -8,10 +8,9 @@ import (
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
-	"github.com/gin-gonic/gin"
 )
 
-func (orderClient *OrderClient) UpdateOrderStatus(input model.UpdateOrder, c *gin.Context) (*model.UpdateOrder, error) {
+func (orderClient *OrderClient) UpdateOrderStatus(input model.UpdateOrder, token string) (*model.UpdateOrder, error) {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
@@ -25,7 +24,7 @@ func (orderClient *OrderClient) UpdateOrderStatus(input model.UpdateOrder, c *gi
 		return nil, fmt.Errorf("error: %v", err)
 	}
 
-	req, err := utils.CreateAuthorizedRequest(url, jsonData, c, "PATCH")
+	req, err := utils.CreateAuthorizedRequest(url, jsonData, "PATCH", token)
 	if err != nil {
 		return nil, fmt.Errorf("error: %v", err)
 	}
@@ -50,7 +49,7 @@ func (orderClient *OrderClient) UpdateOrderStatus(input model.UpdateOrder, c *gi
 	return &orders, nil
 }
 
-func (orderClient *OrderClient) AssignDriver(input model.UpdateOrder, c *gin.Context) error {
+func (orderClient *OrderClient) AssignDriver(input model.UpdateOrder, token string) error {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
@@ -65,7 +64,7 @@ func (orderClient *OrderClient) AssignDriver(input model.UpdateOrder, c *gin.Con
 		return fmt.Errorf("error: %v", err)
 	}
 
-	req, err := utils.CreateAuthorizedRequest(url, jsonData, c, "PATCH")
+	req, err := utils.CreateAuthorizedRequest(url, jsonData, "PATCH", token)
 	if err != nil {
 		return fmt.Errorf("error: %v", err)
 	}
@@ -84,7 +83,46 @@ func (orderClient *OrderClient) AssignDriver(input model.UpdateOrder, c *gin.Con
 	return nil
 }
 
-func (orderClient *OrderClient) ViewOrdersWithoutDriver(input model.UpdateOrder, c *gin.Context) (*[]model.UpdateOrder, error) {
+func (orderClient *OrderClient) ViewOrders(input model.UpdateOrder, token string) (*[]model.UpdateOrder, error) {
+
+	jsonData, err := json.Marshal(input)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling input: %v", err)
+	}
+
+	url, err := utils.CreateUrl(orderClient.OrderClientEnv.BASE_URL,
+		orderClient.OrderClientEnv.ORDER_PORT,
+		orderClient.OrderClientEnv.VIEW_ORDERS_URL)
+	if err != nil {
+		return nil, fmt.Errorf("error: %v", err)
+	}
+
+	req, err := utils.CreateAuthorizedRequest(url, jsonData, "GET", token)
+	if err != nil {
+		return nil, fmt.Errorf("error: %v", err)
+	}
+
+	client := utils.CreateHTTPClient()
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("error sending request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to update order status: received HTTP %d", resp.StatusCode)
+	}
+
+	var orders []model.UpdateOrder
+	limit := int64(1 << 22) //limiting the size of response to 4MB
+	if err := json.NewDecoder(io.LimitReader(resp.Body, limit)).Decode(&orders); err != nil {
+		return nil, fmt.Errorf("error decoding response: %v", err)
+	}
+
+	return &orders, nil
+}
+
+func (orderClient *OrderClient) ViewOrdersWithoutDriver(input model.UpdateOrder, token string) (*[]model.UpdateOrder, error) {
 
 	jsonData, err := json.Marshal(input)
 	if err != nil {
@@ -98,7 +136,7 @@ func (orderClient *OrderClient) ViewOrdersWithoutDriver(input model.UpdateOrder,
 		return nil, fmt.Errorf("error: %v", err)
 	}
 
-	req, err := utils.CreateAuthorizedRequest(url, jsonData, c, "GET")
+	req, err := utils.CreateAuthorizedRequest(url, jsonData, "GET", token)
 	if err != nil {
 		return nil, fmt.Errorf("error: %v", err)
 	}
