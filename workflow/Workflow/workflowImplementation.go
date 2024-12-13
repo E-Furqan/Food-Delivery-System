@@ -21,16 +21,16 @@ func (wFlow *Workflow) RegisterWorkflow(ctx workflow.Context, registrationData m
 	}
 	ctx = workflow.WithActivityOptions(ctx, option)
 
-	err := workflow.ExecuteActivity(ctx, wFlow.Act.RegisterCheckRole, registrationData).Get(ctx, &registrationData)
-	if err != nil {
-		return err
-	}
-	log.Print("workflow implementation activity:", registrationData)
-	err = workflow.ExecuteActivity(ctx, wFlow.Act.CreateUser, registrationData).Get(ctx, &registrationData)
-	if err != nil {
-		return err
-	}
-	log.Print("error user", err)
+	// err := workflow.ExecuteActivity(ctx, wFlow.Act.RegisterCheckRole, registrationData).Get(ctx, &registrationData)
+	// if err != nil {
+	// 	return err
+	// }
+	// log.Print("workflow implementation activity:", registrationData)
+	// err = workflow.ExecuteActivity(ctx, wFlow.Act.CreateUser, registrationData).Get(ctx, &registrationData)
+	// if err != nil {
+	// 	return err
+	// }
+	// log.Print("error user", err)
 	return nil
 }
 

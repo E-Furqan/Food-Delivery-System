@@ -214,7 +214,7 @@ func (orderClient *OrderClient) CreateOrder(order model.CombineOrderItem, token 
 		return nil, fmt.Errorf("error: %v", err)
 	}
 
-	req, err := utils.CreateAuthorizedRequest(url, jsonData, "GET", token)
+	req, err := utils.CreateAuthorizedRequest(url, jsonData, "POST", token)
 	if err != nil {
 		return nil, fmt.Errorf("error: %v", err)
 	}

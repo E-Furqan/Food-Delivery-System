@@ -15,11 +15,12 @@ func (work *Worker) WorkerUserStart() {
 	}
 	defer client_var.Close()
 
-	w := worker.New(client_var, model.RegisterTaskQueue, worker.Options{})
+	w := worker.New(client_var, model.PlaceOrderTaskQueue, worker.Options{})
 	w.RegisterWorkflow(work.WorkFlow.RegisterWorkflow)
 	w.RegisterWorkflow(work.WorkFlow.ViewDriverOrdersWorkflow)
-	w.RegisterActivity(work.Act.RegisterCheckRole)
-	w.RegisterActivity(work.Act.CreateUser)
+	w.RegisterWorkflow(work.WorkFlow.OrderPlacedWorkflow)
+	// w.RegisterActivity(work.Act.RegisterCheckRole)
+	// w.RegisterActivity(work.Act.CreateUser)
 	w.RegisterActivity(work.Act.ViewOrders)
 	w.RegisterActivity(work.Act.GetItems)
 	w.RegisterActivity(work.Act.CalculateBill)

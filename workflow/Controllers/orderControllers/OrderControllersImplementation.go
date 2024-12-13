@@ -66,7 +66,7 @@ func (ctrl *orderControllers) PlaceOrder(c *gin.Context) {
 
 	options := client.StartWorkflowOptions{
 		ID:                    "place-order-workflow-" + fmt.Sprintf("%v", order.UserID),
-		TaskQueue:             model.RegisterTaskQueue,
+		TaskQueue:             model.PlaceOrderTaskQueue,
 		WorkflowIDReusePolicy: enums.WORKFLOW_ID_REUSE_POLICY_ALLOW_DUPLICATE,
 	}
 
