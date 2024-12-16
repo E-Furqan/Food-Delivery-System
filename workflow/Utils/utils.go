@@ -158,7 +158,7 @@ func EmailGenerator(orderID uint, orderStatus string) ([]byte, error) {
 
 	switch strings.ToLower(orderStatus) {
 	case OrderPlaced:
-		subject = "Subject: Order Confirmation\n"
+		subject = "Subject: Order placed\n"
 		body = fmt.Sprintf("Great news! Your order with Order ID %v has been successfully placed. Please wait for the restaurant to confirm your order. Thank you for choosing us.", orderID)
 	case Cancelled:
 		subject = "Subject: Order Cancellation\n"

@@ -103,6 +103,37 @@ func (wFlow *Workflow) OrderPlacedWorkflow(ctx workflow.Context, order model.Com
 	}
 	log.Print("Email sent successfully: ")
 
-	log.Print("message", message)
+	for {
+		workflow.Sleep(ctx, 10*time.Second)
+
+		var status string
+		err = workflow.ExecuteActivity(ctx, wFlow.Act.CheckOrderStatus, createdOrder.OrderId, token).Get(ctx, &status)
+		if err != nil {
+			return err
+		}
+
+		if status == "Accepted" {
+			err = workflow.ExecuteActivity(ctx, wFlow.Act.SendEmail, createdOrder.OrderId, status, token).Get(ctx, &message)
+			if err != nil {
+				return err
+			}
+			log.Print("Email sent for accepted order: ", message)
+		} else if status == "Rejected" {
+			err = workflow.ExecuteActivity(ctx, wFlow.Act.SendEmail, createdOrder.OrderId, status, token).Get(ctx, &message)
+			if err != nil {
+				return err
+			}
+			log.Print("Email sent for rejected order: ", message)
+			break
+		} else if status == "Completed" {
+			err = workflow.ExecuteActivity(ctx, wFlow.Act.SendEmail, createdOrder.OrderId, status, token).Get(ctx, &message)
+			if err != nil {
+				return err
+			}
+			log.Print("Email sent for completed order: ", message)
+			break
+		}
+	}
+
 	return nil
 }

@@ -54,3 +54,15 @@ func (act *Activity) CreateOrder(order model.CombineOrderItem, token string) (mo
 
 // 	return "s", nil
 // }
+
+func (act *Activity) CheckOrderStatus(orderID uint, token string) (string, error) {
+	var OrderID model.OrderID
+	OrderID.OrderID = orderID
+	OrderStatus, err := act.OrderClient.FetchOrderStatus(OrderID, token)
+	if err != nil {
+		log.Print("error from check order activity: ", err)
+		return "", err
+	}
+	log.Print("order status from check order activity:", OrderStatus)
+	return OrderStatus, nil
+}
