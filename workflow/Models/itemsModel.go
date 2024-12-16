@@ -1,9 +1,12 @@
 package model
 
-type GetItems struct {
-	ColumnName   string `json:"column_name"`
-	OrderType    string `json:"order_type"`
-	RestaurantId uint   `json:"restaurant_id"`
+type ItemID struct {
+	ItemId uint `json:"item_id"`
+}
+
+type CombinedItemsRestaurantID struct {
+	RestaurantId uint     `json:"restaurant_id"`
+	Items        []ItemID `json:"items"`
 }
 
 type Items struct {
@@ -11,6 +14,7 @@ type Items struct {
 	ItemName        string  `json:"item_name"`
 	ItemDescription string  `json:"item_description"`
 	ItemPrice       float64 `json:"item_price"`
+	RestaurantId    uint    `json:"restaurant_id"`
 }
 
 type OrderItemPayload struct {

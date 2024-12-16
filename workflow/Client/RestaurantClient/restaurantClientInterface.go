@@ -13,5 +13,5 @@ func NewClient(envVar model.RestaurantClientEnv) *RestaurantClient {
 }
 
 type RestaurantClientInterface interface {
-	GetItems(getItems model.GetItems) ([]model.Items, error)
+	GetItems(getItems model.CombineOrderItem) ([]model.Items, error)
 }
