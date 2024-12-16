@@ -7,9 +7,12 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	"github.com/gin-gonic/gin"
+	"go.temporal.io/sdk/temporal"
+	"go.temporal.io/sdk/workflow"
 )
 
 func GenerateResponse(httpStatusCode int, c *gin.Context, title1 string, message1 string, title2 string, input interface{}) {
@@ -186,13 +189,16 @@ func EmailGenerator(orderID uint, orderStatus string) ([]byte, error) {
 	return message, nil
 }
 
-func ItemExists(item model.OrderItemPayload, items []model.Items) bool {
-	for _, v := range items {
-		if v.ItemId == item.ItemId {
-			return true
-		}
+func ActivityOptions() workflow.ActivityOptions {
+	return workflow.ActivityOptions{
+		StartToCloseTimeout: time.Second * 5,
+		RetryPolicy: &temporal.RetryPolicy{
+			InitialInterval:    time.Second * 10,
+			MaximumInterval:    time.Second * 30,
+			MaximumAttempts:    3,
+			BackoffCoefficient: 2.0,
+		},
 	}
-	return false
 }
 
 func UpdateOrderStatusTOCancel(order model.CombineOrderItem) model.UpdateOrder {
