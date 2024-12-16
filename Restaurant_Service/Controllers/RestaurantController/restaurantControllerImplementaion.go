@@ -1,6 +1,7 @@
 package RestaurantController
 
 import (
+	"log"
 	"net/http"
 	"strings"
 
@@ -102,6 +103,32 @@ func (ctrl *RestaurantController) UpdateRestaurantStatus(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"Message": "Restaurant status updated"})
+}
+
+func (ctrl *RestaurantController) FetchItemPrices(c *gin.Context) {
+
+	var Items model.CombinedItemsRestaurantID
+
+	if err := c.ShouldBindJSON(&Items); err != nil {
+		log.Print("binding error: ", err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error binding": err.Error()})
+		return
+	}
+	log.Print("input: ", Items)
+
+	items_output, err := ctrl.Repo.FetchItemPrices(Items)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Restaurant does not exist"})
+		return
+	}
+	log.Print("database output2: ", items_output)
+
+	if len(items_output) <= 0 {
+		c.JSON(http.StatusInternalServerError, "No items present in the restaurant")
+		return
+	}
+
+	c.JSON(http.StatusOK, items_output)
 }
 
 func (ctrl *RestaurantController) ViewMenu(c *gin.Context) {

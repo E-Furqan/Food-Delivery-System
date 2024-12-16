@@ -147,3 +147,22 @@ func (repo *Repository) FetchOpenRestaurant() (model.OpenRestaurantCount, error)
 	}
 	return result, nil
 }
+
+func (repo *Repository) FetchItemPrices(items model.CombinedItemsRestaurantID) ([]model.Item, error) {
+	var output []model.Item
+
+	var itemIDs []uint
+	for _, item := range items.Items {
+		itemIDs = append(itemIDs, item.ItemId)
+	}
+
+	err := repo.DB.Table("items").
+		Select("item_id,item_price,restaurant_id").
+		Where("restaurant_id = ? and item_id IN (?)", items.RestaurantId, itemIDs).
+		Scan(&output).Error
+
+	if err != nil {
+		return []model.Item{}, err
+	}
+	return output, nil
+}

@@ -7,3 +7,12 @@ type Item struct {
 	ItemPrice       float64 `json:"item_price"`
 	RestaurantId    uint    `json:"restaurant_id"`
 }
+
+type ItemID struct {
+	ItemId uint `json:"item_id"`
+}
+
+type CombinedItemsRestaurantID struct {
+	RestaurantId uint     `json:"restaurant_id"`
+	Items        []ItemID `json:"items"`
+}
