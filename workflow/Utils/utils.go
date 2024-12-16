@@ -209,3 +209,7 @@ func UpdateOrderStatusTOCancel(order model.CombineOrderItem) model.UpdateOrder {
 	updatedOrder.UserID = order.UserID
 	return updatedOrder
 }
+
+func Sleep(ctx workflow.Context) {
+	workflow.Sleep(ctx, 2*time.Second)
+}

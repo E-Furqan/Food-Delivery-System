@@ -63,7 +63,7 @@ func (wFlow *Workflow) OrderPlacedWorkflow(ctx workflow.Context, order model.Com
 	err := workflow.ExecuteActivity(ctx, wFlow.Act.GetItems, order, token).Get(ctx, &items)
 	if err != nil {
 		wFlow.SendEmail(ctx, order.UpdateOrder, utils.Cancelled, &message, token)
-		workflow.Sleep(ctx, 5*time.Second)
+		utils.Sleep(ctx)
 		log.Print("error in get items")
 		return err
 	}
@@ -73,7 +73,7 @@ func (wFlow *Workflow) OrderPlacedWorkflow(ctx workflow.Context, order model.Com
 	err = workflow.ExecuteActivity(ctx, wFlow.Act.CalculateBill, order, items).Get(ctx, &totalBill)
 	if err != nil {
 		wFlow.SendEmail(ctx, order.UpdateOrder, utils.Cancelled, &message, token)
-		workflow.Sleep(ctx, 5*time.Second)
+		utils.Sleep(ctx)
 		return err
 	}
 	order.TotalBill = totalBill
@@ -83,7 +83,7 @@ func (wFlow *Workflow) OrderPlacedWorkflow(ctx workflow.Context, order model.Com
 	err = workflow.ExecuteActivity(ctx, wFlow.Act.CreateOrder, order, token).Get(ctx, &createdOrder)
 	if err != nil {
 		wFlow.SendEmail(ctx, createdOrder, utils.Cancelled, &message, token)
-		workflow.Sleep(ctx, 5*time.Second)
+		utils.Sleep(ctx)
 		return err
 	}
 	order.TotalBill = totalBill
