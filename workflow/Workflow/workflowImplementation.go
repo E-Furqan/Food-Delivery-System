@@ -2,9 +2,11 @@ package workflows
 
 import (
 	"log"
+	"strings"
 	"time"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
+	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 )
@@ -66,7 +68,7 @@ func (wFlow *Workflow) OrderPlacedWorkflow(ctx workflow.Context, order model.Com
 		StartToCloseTimeout: time.Second * 5,
 		RetryPolicy: &temporal.RetryPolicy{
 			InitialInterval:    time.Second * 10,
-			MaximumInterval:    time.Minute * 30,
+			MaximumInterval:    time.Minute * 45,
 			MaximumAttempts:    3,
 			BackoffCoefficient: 2.0,
 		},
@@ -103,29 +105,30 @@ func (wFlow *Workflow) OrderPlacedWorkflow(ctx workflow.Context, order model.Com
 	}
 	log.Print("Email sent successfully: ")
 
+	var delayCounter int
+	delayCounter = 0
 	for {
-		workflow.Sleep(ctx, 10*time.Second)
-
+		workflow.Sleep(ctx, 2*time.Minute)
 		var status string
 		err = workflow.ExecuteActivity(ctx, wFlow.Act.CheckOrderStatus, createdOrder.OrderId, token).Get(ctx, &status)
 		if err != nil {
 			return err
 		}
-
-		if status == "Accepted" {
+		status = strings.ToLower(status)
+		if status == utils.Accepted {
 			err = workflow.ExecuteActivity(ctx, wFlow.Act.SendEmail, createdOrder.OrderId, status, token).Get(ctx, &message)
 			if err != nil {
 				return err
 			}
 			log.Print("Email sent for accepted order: ", message)
-		} else if status == "Rejected" {
+		} else if status == utils.Cancelled {
 			err = workflow.ExecuteActivity(ctx, wFlow.Act.SendEmail, createdOrder.OrderId, status, token).Get(ctx, &message)
 			if err != nil {
 				return err
 			}
 			log.Print("Email sent for rejected order: ", message)
 			break
-		} else if status == "Completed" {
+		} else if status == utils.Completed {
 			err = workflow.ExecuteActivity(ctx, wFlow.Act.SendEmail, createdOrder.OrderId, status, token).Get(ctx, &message)
 			if err != nil {
 				return err
@@ -133,6 +136,16 @@ func (wFlow *Workflow) OrderPlacedWorkflow(ctx workflow.Context, order model.Com
 			log.Print("Email sent for completed order: ", message)
 			break
 		}
+
+		if delayCounter == 1 && status == utils.OrderPlaced {
+			err = workflow.ExecuteActivity(ctx, wFlow.Act.SendEmail, createdOrder.OrderId, utils.Delay, token).Get(ctx, &message)
+			if err != nil {
+				return err
+			}
+			log.Print("Email sent for delay order: ", message)
+
+		}
+		delayCounter += 1
 	}
 
 	return nil

@@ -1,6 +1,7 @@
 package utils
 
-var Cancelled string = "cancelled"
-var Accepted string = "accepted"
-var Completed string = "completed"
-var OrderPlaced string = "order placed"
+const Cancelled string = "cancelled"
+const Accepted string = "accepted"
+const Completed string = "completed"
+const OrderPlaced string = "order placed"
+const Delay string = "delay"
