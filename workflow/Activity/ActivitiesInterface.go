@@ -30,5 +30,5 @@ type ActivityInterface interface {
 	SendEmail(orderID uint, orderStatus string, token string) (string, error)
 	GetItems(order model.CombineOrderItem, token string) ([]model.Items, error)
 	CalculateBill(CombineOrderItem model.CombineOrderItem, items []model.Items) (float64, error)
-	CreateOrder(order model.CombineOrderItem, token string) (uint, error)
+	CreateOrder(order model.CombineOrderItem, token string) (model.UpdateOrder, error)
 }

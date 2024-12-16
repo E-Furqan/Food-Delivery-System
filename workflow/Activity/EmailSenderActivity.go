@@ -6,10 +6,6 @@ import (
 )
 
 func (act *Activity) SendEmail(orderID uint, orderStatus string, token string) (string, error) {
-	message, err := act.Email.EmailSender(orderID, orderStatus)
-	if err != nil {
-		return "", err
-	}
 
 	if orderStatus == utils.Cancelled {
 		var order model.CombineOrderItem
@@ -18,6 +14,13 @@ func (act *Activity) SendEmail(orderID uint, orderStatus string, token string) (
 		order.UserID = 0
 		updatedOrder := utils.UpdateOrderStatusTOCancel(order)
 		act.OrderClient.UpdateOrderStatus(updatedOrder, token)
+
 	}
+
+	message, err := act.Email.EmailSender(orderID, orderStatus)
+	if err != nil {
+		return "", err
+	}
+
 	return message, nil
 }

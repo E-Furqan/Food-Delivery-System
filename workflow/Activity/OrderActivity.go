@@ -30,14 +30,15 @@ func (act *Activity) ViewOrders(UserId uint, token string) (*[]model.UpdateOrder
 	return Orders, nil
 }
 
-func (act *Activity) CreateOrder(order model.CombineOrderItem, token string) (uint, error) {
+func (act *Activity) CreateOrder(order model.CombineOrderItem, token string) (model.UpdateOrder, error) {
 
-	OrderID, err := act.OrderClient.CreateOrder(order, token)
+	Order, err := act.OrderClient.CreateOrder(order, token)
 	if err != nil {
 		log.Print("error from order activity: ", err)
-		return 0, err
+		return model.UpdateOrder{}, err
 	}
-	return OrderID.OrderId, nil
+	log.Print("order from order actiivity:", Order)
+	return Order, nil
 }
 
 // func (act *Activity) UpdateOrderStatus(RestaurantId uint, order model.CombineOrderItem, token string) (string, error) {

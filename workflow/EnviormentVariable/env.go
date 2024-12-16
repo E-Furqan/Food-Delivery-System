@@ -26,7 +26,7 @@ func ReadDatabaseEnv() model.DatabaseEnv {
 	DatabaseEnv.DATABASE_PORT, err = strconv.Atoi(portStr)
 	if err != nil {
 		log.Printf("Error converting PORT to integer: %v", err)
-		DatabaseEnv.DATABASE_PORT = 5432
+		DatabaseEnv.DATABASE_PORT = 5433
 	}
 
 	return DatabaseEnv
@@ -46,7 +46,7 @@ func ReadOrderClientEnv() model.OrderClientEnv {
 	OrderClientEnv.VIEW_ORDERS_URL = utils.GetEnv("USER_ORDERS_URL", "/order/view/orders")
 	OrderClientEnv.VIEW_ORDER_WITHOUT_DRIVER_URL = utils.GetEnv("VIEW_ORDER_WITHOUT_DRIVER_URL", "/order/view/without/driver/orders")
 	OrderClientEnv.ASSIGN_DRIVER_URL = utils.GetEnv("ASSIGN_DRIVER_URL", "/order/assign/diver")
-	OrderClientEnv.ORDER_PORT = utils.GetEnv("ORDER_PORT", ":8081")
+	OrderClientEnv.ORDER_PORT = utils.GetEnv("ORDER_PORT", "8081")
 
 	return OrderClientEnv
 }

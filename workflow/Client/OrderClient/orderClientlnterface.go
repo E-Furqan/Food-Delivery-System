@@ -19,5 +19,5 @@ type OrdClientInterface interface {
 	AssignDriver(input model.UpdateOrder, token string) error
 	ViewOrders(input model.UpdateOrder, token string) (*[]model.UpdateOrder, error)
 	ViewOrdersWithoutDriver(input model.UpdateOrder, token string) (*[]model.UpdateOrder, error)
-	CreateOrder(order model.CombineOrderItem, token string) (*model.UpdateOrder, error)
+	CreateOrder(order model.CombineOrderItem, token string) (model.UpdateOrder, error)
 }

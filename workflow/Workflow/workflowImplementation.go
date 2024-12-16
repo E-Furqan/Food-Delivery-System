@@ -72,33 +72,36 @@ func (wFlow *Workflow) OrderPlacedWorkflow(ctx workflow.Context, order model.Com
 		},
 	}
 	ctx = workflow.WithActivityOptions(ctx, option)
+
 	var items []model.Items
 	err := workflow.ExecuteActivity(ctx, wFlow.Act.GetItems, order, token).Get(ctx, &items)
 	if err != nil {
 		return err
 	}
-
 	log.Print("items from get item activity: ", items)
+
 	var totalBill float64
 	err = workflow.ExecuteActivity(ctx, wFlow.Act.CalculateBill, order, items).Get(ctx, &totalBill)
 	if err != nil {
 		return err
 	}
 	order.TotalBill = totalBill
-
 	log.Print("totalBill from get CalculateBill activity: ", totalBill)
-	var orderID uint
-	err = workflow.ExecuteActivity(ctx, wFlow.Act.CreateOrder, order, token).Get(ctx, &orderID)
+
+	var createdOrder model.UpdateOrder
+	err = workflow.ExecuteActivity(ctx, wFlow.Act.CreateOrder, order, token).Get(ctx, &createdOrder)
 	if err != nil {
 		return err
 	}
 	order.TotalBill = totalBill
+	log.Print("order returned from order activity: ", createdOrder)
 
 	var message string
-	err = workflow.ExecuteActivity(ctx, wFlow.Act.SendEmail, orderID, order.OrderStatus, token).Get(ctx, &message)
+	err = workflow.ExecuteActivity(ctx, wFlow.Act.SendEmail, createdOrder.OrderId, createdOrder.OrderStatus, token).Get(ctx, &message)
 	if err != nil {
 		return err
 	}
+	log.Print("Email sent successfully: ")
 
 	log.Print("message", message)
 	return nil

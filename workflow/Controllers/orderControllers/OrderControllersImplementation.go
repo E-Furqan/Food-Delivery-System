@@ -3,6 +3,7 @@ package orderControllers
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
@@ -84,6 +85,8 @@ func (ctrl *orderControllers) PlaceOrder(c *gin.Context) {
 	_, err = client_var.ExecuteWorkflow(context.Background(), options, ctrl.WorkFlows.OrderPlacedWorkflow, order, token)
 	if err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "message", "error in workflow", "error", err)
+		log.Print("error in workflow")
+		ctrl.Activity.SendEmail(0, utils.Cancelled, token)
 		return
 	}
 

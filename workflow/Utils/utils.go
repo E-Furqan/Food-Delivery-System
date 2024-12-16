@@ -2,11 +2,9 @@ package utils
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"strings"
 
@@ -134,23 +132,24 @@ func CreateHTTPClient() *http.Client {
 
 func CreateUrl(BaseUrl string, Port string, APIUrl string) (string, error) {
 
-	if !strings.HasPrefix(BaseUrl, "http://") && !strings.HasPrefix(BaseUrl, "https://") {
-		return "", errors.New("BaseUrl must start with http:// or https://")
-	}
+	// if !strings.HasPrefix(BaseUrl, "http://") && !strings.HasPrefix(BaseUrl, "https://") {
+	// 	return "", errors.New("BaseUrl must start with http:// or https://")
+	// }
 
-	if _, err := url.ParseRequestURI(Port); err != nil {
-		return "", fmt.Errorf("invalid Port: %v", err)
-	}
+	// baseURL, err := url.Parse(BaseUrl)
 
-	baseURL, err := url.Parse(BaseUrl)
-	if err != nil {
-		return "", fmt.Errorf("invalid BaseUrl: %v", err)
-	}
-	baseURL.Host = fmt.Sprintf("%s:%s", baseURL.Hostname(), Port)
+	// if err != nil {
+	// 	return "", fmt.Errorf("invalid BaseUrl: %v", err)
+	// }
+	// baseURL.Host = fmt.Sprintf("%s:%s", baseURL.Hostname(), Port)
+	// log.Print("base url and port", baseURL.Host, baseURL, Port)
+	// if _, err := url.ParseRequestURI(Port); err != nil {
+	// 	return "", fmt.Errorf("invalid Port %v", err)
+	// }
 
-	escapedAPIUrl := url.PathEscape(APIUrl)
+	// escapedAPIUrl := url.PathEscape(APIUrl)
 
-	finalURL := fmt.Sprintf("%s%s", baseURL.String(), escapedAPIUrl)
+	finalURL := fmt.Sprintf("%s:%s%s", BaseUrl, Port, APIUrl)
 	return finalURL, nil
 }
 

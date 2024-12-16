@@ -201,11 +201,11 @@ func (orderClient *OrderClient) FetchOrderStatus(orderID uint, token string) (*m
 	return &orders, nil
 }
 
-func (orderClient *OrderClient) CreateOrder(order model.CombineOrderItem, token string) (*model.UpdateOrder, error) {
+func (orderClient *OrderClient) CreateOrder(order model.CombineOrderItem, token string) (model.UpdateOrder, error) {
 
 	jsonData, err := json.Marshal(order)
 	if err != nil {
-		return nil, fmt.Errorf("error marshaling input: %v", err)
+		return model.UpdateOrder{}, fmt.Errorf("error marshaling input: %v", err)
 	}
 
 	url, err := utils.CreateUrl(orderClient.OrderClientEnv.BASE_URL,
@@ -215,30 +215,30 @@ func (orderClient *OrderClient) CreateOrder(order model.CombineOrderItem, token 
 		log.Printf("BASE_URL: %s", orderClient.OrderClientEnv.BASE_URL)
 		log.Printf("ORDER_PORT: %s", orderClient.OrderClientEnv.ORDER_PORT)
 		log.Printf("Create_Order_URL: %s", orderClient.OrderClientEnv.Create_Order_URL)
-		return nil, fmt.Errorf("error: %v", err)
+		return model.UpdateOrder{}, fmt.Errorf("error: %v", err)
 	}
 
 	req, err := utils.CreateAuthorizedRequest(url, jsonData, "POST", token)
 	if err != nil {
-		return nil, fmt.Errorf("error: %v", err)
+		return model.UpdateOrder{}, fmt.Errorf("error: %v", err)
 	}
 
 	client := utils.CreateHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("error sending request: %v", err)
+		return model.UpdateOrder{}, fmt.Errorf("error sending request: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to update order status: received HTTP %d", resp.StatusCode)
+		return model.UpdateOrder{}, fmt.Errorf("failed to update order status: received HTTP %d", resp.StatusCode)
 	}
 
 	var orders model.UpdateOrder
 	limit := int64(1 << 22) //limiting the size of response to 4MB
 	if err := json.NewDecoder(io.LimitReader(resp.Body, limit)).Decode(&orders); err != nil {
-		return nil, fmt.Errorf("error decoding response: %v", err)
+		return model.UpdateOrder{}, fmt.Errorf("error decoding response: %v", err)
 	}
 
-	return &orders, nil
+	return orders, nil
 }
