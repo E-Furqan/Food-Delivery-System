@@ -17,7 +17,7 @@ func NewController(act activity.ActivityInterface) *Workflow {
 }
 
 type WorkflowInterface interface {
-	RegisterWorkflow(ctx workflow.Context, registrationData model.User) error
+	// RegisterWorkflow(ctx workflow.Context, registrationData model.User) error
 	ViewDriverOrdersWorkflow(ctx workflow.Context, driverID uint, token string) error
 	OrderPlacedWorkflow(ctx workflow.Context, order model.CombineOrderItem, token string) error
 }

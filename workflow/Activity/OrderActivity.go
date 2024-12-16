@@ -1,6 +1,8 @@
 package activity
 
 import (
+	"log"
+
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 )
 
@@ -32,6 +34,7 @@ func (act *Activity) CreateOrder(order model.CombineOrderItem, token string) (ui
 
 	OrderID, err := act.OrderClient.CreateOrder(order, token)
 	if err != nil {
+		log.Print("error from order activity: ", err)
 		return 0, err
 	}
 	return OrderID.OrderId, nil

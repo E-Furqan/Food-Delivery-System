@@ -104,6 +104,7 @@ func VerifyIfDriver(activeRole any) error {
 func CreateAuthorizedRequest(url string, jsonData []byte, MethodType string, token string) (*http.Request, error) {
 
 	req, err := http.NewRequest(MethodType, url, bytes.NewBuffer(jsonData))
+	log.Print("create order url:", url, MethodType)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %v", err)
 	}

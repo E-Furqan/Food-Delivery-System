@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
@@ -211,6 +212,9 @@ func (orderClient *OrderClient) CreateOrder(order model.CombineOrderItem, token 
 		orderClient.OrderClientEnv.ORDER_PORT,
 		orderClient.OrderClientEnv.Create_Order_URL)
 	if err != nil {
+		log.Printf("BASE_URL: %s", orderClient.OrderClientEnv.BASE_URL)
+		log.Printf("ORDER_PORT: %s", orderClient.OrderClientEnv.ORDER_PORT)
+		log.Printf("Create_Order_URL: %s", orderClient.OrderClientEnv.Create_Order_URL)
 		return nil, fmt.Errorf("error: %v", err)
 	}
 

@@ -16,7 +16,7 @@ func (work *Worker) WorkerUserStart() {
 	defer client_var.Close()
 
 	w := worker.New(client_var, model.PlaceOrderTaskQueue, worker.Options{})
-	w.RegisterWorkflow(work.WorkFlow.RegisterWorkflow)
+	// w.RegisterWorkflow(work.WorkFlow.RegisterWorkflow)
 	w.RegisterWorkflow(work.WorkFlow.ViewDriverOrdersWorkflow)
 	w.RegisterWorkflow(work.WorkFlow.OrderPlacedWorkflow)
 	// w.RegisterActivity(work.Act.RegisterCheckRole)

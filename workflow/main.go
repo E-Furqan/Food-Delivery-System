@@ -30,7 +30,7 @@ func main() {
 	var activity_var activity.ActivityInterface = activity.NewController(OrdClient, emailClient, restaurantClient)
 	var workFlow workflows.WorkflowInterface = workflows.NewController(activity_var)
 	var worker_var worker.WorkerInterface = worker.NewController(activity_var, workFlow)
-	var orderController orderControllers.OrderControllerInterface = orderControllers.NewController(workFlow)
+	var orderController orderControllers.OrderControllerInterface = orderControllers.NewController(workFlow, activity_var)
 
 	server := gin.Default()
 	Routes.Order_routes(orderController, server)

@@ -45,6 +45,7 @@ func (ctrl *orderControllers) ViewDriverOrders(c *gin.Context) {
 	_, err = client_var.ExecuteWorkflow(context.Background(), options, ctrl.WorkFlows.ViewDriverOrdersWorkflow, userID, token)
 	if err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "message", "error in workflow", "error", err)
+		ctrl.Activity.SendEmail(0, utils.Cancelled, token)
 		return
 	}
 
