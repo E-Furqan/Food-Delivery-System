@@ -66,7 +66,7 @@ func (wFlow *Workflow) OrderPlacedWorkflow(ctx workflow.Context, order model.Com
 		StartToCloseTimeout: time.Second * 5,
 		RetryPolicy: &temporal.RetryPolicy{
 			InitialInterval:    time.Second * 10,
-			MaximumInterval:    time.Second * 30,
+			MaximumInterval:    time.Minute * 30,
 			MaximumAttempts:    3,
 			BackoffCoefficient: 2.0,
 		},

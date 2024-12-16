@@ -2,7 +2,6 @@ package EmailClient
 
 import (
 	"fmt"
-	"log"
 	"net/smtp"
 
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
@@ -28,6 +27,5 @@ func (email *EmailClient) EmailSender(orderID uint, orderStatus string) (string,
 		return "", fmt.Errorf("failed to send email: %w", err)
 	}
 
-	log.Println("Email sent successfully!")
 	return "Email sent successfully", nil
 }
