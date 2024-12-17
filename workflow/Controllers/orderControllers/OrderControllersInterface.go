@@ -19,7 +19,6 @@ func NewController(workFlows workflows.WorkflowInterface, activity activity.Acti
 }
 
 type OrderControllerInterface interface {
-	// ViewUserOrders(c *gin.Context)
 	ViewDriverOrders(c *gin.Context)
 	PlaceOrder(c *gin.Context)
 }

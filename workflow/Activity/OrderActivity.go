@@ -37,7 +37,7 @@ func (act *Activity) CreateOrder(order model.CombineOrderItem, token string) (mo
 		log.Print("error from order activity: ", err)
 		return model.UpdateOrder{}, err
 	}
-	log.Print("order from order actiivity:", Order)
+	log.Print("order from order activity:", Order)
 	return Order, nil
 }
 
