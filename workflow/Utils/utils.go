@@ -54,13 +54,6 @@ func VerifyActiveAdminRole(c *gin.Context) (any, error) {
 	return activeRole, nil
 }
 
-func CreateUserClaim(user model.User) model.UserClaim {
-	var UserClaim model.UserClaim
-	UserClaim.UserId = user.UserId
-	UserClaim.ActiveRole = user.ActiveRole
-	return UserClaim
-}
-
 func GetEnv(key string, defaultVal string) string {
 	if value := os.Getenv(key); value != "" {
 		return value
@@ -134,23 +127,6 @@ func CreateHTTPClient() *http.Client {
 }
 
 func CreateUrl(BaseUrl string, Port string, APIUrl string) (string, error) {
-
-	// if !strings.HasPrefix(BaseUrl, "http://") && !strings.HasPrefix(BaseUrl, "https://") {
-	// 	return "", errors.New("BaseUrl must start with http:// or https://")
-	// }
-
-	// baseURL, err := url.Parse(BaseUrl)
-
-	// if err != nil {
-	// 	return "", fmt.Errorf("invalid BaseUrl: %v", err)
-	// }
-	// baseURL.Host = fmt.Sprintf("%s:%s", baseURL.Hostname(), Port)
-	// log.Print("base url and port", baseURL.Host, baseURL, Port)
-	// if _, err := url.ParseRequestURI(Port); err != nil {
-	// 	return "", fmt.Errorf("invalid Port %v", err)
-	// }
-
-	// escapedAPIUrl := url.PathEscape(APIUrl)
 
 	finalURL := fmt.Sprintf("%s:%s%s", BaseUrl, Port, APIUrl)
 	return finalURL, nil

@@ -16,11 +16,8 @@ func (work *Worker) WorkerUserStart() {
 	defer client_var.Close()
 
 	w := worker.New(client_var, model.PlaceOrderTaskQueue, worker.Options{})
-	// w.RegisterWorkflow(work.WorkFlow.RegisterWorkflow)
 	w.RegisterWorkflow(work.WorkFlow.ViewDriverOrdersWorkflow)
 	w.RegisterWorkflow(work.WorkFlow.OrderPlacedWorkflow)
-	// w.RegisterActivity(work.Act.RegisterCheckRole)
-	// w.RegisterActivity(work.Act.CreateUser)
 	w.RegisterActivity(work.Act.ViewOrders)
 	w.RegisterActivity(work.Act.GetItems)
 	w.RegisterActivity(work.Act.CalculateBill)
@@ -29,7 +26,6 @@ func (work *Worker) WorkerUserStart() {
 	w.RegisterActivity(work.Act.CheckOrderStatus)
 
 	log.Print("worker started")
-	// Start listening to the Task Queues
 	err = w.Run(worker.InterruptCh())
 	if err != nil {
 		log.Fatalln("unable to start Worker", err)

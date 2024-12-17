@@ -8,10 +8,10 @@ import (
 )
 
 func (email *EmailClient) EmailSender(orderID uint, orderStatus string) (string, error) {
-	from := "furqan.ali@emumba.com"
-	password := "sqrf gefw qccw pqyr"
+	from := utils.FurqanEmail
+	password := utils.FurqanEmailPassKey
 
-	to := "furqanali111366@gmail.com"
+	to := utils.SenderEmail
 
 	smtpHost := "smtp.gmail.com"
 	smtpPort := "587"
