@@ -16,12 +16,11 @@ func (data *Controller) SaveConfiguration(ctx *gin.Context) {
 		return
 	}
 
-	err := data.DriveClient.CreateConnection(Config)
+	err := data.DriveClient.CreateConnection(Config, ctx)
 	if err != nil {
-		utils.GenerateResponse(http.StatusInternalServerError, ctx, "message", "error while connection with the client", "error", err)
+		utils.GenerateResponse(http.StatusInternalServerError, ctx, "message", "error while connection with the client", "", nil)
 		return
 	}
 
 	utils.GenerateResponse(http.StatusOK, ctx, "message", "Configuration have been saved in database", "", nil)
-	return
 }

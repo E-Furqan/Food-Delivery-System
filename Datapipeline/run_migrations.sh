@@ -8,7 +8,7 @@ echo "Using database: $DATABASE_NAME"
 export PASSWORD=$DATABASE_PASSWORD
 
 # Wait for PostgreSQL to be available using pg_isready
-until pg_isready -h $DATABASE_HOST -p 5432 -U "$DATABASE_USER"; do
+until pg_isready -h $DATABASE_HOST -p 5435 -U "$DATABASE_USER"; do
   echo "Waiting for database..."
   sleep 2
 done

@@ -1,6 +1,6 @@
 version: '3'
 services:
-  dataPipeline_service:
+  datapipeline_service:
     build:
       context: .
     ports:
@@ -25,7 +25,7 @@ services:
     ports:
       - "5435:5432"
     networks:
-      - user_network
+      - dataPipeline_network
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "furqan", "-d", "DataPipeline", "-h", "localhost"]
       interval: 5s

@@ -24,8 +24,8 @@ RUN chmod +x /app/run_migrations.sh
 RUN chmod -R 755 /app/Migration
 RUN chmod +x run_migrations.sh
 
-RUN go build -o dataPipeline_service ./main.go
+RUN go build -o datapipeline_service ./main.go
 
 ENTRYPOINT ["/app/run_migrations.sh"]
 
-CMD ["./dataPipeline_service"]
+CMD ["./datapipeline_service"]

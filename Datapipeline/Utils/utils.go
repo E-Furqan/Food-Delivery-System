@@ -1,7 +1,10 @@
 package utils
 
 import (
+	"fmt"
 	"os"
+	"os/exec"
+	"runtime"
 	"strings"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
@@ -42,4 +45,31 @@ func CreateAuthObj(config model.Configuration) *oauth2.Config {
 			TokenURL: config.TokenUri,
 		},
 	}
+}
+
+func OpenBrowser(url string) error {
+	var cmd *exec.Cmd
+	switch {
+	case isWindows():
+		cmd = exec.Command("start", url)
+	case isMac():
+		cmd = exec.Command("open", url)
+	case isLinux():
+		cmd = exec.Command("xdg-open", url)
+	default:
+		return fmt.Errorf("unsupported operating system")
+	}
+	return cmd.Start()
+}
+
+func isWindows() bool {
+	return runtime.GOOS == "windows"
+}
+
+func isMac() bool {
+	return runtime.GOOS == "darwin"
+}
+
+func isLinux() bool {
+	return runtime.GOOS == "linux"
 }

@@ -8,10 +8,10 @@ import (
 
 type Controller struct {
 	Repo        database.RepositoryInterface
-	DriveClient driveClient.DriveControllerInterface
+	DriveClient driveClient.DriveClientInterface
 }
 
-func NewController(repo database.RepositoryInterface, driveClient driveClient.DriveControllerInterface) *Controller {
+func NewController(repo database.RepositoryInterface, driveClient driveClient.DriveClientInterface) *Controller {
 	return &Controller{
 		Repo:        repo,
 		DriveClient: driveClient,

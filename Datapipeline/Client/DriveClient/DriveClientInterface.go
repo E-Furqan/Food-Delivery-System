@@ -4,20 +4,25 @@ import (
 	"net/http"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
+	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
 )
 
-type Controller struct {
+type Client struct {
+	codeChan chan string
 }
 
-func NewController() *Controller {
-	return &Controller{}
+func NewClient() *Client {
+	return &Client{
+		codeChan: make(chan string),
+	}
 }
 
-type DriveControllerInterface interface {
-	getClient(config *oauth2.Config) (*http.Client, error)
+type DriveClientInterface interface {
+	getClient(config *oauth2.Config, ctx *gin.Context) (*http.Client, error)
 	loadToken(file string) (*oauth2.Token, error)
 	saveToken(path string, token *oauth2.Token) error
-	getTokenFromWeb(config *oauth2.Config) (*oauth2.Token, error)
-	CreateConnection(config model.Configuration) error
+	getTokenFromWeb(config *oauth2.Config, ctx *gin.Context) (*oauth2.Token, error)
+	CreateConnection(config model.Configuration, ctx *gin.Context) error
+	HandleOAuth2Callback(ctx *gin.Context)
 }

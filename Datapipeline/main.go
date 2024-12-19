@@ -18,12 +18,12 @@ func main() {
 
 	var repo database.RepositoryInterface = database.NewRepository(db)
 
-	var DriveClient driveClient.DriveControllerInterface = driveClient.NewController()
+	var DriveClient driveClient.DriveClientInterface = driveClient.NewClient()
 	var DataController dataController.DataControllerInterface = dataController.NewController(repo, DriveClient)
 
 	server := gin.Default()
 
-	route.User_routes(DataController, server)
+	route.User_routes(DataController, DriveClient, server)
 
 	server.Run(":8085")
 
