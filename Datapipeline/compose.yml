@@ -1,0 +1,38 @@
+version: '3'
+services:
+  dataPipeline_service:
+    build:
+      context: .
+    ports:
+      - "8086:8086"
+    networks:
+      - dataPipeline_network  
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DATABASE_HOST=dataPipeline_service_db_1
+      - DATABASE_PORT=5432
+      - DATABASE_USER=furqan
+      - DATABASE_PASSWORD=furqan
+      - DATABASE_NAME=DataPipeline
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: furqan
+      POSTGRES_PASSWORD: furqan
+      POSTGRES_DB: User
+    ports:
+      - "5435:5432"
+    networks:
+      - user_network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "furqan", "-d", "DataPipeline", "-h", "localhost"]
+      interval: 5s
+      retries: 5
+      start_period: 10s
+      timeout: 5s
+      
+networks:
+  dataPipeline_network:
+    driver: bridge
