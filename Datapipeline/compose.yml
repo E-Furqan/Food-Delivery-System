@@ -4,7 +4,7 @@ services:
     build:
       context: .
     ports:
-      - "8086:8086"
+      - "8085:8085"
     networks:
       - dataPipeline_network  
     depends_on:
