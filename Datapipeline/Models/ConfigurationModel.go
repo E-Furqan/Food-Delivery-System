@@ -1,6 +1,6 @@
 package model
 
-type Configuration struct {
+type Configs struct {
 	ConfigID            int    `json:"configId"`
 	ClientID            string `json:"clientId"`
 	ClientSecret        string `json:"clientSecret"`

@@ -23,6 +23,6 @@ type DriveClientInterface interface {
 	loadToken(file string) (*oauth2.Token, error)
 	saveToken(path string, token *oauth2.Token) error
 	getTokenFromWeb(config *oauth2.Config, ctx *gin.Context) (*oauth2.Token, error)
-	CreateConnection(config model.Configuration, ctx *gin.Context) error
+	CreateConnection(config model.Configs, ctx *gin.Context) error
 	HandleOAuth2Callback(ctx *gin.Context)
 }

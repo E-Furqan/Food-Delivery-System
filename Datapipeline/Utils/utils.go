@@ -34,7 +34,7 @@ func GenerateResponse(httpStatusCode int, c *gin.Context, title1 string, message
 	c.JSON(httpStatusCode, response)
 }
 
-func CreateAuthObj(config model.Configuration) *oauth2.Config {
+func CreateAuthObj(config model.Configs) *oauth2.Config {
 	return &oauth2.Config{
 		ClientID:     config.ClientID,
 		ClientSecret: config.ClientSecret,

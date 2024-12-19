@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS logs (
+    log_id SERIAL PRIMARY KEY,
+    log_message TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+

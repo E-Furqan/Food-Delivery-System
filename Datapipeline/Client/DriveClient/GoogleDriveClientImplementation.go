@@ -86,12 +86,9 @@ func (driveClient *Client) getTokenFromWeb(config *oauth2.Config, ctx *gin.Conte
 	}
 }
 
-func (driveClient *Client) CreateConnection(config model.Configuration, ctx *gin.Context) error {
+func (driveClient *Client) CreateConnection(config model.Configs, ctx *gin.Context) error {
 
 	oauthConfig := utils.CreateAuthObj(config)
-
-	oauthConfig.RedirectURL = utils.RedirectURL
-
 	client, err := driveClient.getClient(oauthConfig, ctx)
 	log.Print("CLIENt:  ", client)
 	if err != nil {
