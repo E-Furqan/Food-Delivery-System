@@ -20,9 +20,9 @@ func ReadDatabaseEnv() model.DatabaseEnv {
 	DatabaseEnv.DATABASE_HOST = utils.GetEnv("DATABASE_HOST", "localhost")
 	DatabaseEnv.DATABASE_USER = utils.GetEnv("DATABASE_USER", "furqan")
 	DatabaseEnv.DATABASE_PASSWORD = utils.GetEnv("DATABASE_PASSWORD", "furqan")
-	DatabaseEnv.DATABASE_NAME = utils.GetEnv("DATABASE_NAME", "User")
+	DatabaseEnv.DATABASE_NAME = utils.GetEnv("DATABASE_NAME", "DataPipeline")
 
-	portStr := utils.GetEnv("DATABASE_PORT", "5433")
+	portStr := utils.GetEnv("DATABASE_PORT", "5435")
 	DatabaseEnv.DATABASE_PORT, err = strconv.Atoi(portStr)
 	if err != nil {
 		log.Printf("Error converting PORT to integer: %v", err)

@@ -21,7 +21,7 @@ services:
     environment:
       POSTGRES_USER: furqan
       POSTGRES_PASSWORD: furqan
-      POSTGRES_DB: User
+      POSTGRES_DB: DataPipeline
     ports:
       - "5435:5432"
     networks:
