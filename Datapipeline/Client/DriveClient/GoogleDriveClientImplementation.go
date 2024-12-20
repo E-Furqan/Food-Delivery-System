@@ -17,19 +17,19 @@ import (
 	"google.golang.org/api/option"
 )
 
-func (driveClient *Client) getClient(config *oauth2.Config, ctx *gin.Context) (*http.Client, error) {
+func (driveClient *Client) getClient(config *oauth2.Config, ctx *gin.Context) (*http.Client, *oauth2.Token, error) {
+	driveClient.Repo.DeleteExpiredTokens()
 	tokenFile := "token" + config.ClientID + ".json"
 
 	token, err := driveClient.loadToken(tokenFile)
 	if err != nil {
 		token, err := driveClient.getTokenFromWeb(config, ctx)
 		if err != nil {
-			return &http.Client{}, err
+			return &http.Client{}, &oauth2.Token{}, err
 		}
-		driveClient.saveToken(tokenFile, token)
-		return config.Client(ctx, token), nil
+		return config.Client(ctx, token), token, nil
 	}
-	return config.Client(ctx, token), nil
+	return config.Client(ctx, token), &oauth2.Token{}, nil
 }
 
 func (driveClient *Client) loadToken(filePath string) (*oauth2.Token, error) {
@@ -44,21 +44,6 @@ func (driveClient *Client) loadToken(filePath string) (*oauth2.Token, error) {
 	err = json.NewDecoder(file).Decode(&token)
 
 	return &token, err
-}
-
-func (driveClient *Client) saveToken(path string, token *oauth2.Token) error {
-	fmt.Printf("Saving credential file to: %s\n", path)
-	file, err := os.Create(path)
-
-	if err != nil {
-		log.Printf("Unable to cache oauth token: %v", err)
-		return err
-	}
-	defer file.Close()
-
-	json.NewEncoder(file).Encode(token)
-
-	return nil
 }
 
 func (driveClient *Client) getTokenFromWeb(config *oauth2.Config, ctx *gin.Context) (*oauth2.Token, error) {
@@ -86,14 +71,14 @@ func (driveClient *Client) getTokenFromWeb(config *oauth2.Config, ctx *gin.Conte
 	}
 }
 
-func (driveClient *Client) CreateConnection(config model.Configs, ctx *gin.Context) error {
+func (driveClient *Client) CreateConnection(config model.Configs, ctx *gin.Context) (*oauth2.Token, error) {
 
 	oauthConfig := utils.CreateAuthObj(config)
-	client, err := driveClient.getClient(oauthConfig, ctx)
+	client, token, err := driveClient.getClient(oauthConfig, ctx)
 	log.Print("CLIENt:  ", client)
 	if err != nil {
 		log.Print("Error while fetching client: ", err)
-		return err
+		return &oauth2.Token{}, err
 	}
 
 	srv, err := drive.NewService(ctx, option.WithHTTPClient(client))
@@ -104,12 +89,12 @@ func (driveClient *Client) CreateConnection(config model.Configs, ctx *gin.Conte
 	files, err := srv.Files.List().PageSize(10).Fields("nextPageToken, files(id, name)").Do()
 	if err != nil {
 		log.Printf("Unable to retrieve files: %v", err)
-		return err
+		return &oauth2.Token{}, err
 	}
 
 	log.Println("Files:", len(files.Files))
 
-	return nil
+	return token, nil
 }
 
 func (driveClient *Client) HandleOAuth2Callback(ctx *gin.Context) {

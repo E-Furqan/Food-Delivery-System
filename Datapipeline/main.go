@@ -18,7 +18,7 @@ func main() {
 
 	var repo database.RepositoryInterface = database.NewRepository(db)
 
-	var DriveClient driveClient.DriveClientInterface = driveClient.NewClient()
+	var DriveClient driveClient.DriveClientInterface = driveClient.NewClient(repo)
 	var DataController dataController.DataControllerInterface = dataController.NewController(repo, DriveClient)
 
 	server := gin.Default()
@@ -28,3 +28,6 @@ func main() {
 	server.Run(":8085")
 
 }
+
+// create token table so that we can get token info to workflow service to connect to it directly rather than configuration
+// set up the function to check for expiry and delete the rows that are expire  function is written just need to place at different locations for it to work

@@ -16,6 +16,8 @@ func NewRepository(db *gorm.DB) *Repository {
 }
 
 type RepositoryInterface interface {
-	CreateConfiguration(configuration *model.Configs) error
+	InsertConfiguration(configuration *model.Configs) error
+	InsertToken(token *model.Token, configID uint) error
+	LinkTokenToConfig(tokenID uint, configID uint) error
 	DeleteExpiredTokens()
 }

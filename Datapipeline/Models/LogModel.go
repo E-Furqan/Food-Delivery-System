@@ -3,12 +3,12 @@ package model
 import "time"
 
 type Log struct {
-	LogID      int       `json:"logId"`
-	LogMessage string    `json:"logMessage"`
-	CreatedAt  time.Time `json:"createdAt"`
+	LogID      uint      `json:"log_id"`
+	LogMessage string    `json:"log_message"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 type LogConfig struct {
-	LogID    int `json:"logId"`
-	ConfigID int `json:"configId"`
+	LogID    uint `json:"log_id"`
+	ConfigID uint `json:"config_id"`
 }

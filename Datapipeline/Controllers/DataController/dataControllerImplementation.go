@@ -18,16 +18,26 @@ func (data *Controller) SaveConfiguration(ctx *gin.Context) {
 	}
 
 	Config.RedirectUris = utils.RedirectURL
-	err := data.DriveClient.CreateConnection(Config, ctx)
+	token, err := data.DriveClient.CreateConnection(Config, ctx)
 	if err != nil {
 		utils.GenerateResponse(http.StatusInternalServerError, ctx, "message", "error while connection with the client", "", nil)
 		return
 	}
 
-	err = data.Repo.CreateConfiguration(&Config)
+	err = data.Repo.InsertConfiguration(&Config)
 	if err != nil {
 		utils.GenerateResponse(http.StatusInternalServerError, ctx, "message", "error while connection with the client", "error", err.Error())
 		return
+	}
+
+	if token != nil {
+		var oauthToken model.Token
+		oauthToken = utils.CreateTokenObj(oauthToken, token)
+		err = data.Repo.InsertToken(&oauthToken, Config.ConfigID)
+		if err != nil {
+			utils.GenerateResponse(http.StatusInternalServerError, ctx, "message", "error while connection with the client", "error", err.Error())
+			return
+		}
 	}
 
 	mess := fmt.Sprintf("Configuration has been saved in the database and your config ID is %v", Config.ConfigID)

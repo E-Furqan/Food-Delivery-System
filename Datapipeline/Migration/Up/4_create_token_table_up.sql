@@ -3,7 +3,6 @@ CREATE TABLE IF NOT EXISTS tokens (
     access_token TEXT,
     token_type TEXT,
     refresh_token TEXT,
-    expiry TIMESTAMP,  
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    expiry TIMESTAMP 
 );
 

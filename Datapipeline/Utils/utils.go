@@ -73,3 +73,21 @@ func isMac() bool {
 func isLinux() bool {
 	return runtime.GOOS == "linux"
 }
+
+func CreateTokenObj(oauthToken model.Token, token *oauth2.Token) model.Token {
+	oauthToken.AccessToken = token.AccessToken
+	oauthToken.RefreshToken = token.RefreshToken
+	oauthToken.TokenType = token.TokenType
+	oauthToken.Expiry = token.Expiry
+
+	return oauthToken
+}
+
+func ConvertToOAuthToken(token *model.Token) *oauth2.Token {
+	return &oauth2.Token{
+		AccessToken:  token.AccessToken,
+		TokenType:    token.TokenType,
+		RefreshToken: token.RefreshToken,
+		Expiry:       token.Expiry,
+	}
+}
