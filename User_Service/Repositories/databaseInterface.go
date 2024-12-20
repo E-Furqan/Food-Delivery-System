@@ -35,4 +35,6 @@ type RepositoryInterface interface {
 	UpdateRoleStatus(user *model.User) error
 
 	FetchActiveUserCount(userType string) (model.ActiveUserCount, error)
+
+	FetchUserEmail(UserID uint) (model.UserEmail, error)
 }

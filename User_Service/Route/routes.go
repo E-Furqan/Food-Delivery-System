@@ -38,5 +38,6 @@ func User_routes(ctrl UserControllers.UserControllerInterface, rCtrl RoleControl
 		user.POST("/add/role", rCtrl.AddRolesByAdmin)
 		user.POST("/search/user", ctrl.SearchForUser)
 
+		user.GET("/fetch/email", ctrl.FetchUserEmail)
 	}
 }

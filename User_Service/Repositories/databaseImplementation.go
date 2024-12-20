@@ -145,3 +145,16 @@ func (repo *Repository) FetchActiveUserCount(userType string) (model.ActiveUserC
 	}
 	return result, nil
 }
+
+func (repo *Repository) FetchUserEmail(UserID uint) (model.UserEmail, error) {
+	var result model.UserEmail
+	err := repo.DB.Table("users").
+		Select("email").
+		Where("user_id = ?", UserID).
+		Scan(&result).Error
+
+	if err != nil {
+		return model.UserEmail{}, err
+	}
+	return result, nil
+}

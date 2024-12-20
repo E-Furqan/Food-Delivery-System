@@ -52,3 +52,7 @@ type UserRoleFilter struct {
 type ActiveUserCount struct {
 	ActiveUserCount string `json:"active_user_count"`
 }
+
+type UserEmail struct {
+	Email string `json:"email"`
+}

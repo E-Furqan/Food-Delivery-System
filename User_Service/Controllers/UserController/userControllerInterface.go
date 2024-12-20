@@ -36,4 +36,5 @@ type UserControllerInterface interface {
 	ViewOrdersWithoutDriver(c *gin.Context)
 	AssignDriver(c *gin.Context)
 	FetchActiveUser(c *gin.Context)
+	FetchUserEmail(c *gin.Context)
 }

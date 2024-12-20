@@ -437,3 +437,20 @@ func (ctrl *Controller) FetchActiveUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, result)
 }
+
+func (ctrl *Controller) FetchUserEmail(c *gin.Context) {
+
+	UserId, err := utils.VerifyUserId(c)
+
+	if err != nil {
+		utils.GenerateResponse(http.StatusUnauthorized, c, "error", err.Error(), "", nil)
+		return
+	}
+	result, err := ctrl.Repo.FetchUserEmail(UserId)
+	if err != nil {
+		utils.GenerateResponse(http.StatusInternalServerError, c, "error", err.Error(), "", nil)
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
+}
