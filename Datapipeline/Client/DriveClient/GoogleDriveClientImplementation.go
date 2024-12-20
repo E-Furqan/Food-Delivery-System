@@ -57,9 +57,7 @@ func (driveClient *Client) CreateConnection(config model.Config) error {
 		return fmt.Errorf("unable to retrieve files: %w", err)
 	}
 
-	for _, file := range fileList.Files {
-		fmt.Printf("Name: %s, ID: %s\n", file.Name, file.Id)
-	}
+	log.Print("total files in drive: ", len(fileList.Files))
 
 	return nil
 }
