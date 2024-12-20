@@ -1,6 +1,7 @@
 package activity
 
 import (
+	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 )
 
@@ -20,7 +21,12 @@ func (act *Activity) SendEmail(orderID uint, orderStatus string, token string, u
 	return message, nil
 }
 
-func (act *Activity) FetchUserEmail(UserID uint, orderStatus string, token string) (string, error) {
+func (act *Activity) FetchUserEmail(token string) (*model.UserEmail, error) {
 
-	return "message", nil
+	email, err := act.UserClient.FetchEmail(token)
+	if err != nil {
+		return &model.UserEmail{}, err
+	}
+
+	return email, nil
 }

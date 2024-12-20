@@ -28,3 +28,12 @@ func (act *Activity) CheckOrderStatus(orderID uint, token string) (string, error
 	log.Print("order status from check order activity:", OrderStatus)
 	return OrderStatus, nil
 }
+
+func (act *Activity) CalculateBill(CombineOrderItem model.CombineOrderItem, items []model.Items) (float64, error) {
+	totalBill := 0.0
+
+	for index, orderedItem := range CombineOrderItem.Items {
+		totalBill += items[index].ItemPrice * float64(orderedItem.Quantity)
+	}
+	return totalBill, nil
+}

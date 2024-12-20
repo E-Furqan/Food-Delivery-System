@@ -17,7 +17,7 @@ func (work *Worker) WorkerUserStart() {
 
 	w := worker.New(client_var, model.PlaceOrderTaskQueue, worker.Options{})
 	w.RegisterWorkflow(work.WorkFlow.OrderPlacedWorkflow)
-	w.RegisterActivity(work.Act.ViewOrders)
+	w.RegisterActivity(work.Act.FetchUserEmail)
 	w.RegisterActivity(work.Act.GetItems)
 	w.RegisterActivity(work.Act.CalculateBill)
 	w.RegisterActivity(work.Act.SendEmail)

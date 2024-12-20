@@ -54,3 +54,18 @@ func ReadEmailClientEnv() model.EmailEnv {
 	envVar.EmailPassKey = utils.GetEnv("PASS_KEY", "sqrf gefw qccw pqyr")
 	return envVar
 }
+
+func ReadUserClientEnv() model.UserClientEnv {
+	var envVar model.UserClientEnv
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Printf("Error loading .env file: %v", err)
+	}
+
+	envVar.BASE_URL = utils.GetEnv("BASE_URL", "http://localhost")
+	envVar.Fetch_email_URL = utils.GetEnv("GET_ITEMS_URL", "/user/fetch/email")
+	envVar.USER_PORT = utils.GetEnv("RESTAURANT_PORT", ":8083")
+
+	return envVar
+}

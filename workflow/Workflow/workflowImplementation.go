@@ -31,10 +31,20 @@ func (wFlow *Workflow) OrderPlacedWorkflow(c *gin.Context) {
 	ctx = workflow.WithActivityOptions(ctx, option)
 	var message string
 
+	var email model.UserEmail
+	err = workflow.ExecuteActivity(ctx, wFlow.Act.FetchUserEmail, token).Get(ctx, &email)
+	if err != nil {
+		wFlow.SendEmail(ctx, order.UpdateOrder, utils.Cancelled, &message, token, email.Email)
+		utils.Sleep(ctx)
+		log.Print("error in getting email")
+		utils.GenerateResponse(http.StatusInternalServerError, c, "message", "could not fetch user email", "error", err)
+		return
+	}
+
 	var items []model.Items
 	err = workflow.ExecuteActivity(ctx, wFlow.Act.GetItems, order, token).Get(ctx, &items)
 	if err != nil {
-		wFlow.SendEmail(ctx, order.UpdateOrder, utils.Cancelled, &message, token)
+		wFlow.SendEmail(ctx, order.UpdateOrder, utils.Cancelled, &message, token, email.Email)
 		utils.Sleep(ctx)
 		log.Print("error in get items")
 		utils.GenerateResponse(http.StatusInternalServerError, c, "message", "could not get items", "error", err)
@@ -45,7 +55,7 @@ func (wFlow *Workflow) OrderPlacedWorkflow(c *gin.Context) {
 	var totalBill float64
 	err = workflow.ExecuteActivity(ctx, wFlow.Act.CalculateBill, order, items).Get(ctx, &totalBill)
 	if err != nil {
-		wFlow.SendEmail(ctx, order.UpdateOrder, utils.Cancelled, &message, token)
+		wFlow.SendEmail(ctx, order.UpdateOrder, utils.Cancelled, &message, token, email.Email)
 		utils.Sleep(ctx)
 		utils.GenerateResponse(http.StatusInternalServerError, c, "message", "could not calculate bill", "error", err)
 		return
@@ -56,7 +66,7 @@ func (wFlow *Workflow) OrderPlacedWorkflow(c *gin.Context) {
 	var createdOrder model.UpdateOrder
 	err = workflow.ExecuteActivity(ctx, wFlow.Act.CreateOrder, order, token).Get(ctx, &createdOrder)
 	if err != nil {
-		wFlow.SendEmail(ctx, createdOrder, utils.Cancelled, &message, token)
+		wFlow.SendEmail(ctx, createdOrder, utils.Cancelled, &message, token, email.Email)
 		utils.Sleep(ctx)
 		utils.GenerateResponse(http.StatusInternalServerError, c, "message", "could not place the order", "error", err)
 		return
@@ -64,19 +74,19 @@ func (wFlow *Workflow) OrderPlacedWorkflow(c *gin.Context) {
 	order.TotalBill = totalBill
 	log.Print("order returned from order activity: ", createdOrder)
 
-	err = wFlow.SendEmail(ctx, createdOrder, createdOrder.OrderStatus, &message, token)
+	err = wFlow.SendEmail(ctx, createdOrder, createdOrder.OrderStatus, &message, token, email.Email)
 	if err != nil {
 		utils.GenerateResponse(http.StatusInternalServerError, c, "message", "could not send email", "error", err)
 		return
 	}
 	log.Print("Email sent successfully: ")
 
-	wFlow.DelayOrderChecker(ctx, createdOrder, token)
+	wFlow.DelayOrderChecker(ctx, createdOrder, token, email.Email)
 
 	utils.GenerateResponse(http.StatusOK, c, "message", "order has been placed successfully", "", nil)
 }
 
-func (wFlow *Workflow) DelayOrderChecker(ctx workflow.Context, createdOrder model.UpdateOrder, token string) error {
+func (wFlow *Workflow) DelayOrderChecker(ctx workflow.Context, createdOrder model.UpdateOrder, token string, email string) error {
 	var delayCounter int
 	var message string
 	delayCounter = 0
@@ -90,20 +100,20 @@ func (wFlow *Workflow) DelayOrderChecker(ctx workflow.Context, createdOrder mode
 		}
 		status = strings.ToLower(status)
 		if status == utils.Accepted {
-			err = wFlow.SendEmail(ctx, createdOrder, status, &message, token)
+			err = wFlow.SendEmail(ctx, createdOrder, status, &message, token, email)
 			if err != nil {
 				return err
 			}
 			log.Print("Email sent for accepted order: ", message)
 		} else if status == utils.Cancelled {
-			err = wFlow.SendEmail(ctx, createdOrder, status, &message, token)
+			err = wFlow.SendEmail(ctx, createdOrder, status, &message, token, email)
 			if err != nil {
 				return err
 			}
 			log.Print("Email sent for rejected order: ", message)
 			break
 		} else if status == utils.Completed {
-			err = wFlow.SendEmail(ctx, createdOrder, status, &message, token)
+			err = wFlow.SendEmail(ctx, createdOrder, status, &message, token, email)
 			if err != nil {
 				return err
 			}
@@ -112,7 +122,7 @@ func (wFlow *Workflow) DelayOrderChecker(ctx workflow.Context, createdOrder mode
 		}
 
 		if delayCounter == 1 && status == utils.OrderPlaced {
-			err = wFlow.SendEmail(ctx, createdOrder, utils.Delay, &message, token)
+			err = wFlow.SendEmail(ctx, createdOrder, utils.Delay, &message, token, email)
 			if err != nil {
 				return err
 			}
@@ -125,8 +135,8 @@ func (wFlow *Workflow) DelayOrderChecker(ctx workflow.Context, createdOrder mode
 	return nil
 }
 
-func (wFlow *Workflow) SendEmail(ctx workflow.Context, createdOrder model.UpdateOrder, status string, message *string, token string) error {
-	err := workflow.ExecuteActivity(ctx, wFlow.Act.SendEmail, createdOrder.OrderId, status, token).Get(ctx, &message)
+func (wFlow *Workflow) SendEmail(ctx workflow.Context, createdOrder model.UpdateOrder, status string, message *string, token string, email string) error {
+	err := workflow.ExecuteActivity(ctx, wFlow.Act.SendEmail, createdOrder.OrderId, status, token, email).Get(ctx, &message)
 	if err != nil {
 		return err
 	}
