@@ -18,7 +18,7 @@ func (WorkFlow *WorkFlowClient) PlaceORder(order model.CombineOrderItem, token s
 
 	url := fmt.Sprintf("%s%s%s", WorkFlow.envVar.BASE_URL, WorkFlow.envVar.WORKFLOW_PORT, WorkFlow.envVar.PLACE_ORDER_URL)
 
-	req, err := utils.CreateAuthorizedRequest(url, jsonData, "PATCH", token)
+	req, err := utils.CreateAuthorizedRequest(url, jsonData, "GET", token)
 	if err != nil {
 		return fmt.Errorf("error: %v", err)
 	}

@@ -119,7 +119,7 @@ func FetchRoleFromClaims(c *gin.Context) (string, error) {
 }
 
 func FetchIDFromClaim(c *gin.Context) (uint, error) {
-	Id, exists := c.Get("ClaimId")
+	Id, exists := c.Get("ID")
 	if !exists {
 		return 0, fmt.Errorf("id id does not exist")
 	}
