@@ -1,1 +1,0 @@
-Drop TABLE IF EXISTS logs_configs;

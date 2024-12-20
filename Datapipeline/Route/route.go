@@ -10,6 +10,5 @@ func User_routes(DataCon dataController.DataControllerInterface, DriveClient dri
 
 	pipeline := server.Group("/pipeline")
 	pipeline.POST("/source/configuration", DataCon.SaveConfiguration)
-	pipeline.GET("/callback", DriveClient.HandleOAuth2Callback)
 
 }
