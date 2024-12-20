@@ -57,3 +57,18 @@ func ReadMiddlewareEnv() model.MiddlewareEnv {
 	envVar.RefreshTokenKey = utils.GetEnv("REFRESH_TOKEN_SECRET", "Ali")
 	return envVar
 }
+
+func ReadWorkflowClientEnv() model.WorkFlowClientEnv {
+	var envVar model.WorkFlowClientEnv
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Printf("Error loading .env file: %v", err)
+	}
+
+	envVar.BASE_URL = utils.GetEnv("BASE_URL", "http://localhost")
+	envVar.PLACE_ORDER_URL = utils.GetEnv("Get_Items_URL", "/workflow/place/order")
+	envVar.WORKFLOW_PORT = utils.GetEnv("RESTAURANT_PORT", ":8082")
+
+	return envVar
+}

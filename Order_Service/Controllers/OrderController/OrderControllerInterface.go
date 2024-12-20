@@ -2,6 +2,7 @@ package OrderControllers
 
 import (
 	"github.com/E-Furqan/Food-Delivery-System/Client/RestaurantClient"
+	WorkFlow "github.com/E-Furqan/Food-Delivery-System/Client/WorkFlowClient"
 	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
 	"github.com/gin-gonic/gin"
 )
@@ -9,12 +10,15 @@ import (
 type OrderController struct {
 	Repo      database.RepositoryInterface
 	ResClient RestaurantClient.RestaurantClientInterface
+	Workflow  WorkFlow.WorkFlowClientInterface
 }
 
-func NewController(repo database.RepositoryInterface, ResClient RestaurantClient.RestaurantClientInterface) *OrderController {
+func NewController(repo database.RepositoryInterface, ResClient RestaurantClient.RestaurantClientInterface,
+	workflow WorkFlow.WorkFlowClientInterface) *OrderController {
 	return &OrderController{
 		Repo:      repo,
 		ResClient: ResClient,
+		Workflow:  workflow,
 	}
 }
 

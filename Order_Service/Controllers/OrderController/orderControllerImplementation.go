@@ -1,7 +1,6 @@
 package OrderControllers
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -200,36 +199,19 @@ func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
 
-	var GetItem model.GetItems
-	GetItem.RestaurantId = CombineOrderItem.RestaurantId
-	GetItem.ColumnName = "restaurant_id"
-	GetItem.OrderType = "asc"
-
-	var items []model.Items
-	items, err = orderCtrl.ResClient.GetItems(GetItem)
+	token, err := utils.GetAuthToken(c)
 	if err != nil {
-		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Error while getting items from the restaurant", "Error", err.Error())
+		utils.GenerateResponse(http.StatusUnauthorized, c, "message", "could not get token", "error", err)
 		return
 	}
 
-	if len(items) == 0 {
-		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "No items found in the restaurant", "", nil)
-		return
-	}
-
-	totalBill, err := utils.CalculateBill(CombineOrderItem, items)
+	err = orderCtrl.Workflow.PlaceORder(CombineOrderItem, token)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err.Error())
+		utils.GenerateResponse(http.StatusUnauthorized, c, "message", "could not start workflow", "error", err)
 		return
 	}
-	order := utils.CreateOrderObj(CombineOrderItem, totalBill)
-	err = orderCtrl.Repo.PlaceOrder(&order, &CombineOrderItem)
 
-	if err != nil {
-		utils.GenerateResponse(http.StatusBadRequest, c, "Message", "Error while creating order", "Error", err.Error())
-		return
-	}
-	utils.GenerateResponse(http.StatusOK, c, "Message", fmt.Sprintf("Order created successfully with order id %v and total bill: %v", order.OrderID, totalBill), "", nil)
+	utils.GenerateResponse(http.StatusOK, c, "Message", "Order Placement workflow has be started", "", nil)
 }
 
 // ViewOrderDetails godoc
