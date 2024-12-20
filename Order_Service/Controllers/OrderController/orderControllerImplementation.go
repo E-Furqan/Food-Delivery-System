@@ -194,10 +194,16 @@ func (orderCtrl *OrderController) PlaceOrder(c *gin.Context) {
 		return
 	}
 
+	userID, err := utils.FetchIDFromClaim(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+	}
+
 	var CombineOrderItem model.CombineOrderItem
 	if err := c.ShouldBindJSON(&CombineOrderItem); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
+	CombineOrderItem.UserId = userID
 
 	token, err := utils.GetAuthToken(c)
 	if err != nil {
