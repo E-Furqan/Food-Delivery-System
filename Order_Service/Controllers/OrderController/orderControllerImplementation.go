@@ -551,5 +551,5 @@ func (orderCtrl *OrderController) CreateOrder(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, order.OrderID)
+	c.JSON(http.StatusOK, order)
 }
