@@ -65,7 +65,7 @@ func ReadUserClientEnv() model.UserClientEnv {
 
 	envVar.BASE_URL = utils.GetEnv("BASE_URL", "http://localhost")
 	envVar.Fetch_email_URL = utils.GetEnv("GET_ITEMS_URL", "/user/fetch/email")
-	envVar.USER_PORT = utils.GetEnv("RESTAURANT_PORT", ":8083")
+	envVar.USER_PORT = utils.GetEnv("RESTAURANT_PORT", "8083")
 
 	return envVar
 }

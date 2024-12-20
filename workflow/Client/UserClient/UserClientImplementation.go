@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
@@ -20,6 +21,8 @@ func (userClient *UserClient) FetchEmail(token string) (*model.UserEmail, error)
 	url, err := utils.CreateUrl(userClient.envVar.BASE_URL,
 		userClient.envVar.USER_PORT,
 		userClient.envVar.Fetch_email_URL)
+
+	log.Print("URL      ", url)
 	if err != nil {
 		return nil, fmt.Errorf("error: %v", err)
 	}

@@ -6,15 +6,15 @@ import (
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 )
 
-func (act *Activity) CreateOrder(order model.CombineOrderItem, token string) (model.UpdateOrder, error) {
+func (act *Activity) CreateOrder(order model.CombineOrderItem, token string) (uint, error) {
 
-	Order, err := act.OrderClient.CreateOrder(order, token)
+	OrderID, err := act.OrderClient.CreateOrder(order, token)
 	if err != nil {
 		log.Print("error from order activity: ", err)
-		return model.UpdateOrder{}, err
+		return 0, err
 	}
-	log.Print("order from order activity:", Order)
-	return Order, nil
+	log.Print("order from order activity:", OrderID)
+	return OrderID, nil
 }
 
 func (act *Activity) CheckOrderStatus(orderID uint, token string) (string, error) {
