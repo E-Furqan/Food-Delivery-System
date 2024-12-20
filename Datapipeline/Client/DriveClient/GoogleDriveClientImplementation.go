@@ -41,6 +41,7 @@ func (driveClient *Client) CreateConnection(config model.Config) error {
 		RefreshToken: config.RefreshToken,
 	}).Token()
 	if err != nil {
+		log.Print(err)
 		return fmt.Errorf("failed to generate token: %w", err)
 	}
 
@@ -59,5 +60,6 @@ func (driveClient *Client) CreateConnection(config model.Config) error {
 	for _, file := range fileList.Files {
 		fmt.Printf("Name: %s, ID: %s\n", file.Name, file.Id)
 	}
+
 	return nil
 }
