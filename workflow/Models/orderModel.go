@@ -11,10 +11,9 @@ type OrderID struct {
 }
 
 type ID struct {
-	OrderId         uint `json:"order_id"`
-	UserID          uint `json:"user_id"`
-	DeliverDriverID uint `json:"delivery_driver"`
-	RestaurantId    uint `json:"restaurant_id"`
+	OrderId      uint `json:"order_id"`
+	UserID       uint `json:"user_id"`
+	RestaurantId uint `json:"restaurant_id"`
 }
 
 type UpdateOrder struct {

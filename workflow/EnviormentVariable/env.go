@@ -36,8 +36,21 @@ func ReadRestaurantClientEnv() model.RestaurantClientEnv {
 	}
 
 	envVar.BASE_URL = utils.GetEnv("BASE_URL", "http://localhost")
-	envVar.Get_Items_URL = utils.GetEnv("Get_Items_URL", "/restaurant/fetch/item/prices")
+	envVar.Get_Items_URL = utils.GetEnv("GET_ITEMS_URL", "/restaurant/fetch/item/prices")
 	envVar.RESTAURANT_PORT = utils.GetEnv("RESTAURANT_PORT", ":8082")
 
+	return envVar
+}
+
+func ReadEmailClientEnv() model.EmailEnv {
+	var envVar model.EmailEnv
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Printf("Error loading .env file: %v", err)
+	}
+
+	envVar.EmailAddressFrom = utils.GetEnv("EMAIL_FROM", "furqan.ali@emumba.com")
+	envVar.EmailPassKey = utils.GetEnv("PASS_KEY", "sqrf gefw qccw pqyr")
 	return envVar
 }

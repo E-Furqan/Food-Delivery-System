@@ -7,11 +7,11 @@ import (
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 )
 
-func (email *EmailClient) EmailSender(orderID uint, orderStatus string) (string, error) {
-	from := utils.FurqanEmail
-	password := utils.FurqanEmailPassKey
+func (email *EmailClient) EmailSender(orderID uint, orderStatus string, userEmail string) (string, error) {
+	from := email.envVar.EmailAddressFrom
+	password := email.envVar.EmailPassKey
 
-	to := utils.SenderEmail
+	to := userEmail
 
 	smtpHost := "smtp.gmail.com"
 	smtpPort := "587"

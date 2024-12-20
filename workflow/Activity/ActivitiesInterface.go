@@ -23,13 +23,9 @@ func NewController(orderClient OrderClient.OrdClientInterface,
 }
 
 type ActivityInterface interface {
-	// RegisterCheckRole(registrationData model.User) (model.User, error)
-	// CreateUser(registrationData model.User) (model.User, error)
-	ViewOrders(UserId uint, token string) (*[]model.UpdateOrder, error)
-	UpdateOrderStatus(RestaurantId uint, order model.CombineOrderItem, token string) (string, error)
-	SendEmail(orderID uint, orderStatus string, token string) (string, error)
 	GetItems(order model.CombineOrderItem, token string) ([]model.Items, error)
 	CalculateBill(CombineOrderItem model.CombineOrderItem, items []model.Items) (float64, error)
 	CreateOrder(order model.CombineOrderItem, token string) (model.UpdateOrder, error)
+	SendEmail(orderID uint, orderStatus string, token string, userEmail string) (string, error)
 	CheckOrderStatus(orderID uint, token string) (string, error)
 }

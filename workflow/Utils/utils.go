@@ -177,12 +177,12 @@ func ActivityOptions() workflow.ActivityOptions {
 	}
 }
 
-func UpdateOrderStatusTOCancel(order model.CombineOrderItem) model.UpdateOrder {
+func UpdateOrderStatusTOCancel(orderID uint) model.UpdateOrder {
 
 	var updatedOrder model.UpdateOrder
-	updatedOrder.OrderId = order.OrderId
+	updatedOrder.OrderId = orderID
 	updatedOrder.OrderStatus = Cancelled
-	updatedOrder.UserID = order.UserID
+	updatedOrder.UserID = 0
 	return updatedOrder
 }
 
