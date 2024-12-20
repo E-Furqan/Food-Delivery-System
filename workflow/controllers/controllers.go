@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
@@ -15,10 +16,11 @@ import (
 func (ctrl *Controller) PlaceOrder(c *gin.Context) {
 	var order model.CombineOrderItem
 	if err := c.ShouldBindBodyWithJSON(&order); err != nil {
+		log.Print("binding issue")
 		utils.GenerateResponse(http.StatusBadRequest, c, "error", "could not bind", "", nil)
 		return
 	}
-
+	log.Print(" issue")
 	token, err := utils.GetAuthToken(c)
 	if err != nil {
 		utils.GenerateResponse(http.StatusUnauthorized, c, "message", "could not get token", "error", err)
