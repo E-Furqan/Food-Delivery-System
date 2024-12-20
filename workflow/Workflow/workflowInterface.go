@@ -2,7 +2,8 @@ package workflows
 
 import (
 	activity "github.com/E-Furqan/Food-Delivery-System/Activity"
-	"github.com/gin-gonic/gin"
+	model "github.com/E-Furqan/Food-Delivery-System/Models"
+	"go.temporal.io/sdk/workflow"
 )
 
 type Workflow struct {
@@ -16,5 +17,5 @@ func NewController(act activity.ActivityInterface) *Workflow {
 }
 
 type WorkflowInterface interface {
-	OrderPlacedWorkflow(c *gin.Context)
+	OrderPlacedWorkflow(ctx workflow.Context, order model.CombineOrderItem, token string) error
 }

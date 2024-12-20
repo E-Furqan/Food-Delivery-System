@@ -2,43 +2,27 @@ package workflows
 
 import (
 	"log"
-	"net/http"
 	"strings"
 	"time"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
-	"github.com/gin-gonic/gin"
 	"go.temporal.io/sdk/workflow"
 )
 
-func (wFlow *Workflow) OrderPlacedWorkflow(c *gin.Context) {
-	var ctx workflow.Context
-
-	var order model.CombineOrderItem
-	if err := c.ShouldBindBodyWithJSON(&order); err != nil {
-		utils.GenerateResponse(http.StatusBadRequest, c, "error", "could not bind", "", nil)
-		return
-	}
-
-	token, err := utils.GetAuthToken(c)
-	if err != nil {
-		utils.GenerateResponse(http.StatusUnauthorized, c, "message", "could not get token", "error", err)
-		return
-	}
+func (wFlow *Workflow) OrderPlacedWorkflow(ctx workflow.Context, order model.CombineOrderItem, token string) error {
 
 	option := utils.ActivityOptions()
 	ctx = workflow.WithActivityOptions(ctx, option)
 	var message string
 
 	var email model.UserEmail
-	err = workflow.ExecuteActivity(ctx, wFlow.Act.FetchUserEmail, token).Get(ctx, &email)
+	err := workflow.ExecuteActivity(ctx, wFlow.Act.FetchUserEmail, token).Get(ctx, &email)
 	if err != nil {
 		wFlow.SendEmail(ctx, order.UpdateOrder, utils.Cancelled, &message, token, email.Email)
 		utils.Sleep(ctx)
 		log.Print("error in getting email")
-		utils.GenerateResponse(http.StatusInternalServerError, c, "message", "could not fetch user email", "error", err)
-		return
+		return err
 	}
 
 	var items []model.Items
@@ -47,8 +31,7 @@ func (wFlow *Workflow) OrderPlacedWorkflow(c *gin.Context) {
 		wFlow.SendEmail(ctx, order.UpdateOrder, utils.Cancelled, &message, token, email.Email)
 		utils.Sleep(ctx)
 		log.Print("error in get items")
-		utils.GenerateResponse(http.StatusInternalServerError, c, "message", "could not get items", "error", err)
-		return
+		return err
 	}
 	log.Print("items from get item activity: ", items)
 
@@ -57,8 +40,7 @@ func (wFlow *Workflow) OrderPlacedWorkflow(c *gin.Context) {
 	if err != nil {
 		wFlow.SendEmail(ctx, order.UpdateOrder, utils.Cancelled, &message, token, email.Email)
 		utils.Sleep(ctx)
-		utils.GenerateResponse(http.StatusInternalServerError, c, "message", "could not calculate bill", "error", err)
-		return
+		return err
 	}
 	order.TotalBill = totalBill
 	log.Print("totalBill from get CalculateBill activity: ", totalBill)
@@ -68,22 +50,20 @@ func (wFlow *Workflow) OrderPlacedWorkflow(c *gin.Context) {
 	if err != nil {
 		wFlow.SendEmail(ctx, createdOrder, utils.Cancelled, &message, token, email.Email)
 		utils.Sleep(ctx)
-		utils.GenerateResponse(http.StatusInternalServerError, c, "message", "could not place the order", "error", err)
-		return
+		return err
 	}
 	order.TotalBill = totalBill
 	log.Print("order returned from order activity: ", createdOrder)
 
 	err = wFlow.SendEmail(ctx, createdOrder, createdOrder.OrderStatus, &message, token, email.Email)
 	if err != nil {
-		utils.GenerateResponse(http.StatusInternalServerError, c, "message", "could not send email", "error", err)
-		return
+		return err
 	}
 	log.Print("Email sent successfully: ")
 
 	wFlow.DelayOrderChecker(ctx, createdOrder, token, email.Email)
 
-	utils.GenerateResponse(http.StatusOK, c, "message", "order has been placed successfully", "", nil)
+	return nil
 }
 
 func (wFlow *Workflow) DelayOrderChecker(ctx workflow.Context, createdOrder model.UpdateOrder, token string, email string) error {

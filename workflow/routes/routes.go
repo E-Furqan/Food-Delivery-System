@@ -1,12 +1,12 @@
 package Routes
 
 import (
-	workflows "github.com/E-Furqan/Food-Delivery-System/Workflow"
+	"github.com/E-Furqan/Food-Delivery-System/controllers"
 	"github.com/gin-gonic/gin"
 )
 
-func Workflow_routes(workFlow workflows.WorkflowInterface, server *gin.Engine) {
+func Workflow_routes(ctrl controllers.ControllerInterface, server *gin.Engine) {
 
 	workflow := server.Group("/workflow")
-	workflow.GET("/place/order", workFlow.OrderPlacedWorkflow)
+	workflow.GET("/place/order", ctrl.PlaceOrder)
 }

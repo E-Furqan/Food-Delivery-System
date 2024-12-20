@@ -9,6 +9,7 @@ import (
 	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
 	worker "github.com/E-Furqan/Food-Delivery-System/Worker"
 	workflows "github.com/E-Furqan/Food-Delivery-System/Workflow"
+	"github.com/E-Furqan/Food-Delivery-System/controllers"
 	Routes "github.com/E-Furqan/Food-Delivery-System/routes"
 	"github.com/gin-gonic/gin"
 )
@@ -27,9 +28,10 @@ func main() {
 	var activity_var activity.ActivityInterface = activity.NewController(OrdClient, emailClient, restaurantClient, UserClient)
 	var workFlow workflows.WorkflowInterface = workflows.NewController(activity_var)
 	var worker_var worker.WorkerInterface = worker.NewController(activity_var, workFlow)
+	var controller controllers.ControllerInterface = controllers.NewController(workFlow)
 
 	server := gin.Default()
-	Routes.Workflow_routes(workFlow, server)
+	Routes.Workflow_routes(controller, server)
 
 	go func() {
 		worker_var.WorkerUserStart()
