@@ -6,5 +6,6 @@ CREATE TABLE IF NOT EXISTS configs (
     sources_id INT ,
     destinations_id INT,
     FOREIGN KEY (sources_id) REFERENCES sources(sources_id), 
-    FOREIGN KEY (destinations_id) REFERENCES destinations(destinations_id)
+    FOREIGN KEY (destinations_id) REFERENCES destinations(destinations_id),
+    folder_Url TEXT
 );

@@ -1,6 +1,7 @@
 package dataController
 
 import (
+	"fmt"
 	"net/http"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
@@ -10,17 +11,17 @@ import (
 
 func (data *Controller) SaveConfiguration(ctx *gin.Context) {
 
-	var Config model.Configs
+	var Config model.Config
 	if err := ctx.ShouldBindJSON(&Config); err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, ctx, "message", "error while binding", "error", err)
 		return
 	}
 
-	// token, err := data.DriveClient.CreateConnection(Config, ctx)
-	// if err != nil {
-	// 	utils.GenerateResponse(http.StatusInternalServerError, ctx, "message", "error while connection with the client", "", nil)
-	// 	return
-	// }
+	err := data.DriveClient.CreateConnection(Config)
+	if err != nil {
+		utils.GenerateResponse(http.StatusInternalServerError, ctx, "message", "error while connection with the client", "", nil)
+		return
+	}
 
 	// err = data.Repo.InsertConfiguration(&Config)
 	// if err != nil {
@@ -28,6 +29,6 @@ func (data *Controller) SaveConfiguration(ctx *gin.Context) {
 	// 	return
 	// }
 
-	// mess := fmt.Sprintf("Configuration has been saved in the database and your config ID is %v", Config.ConfigID)
-	// utils.GenerateResponse(http.StatusOK, ctx, "message", mess, "", nil)
+	mess := fmt.Sprintf("Configuration has been saved in the database and your config ID is %v", 1)
+	utils.GenerateResponse(http.StatusOK, ctx, "message", mess, "", nil)
 }

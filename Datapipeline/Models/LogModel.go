@@ -3,9 +3,11 @@ package model
 import "time"
 
 type Log struct {
-	LogID      uint      `json:"log_id"`
-	LogMessage string    `json:"log_message"`
-	CreatedAt  time.Time `json:"created_at"`
+	LogID       int       `gorm:"primaryKey;autoIncrement;column:log_id" json:"log_id"`
+	LogMessage  string    `gorm:"type:text;column:log_message" json:"log_message"`
+	PipelinesID int       `gorm:"column:pipelines_id" json:"pipelines_id"`
+	CreatedAt   time.Time `gorm:"default:CURRENT_TIMESTAMP;column:created_at" json:"created_at"`
+	Pipeline    Pipeline  `json:"pipeline"`
 }
 
 type LogConfig struct {

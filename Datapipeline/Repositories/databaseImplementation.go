@@ -6,7 +6,7 @@ import (
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 )
 
-func (repo *Repository) InsertConfiguration(configuration *model.Configs) error {
+func (repo *Repository) InsertConfiguration(configuration *model.Config) error {
 	result := repo.DB.Create(configuration)
 	if result.Error != nil {
 		log.Printf("Error saving configuration: %v", result.Error)
