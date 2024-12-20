@@ -68,7 +68,7 @@ func ReadWorkflowClientEnv() model.WorkFlowClientEnv {
 
 	envVar.BASE_URL = utils.GetEnv("BASE_URL", "http://localhost")
 	envVar.PLACE_ORDER_URL = utils.GetEnv("Get_Items_URL", "/workflow/place/order")
-	envVar.WORKFLOW_PORT = utils.GetEnv("RESTAURANT_PORT", ":8082")
+	envVar.WORKFLOW_PORT = utils.GetEnv("RESTAURANT_PORT", ":8088")
 
 	return envVar
 }
