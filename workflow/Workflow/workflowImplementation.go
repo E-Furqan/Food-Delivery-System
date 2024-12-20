@@ -1,6 +1,7 @@
 package workflows
 
 import (
+	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -111,13 +112,13 @@ func (wFlow *Workflow) DelayOrderChecker(ctx workflow.Context, createdOrder mode
 		}
 		delayCounter += 1
 
-		if delayCounter == 3 && status == utils.OrderPlaced {
+		if delayCounter == 5 && status == utils.OrderPlaced {
 			err = wFlow.SendEmail(ctx, createdOrder, utils.Cancelled, &message, token, email)
 			if err != nil {
 				return err
 			}
 			log.Print("Email sent for delay order: ", message)
-			return err
+			return fmt.Errorf("order status does not changes within 10 mins")
 		}
 	}
 
