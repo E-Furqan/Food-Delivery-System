@@ -19,7 +19,7 @@ func (wFlow *Workflow) OrderPlacedWorkflow(ctx workflow.Context, order model.Com
 	var email model.UserEmail
 	err := workflow.ExecuteActivity(ctx, wFlow.Act.FetchUserEmail, token).Get(ctx, &email)
 	if err != nil {
-		wFlow.SendEmail(ctx, order.UpdateOrder.OrderId, utils.Cancelled, &message, token, email.Email)
+		wFlow.SendEmail(ctx, order.UpdateOrder, utils.Cancelled, &message, token, email.Email)
 		utils.Sleep(ctx)
 		log.Print("error in getting email")
 		return err
@@ -28,7 +28,7 @@ func (wFlow *Workflow) OrderPlacedWorkflow(ctx workflow.Context, order model.Com
 	var items []model.Items
 	err = workflow.ExecuteActivity(ctx, wFlow.Act.GetItems, order, token).Get(ctx, &items)
 	if err != nil {
-		wFlow.SendEmail(ctx, order.UpdateOrder.OrderId, utils.Cancelled, &message, token, email.Email)
+		wFlow.SendEmail(ctx, order.UpdateOrder, utils.Cancelled, &message, token, email.Email)
 		utils.Sleep(ctx)
 		log.Print("error in get items")
 		return err
@@ -45,15 +45,15 @@ func (wFlow *Workflow) OrderPlacedWorkflow(ctx workflow.Context, order model.Com
 	order.TotalBill = totalBill
 	log.Print("totalBill from get CalculateBill activity: ", totalBill)
 
-	var orderID uint
-	err = workflow.ExecuteActivity(ctx, wFlow.Act.CreateOrder, order, token).Get(ctx, &orderID)
+	var createdOrder model.UpdateOrder
+	err = workflow.ExecuteActivity(ctx, wFlow.Act.CreateOrder, order, token).Get(ctx, &createdOrder)
 	if err != nil {
-		wFlow.SendEmail(ctx, orderID, utils.Cancelled, &message, token, email.Email)
+		wFlow.SendEmail(ctx, createdOrder, utils.Cancelled, &message, token, email.Email)
 		utils.Sleep(ctx)
 		return err
 	}
 	order.TotalBill = totalBill
-	log.Print("order returned from order activity: ", orderID)
+	log.Print("order returned from order activity: ", createdOrder)
 
 	err = wFlow.SendEmail(ctx, createdOrder, createdOrder.OrderStatus, &message, token, email.Email)
 	if err != nil {
@@ -115,8 +115,8 @@ func (wFlow *Workflow) DelayOrderChecker(ctx workflow.Context, createdOrder mode
 	return nil
 }
 
-func (wFlow *Workflow) SendEmail(ctx workflow.Context, OrderId uint, status string, message *string, token string, email string) error {
-	err := workflow.ExecuteActivity(ctx, wFlow.Act.SendEmail, OrderId, status, token, email).Get(ctx, &message)
+func (wFlow *Workflow) SendEmail(ctx workflow.Context, createdOrder model.UpdateOrder, status string, message *string, token string, email string) error {
+	err := workflow.ExecuteActivity(ctx, wFlow.Act.SendEmail, createdOrder.OrderId, status, token, email).Get(ctx, &message)
 	if err != nil {
 		return err
 	}
