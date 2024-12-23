@@ -46,6 +46,7 @@ type ActivityInterface interface {
 	FetchDestinationConfiguration(destination model.Destination) (model.Config, error)
 	CreateSourceConnection(source model.Config) (*drive.Service, error)
 	CreateDestinationConnection(destination model.Config) (*drive.Service, error)
+	AddLogs(failedCounter int, PipelinesID int) error
 	MoveDataFromSourceToDestination(sourceClient *drive.Service, destinationClient *drive.Service,
 		sourceFolderUrl string, destinationFolderUrl string) (int, error)
 }

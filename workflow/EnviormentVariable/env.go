@@ -78,6 +78,7 @@ func ReadPipelineEnv() model.DatapipelineClientEnv {
 	envVar.BASE_URL = utils.GetEnv("BASE_URL", "http://localhost/pipeline")
 	envVar.FETCH_SOURCE_CONFIGURATION_URL = utils.GetEnv("FETCH_SOURCE_CONFIGURATION_URL", "/fetch/source/configuration")
 	envVar.FETCH_DESTINATION_CONFIGURATION_URL = utils.GetEnv("FETCH_DESTINATION_CONFIGURATION_URL", "/fetch/destination/configuration")
+	envVar.ADD_LOGS_URL = utils.GetEnv("ADD_LOGS_URL", "/add/logs")
 	envVar.DATAPIPELINE_PORT = utils.GetEnv("DATAPIPELINE_PORT", "8085")
 
 	return envVar

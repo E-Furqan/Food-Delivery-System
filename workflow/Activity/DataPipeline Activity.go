@@ -80,15 +80,18 @@ func (act *Activity) MoveDataFromSourceToDestination(sourceClient *drive.Service
 	return failedCounter, nil
 }
 
-func (act *Activity) AddLogs(failedCounter int) (*drive.Service, error) {
-	var log model.log
+func (act *Activity) AddLogs(failedCounter int, PipelinesID int) error {
+	var log model.Log
+
 	if failedCounter != 0 {
-
+		log.LogMessage = fmt.Sprintf("the data sync failed to move %v files", failedCounter)
 	}
-	destinationConnection, err := act.DriveClient.CreateConnection(destination)
+	log.PipelinesID = PipelinesID
+
+	err := act.DatapipelineClient.AddLogs(log)
 	if err != nil {
-		return &drive.Service{}, err
+		return err
 	}
 
-	return destinationConnection, nil
+	return nil
 }

@@ -28,6 +28,7 @@ func (work *Worker) WorkerUserStart() {
 	w.RegisterActivity(work.Act.FetchSourceConfiguration)
 	w.RegisterActivity(work.Act.FetchDestinationConfiguration)
 	w.RegisterActivity(work.Act.MoveDataFromSourceToDestination)
+	w.RegisterActivity(work.Act.AddLogs)
 
 	log.Print("worker started")
 	err = w.Run(worker.InterruptCh())

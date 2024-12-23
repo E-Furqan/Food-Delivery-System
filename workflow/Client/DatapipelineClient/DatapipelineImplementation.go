@@ -72,3 +72,30 @@ func (client *DatapipelineClient) FetchDestinationConfiguration(destination mode
 
 	return sourceConfig, nil
 }
+
+func (client *DatapipelineClient) AddLogs(logs model.Log) error {
+
+	body, err := json.Marshal(logs)
+	if err != nil {
+		return fmt.Errorf("error marshaling request body: %v", err)
+	}
+
+	url := fmt.Sprintf("%s:%s%s", client.envVar.BASE_URL, client.envVar.DATAPIPELINE_PORT, client.envVar.ADD_LOGS_URL)
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
+	if err != nil {
+		return fmt.Errorf("error creating request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("error sending request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("received non-200 response: %v", resp.Status)
+	}
+
+	return nil
+}

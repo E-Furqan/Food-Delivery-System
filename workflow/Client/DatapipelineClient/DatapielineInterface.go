@@ -15,4 +15,5 @@ func NewClient(envVar model.DatapipelineClientEnv) *DatapipelineClient {
 type DatapipelineClientInterface interface {
 	FetchSourceConfiguration(source model.Source) (model.Config, error)
 	FetchDestinationConfiguration(destination model.Destination) (model.Config, error)
+	AddLogs(logs model.Log) error
 }

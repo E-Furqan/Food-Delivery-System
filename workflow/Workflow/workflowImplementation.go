@@ -151,30 +151,35 @@ func (wFlow *Workflow) DataSyncWorkflow(ctx workflow.Context, pipeline model.Pip
 	var destinationConfig model.Config
 	err = workflow.ExecuteActivity(ctx, wFlow.Act.FetchDestinationConfiguration, destination).Get(ctx, &destinationConfig)
 	if err != nil {
-		log.Print("error in fetching source configuration")
+		log.Print("error in fetching destination configuration")
 		return err
 	}
 
 	var sourceClient *drive.Service
 	err = workflow.ExecuteActivity(ctx, wFlow.Act.CreateSourceConnection, sourceConfig).Get(ctx, &sourceClient)
 	if err != nil {
-		log.Print("error in fetching source configuration")
+		log.Print("error in creating source client")
 		return err
 	}
 
 	var destinationClient *drive.Service
 	err = workflow.ExecuteActivity(ctx, wFlow.Act.CreateDestinationConnection, destinationConfig).Get(ctx, &destinationClient)
 	if err != nil {
-		log.Print("error in fetching source configuration")
+		log.Print("error in creating destination client")
 		return err
 	}
 
 	var failedCounter int
-	err = workflow.ExecuteActivity(ctx, wFlow.Act.CreateDestinationConnection, sourceClient, destinationClient, sourceConfig.FolderURL, destinationConfig.FolderURL).Get(ctx, &failedCounter)
+	err = workflow.ExecuteActivity(ctx, wFlow.Act.MoveDataFromSourceToDestination, sourceClient, destinationClient, sourceConfig.FolderURL, destinationConfig.FolderURL).Get(ctx, &failedCounter)
+	if err != nil {
+		log.Print("error in fetching moving files")
+		return err
+	}
+
+	err = workflow.ExecuteActivity(ctx, wFlow.Act.AddLogs, failedCounter, pipeline.PipelinesID).Get(ctx, &failedCounter)
 	if err != nil {
 		log.Print("error in fetching source configuration")
 		return err
 	}
-
 	return nil
 }
