@@ -20,3 +20,11 @@ type UpdateOrder struct {
 	ID
 	OrderStatus string `json:"order_status"`
 }
+
+type OrderClientEnv struct {
+	BASE_URL                string
+	UPDATE_ORDER_STATUS_URL string
+	ORDER_PORT              string
+	Fetch_OrderStatus_URL   string
+	Create_Order_URL        string
+}
