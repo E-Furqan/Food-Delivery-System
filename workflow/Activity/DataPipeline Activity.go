@@ -79,3 +79,16 @@ func (act *Activity) MoveDataFromSourceToDestination(sourceClient *drive.Service
 
 	return failedCounter, nil
 }
+
+func (act *Activity) AddLogs(failedCounter int) (*drive.Service, error) {
+	var log model.log
+	if failedCounter != 0 {
+
+	}
+	destinationConnection, err := act.DriveClient.CreateConnection(destination)
+	if err != nil {
+		return &drive.Service{}, err
+	}
+
+	return destinationConnection, nil
+}
