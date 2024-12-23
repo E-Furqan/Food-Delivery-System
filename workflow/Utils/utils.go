@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
+	"google.golang.org/api/drive/v3"
 )
 
 func GenerateResponse(httpStatusCode int, c *gin.Context, title1 string, message1 string, title2 string, input interface{}) {
@@ -188,4 +189,36 @@ func UpdateOrderStatusTOCancel(orderID uint) model.UpdateOrder {
 
 func Sleep(ctx workflow.Context) {
 	workflow.Sleep(ctx, 2*time.Second)
+}
+
+func ListFilesInFolder(client *drive.Service, folderID string) ([]*drive.File, error) {
+	query := fmt.Sprintf("'%s' in parents and trashed = false", folderID)
+	fileList, err := client.Files.List().Q(query).Do()
+	if err != nil {
+		return nil, err
+	}
+	return fileList.Files, nil
+}
+
+func ExtractFolderID(folderUrl string) (string, error) {
+
+	parts := strings.Split(folderUrl, "/")
+	if len(parts) < 2 {
+		return "", fmt.Errorf("invalid folder URL")
+	}
+	return parts[len(parts)-1], nil
+}
+
+func CreateSourceObj(SourcesID int) model.Source {
+	var source model.Source
+
+	source.SourcesID = SourcesID
+	return source
+}
+
+func CreateDestinationObj(SourcesID int) model.Destination {
+	var Destination model.Destination
+
+	Destination.DestinationsID = SourcesID
+	return Destination
 }

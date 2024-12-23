@@ -17,5 +17,5 @@ func NewController(act activity.ActivityInterface) *Workflow {
 }
 
 type WorkflowInterface interface {
-	OrderPlacedWorkflow(ctx workflow.Context, order model.CombineOrderItem, token string) error
+	PlaceOrderWorkflow(ctx workflow.Context, order model.CombineOrderItem, token string) error
 }

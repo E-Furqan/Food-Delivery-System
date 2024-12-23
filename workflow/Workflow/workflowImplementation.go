@@ -9,9 +9,10 @@ import (
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 	"go.temporal.io/sdk/workflow"
+	"google.golang.org/api/drive/v2"
 )
 
-func (wFlow *Workflow) OrderPlacedWorkflow(ctx workflow.Context, order model.CombineOrderItem, token string) error {
+func (wFlow *Workflow) PlaceOrderWorkflow(ctx workflow.Context, order model.CombineOrderItem, token string) error {
 
 	option := utils.ActivityOptions()
 	ctx = workflow.WithActivityOptions(ctx, option)
@@ -130,5 +131,50 @@ func (wFlow *Workflow) SendEmail(ctx workflow.Context, createdOrder model.Update
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (wFlow *Workflow) DataSyncWorkflow(ctx workflow.Context, pipeline model.Pipeline) error {
+
+	option := utils.ActivityOptions()
+	ctx = workflow.WithActivityOptions(ctx, option)
+	source := utils.CreateSourceObj(pipeline.SourcesID)
+	destination := utils.CreateSourceObj(pipeline.DestinationsID)
+
+	var sourceConfig model.Config
+	err := workflow.ExecuteActivity(ctx, wFlow.Act.FetchSourceConfiguration, source).Get(ctx, &sourceConfig)
+	if err != nil {
+		log.Print("error in fetching source configuration")
+		return err
+	}
+
+	var destinationConfig model.Config
+	err = workflow.ExecuteActivity(ctx, wFlow.Act.FetchDestinationConfiguration, destination).Get(ctx, &destinationConfig)
+	if err != nil {
+		log.Print("error in fetching source configuration")
+		return err
+	}
+
+	var sourceClient *drive.Service
+	err = workflow.ExecuteActivity(ctx, wFlow.Act.CreateSourceConnection, sourceConfig).Get(ctx, &sourceClient)
+	if err != nil {
+		log.Print("error in fetching source configuration")
+		return err
+	}
+
+	var destinationClient *drive.Service
+	err = workflow.ExecuteActivity(ctx, wFlow.Act.CreateDestinationConnection, destinationConfig).Get(ctx, &destinationClient)
+	if err != nil {
+		log.Print("error in fetching source configuration")
+		return err
+	}
+
+	var failedCounter int
+	err = workflow.ExecuteActivity(ctx, wFlow.Act.CreateDestinationConnection, sourceClient, destinationClient, sourceConfig.FolderURL, destinationConfig.FolderURL).Get(ctx, &failedCounter)
+	if err != nil {
+		log.Print("error in fetching source configuration")
+		return err
+	}
+
 	return nil
 }

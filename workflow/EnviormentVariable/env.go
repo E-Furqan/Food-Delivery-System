@@ -67,8 +67,8 @@ func ReadUserClientEnv() model.UserClientEnv {
 	return envVar
 }
 
-func ReadPipelineEnv() model.UserClientEnv {
-	var envVar model.UserClientEnv
+func ReadPipelineEnv() model.DatapipelineClientEnv {
+	var envVar model.DatapipelineClientEnv
 
 	err := godotenv.Load()
 	if err != nil {
@@ -76,8 +76,9 @@ func ReadPipelineEnv() model.UserClientEnv {
 	}
 
 	envVar.BASE_URL = utils.GetEnv("BASE_URL", "http://localhost/pipeline")
-	envVar.Fetch_email_URL = utils.GetEnv("GET_ITEMS_URL", "/fetch/pipeline/details")
-	envVar.USER_PORT = utils.GetEnv("RESTAURANT_PORT", "8085")
+	envVar.FETCH_SOURCE_CONFIGURATION_URL = utils.GetEnv("FETCH_SOURCE_CONFIGURATION_URL", "/fetch/source/configuration")
+	envVar.FETCH_DESTINATION_CONFIGURATION_URL = utils.GetEnv("FETCH_DESTINATION_CONFIGURATION_URL", "/fetch/destination/configuration")
+	envVar.DATAPIPELINE_PORT = utils.GetEnv("DATAPIPELINE_PORT", "8085")
 
 	return envVar
 }

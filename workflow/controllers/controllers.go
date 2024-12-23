@@ -44,7 +44,7 @@ func (ctrl *Controller) PlaceOrder(c *gin.Context) {
 		return
 	}
 
-	_, err = client_var.ExecuteWorkflow(context.Background(), options, ctrl.WorkFlows.OrderPlacedWorkflow, order, token)
+	_, err = client_var.ExecuteWorkflow(context.Background(), options, ctrl.WorkFlows.PlaceOrderWorkflow, order, token)
 	if err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "message", "error in workflow", "error", err)
 		return

@@ -11,7 +11,7 @@ import (
 	"google.golang.org/api/option"
 )
 
-func (driveClient *Client) CreateConnection(config model.Config) error {
+func (driveClient *Client) CreateConnection(config model.Config) (*drive.Service, error) {
 
 	oauthConfig := &oauth2.Config{
 		ClientID:     config.ClientID,
@@ -26,22 +26,22 @@ func (driveClient *Client) CreateConnection(config model.Config) error {
 	}).Token()
 	if err != nil {
 		log.Print(err)
-		return fmt.Errorf("failed to generate token: %w", err)
+		return &drive.Service{}, fmt.Errorf("failed to generate token: %w", err)
 	}
 
 	httpClient := oauthConfig.Client(context.Background(), token)
 
 	driveService, err := drive.NewService(context.Background(), option.WithHTTPClient(httpClient))
 	if err != nil {
-		return fmt.Errorf("failed to create Google Drive service: %w", err)
+		return &drive.Service{}, fmt.Errorf("failed to create Google Drive service: %w", err)
 	}
 	fileList, err := driveService.Files.List().Do()
 	if err != nil {
 		log.Printf("Unable to retrieve files: %v", err)
-		return fmt.Errorf("unable to retrieve files: %w", err)
+		return &drive.Service{}, fmt.Errorf("unable to retrieve files: %w", err)
 	}
 
 	log.Print("total files in drive: ", len(fileList.Files))
 
-	return nil
+	return driveService, nil
 }
