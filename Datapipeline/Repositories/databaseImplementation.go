@@ -4,11 +4,9 @@ import (
 	"log"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
-	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 )
 
-func (repo *Repository) InsertSourceConfiguration(combinedConfig *model.CombinedStorageConfig) error {
-	source := utils.CreateSourceObj(combinedConfig)
+func (repo *Repository) InsertSourceConfiguration(source *model.Source, config *model.Config) error {
 
 	tx := repo.DB.Begin()
 	if tx.Error != nil {
@@ -27,7 +25,7 @@ func (repo *Repository) InsertSourceConfiguration(combinedConfig *model.Combined
 		return err
 	}
 
-	config := utils.CreateConfigObj(combinedConfig)
+	config.SourcesID = source.SourcesID
 	err = tx.Create(config)
 	if err.Error != nil {
 		log.Printf("Error saving configuration: %v", err.Error)
@@ -42,8 +40,7 @@ func (repo *Repository) InsertSourceConfiguration(combinedConfig *model.Combined
 	return nil
 }
 
-func (repo *Repository) InsertDestinationConfiguration(combinedConfig *model.CombinedStorageConfig) error {
-	destination := utils.CreateDestinationObj(combinedConfig)
+func (repo *Repository) InsertDestinationConfiguration(destination *model.Destination, config *model.Config) error {
 
 	tx := repo.DB.Begin()
 	if tx.Error != nil {
@@ -62,7 +59,7 @@ func (repo *Repository) InsertDestinationConfiguration(combinedConfig *model.Com
 		return err
 	}
 
-	config := utils.CreateConfigObj(combinedConfig)
+	config.DestinationsID = destination.DestinationsID
 	err = tx.Create(config)
 	if err.Error != nil {
 		log.Printf("Error saving configuration: %v", err.Error)
@@ -77,9 +74,7 @@ func (repo *Repository) InsertDestinationConfiguration(combinedConfig *model.Com
 	return nil
 }
 
-func (repo *Repository) InsertPipeline(sourceID int, destinationID int) error {
-	pipeline := utils.CreatePipelineObj(sourceID, destinationID)
-
+func (repo *Repository) CreatePipeline(pipeline model.Pipeline) error {
 	err := repo.DB.Create(pipeline)
 	if err.Error != nil {
 		log.Printf("Error creating pipeline: %v", err.Error)
@@ -87,4 +82,21 @@ func (repo *Repository) InsertPipeline(sourceID int, destinationID int) error {
 	}
 
 	return nil
+}
+
+func (repo *Repository) FetchPipelineDetails(pipelineID int) (model.Pipeline, error) {
+
+	var pipeline model.Pipeline
+
+	err := repo.DB.Table("pipelines").
+		Select("pipelines_id, sources_id , destinations_id").
+		Where("pipelines_id = ?", pipeline).
+		First(&pipeline).Error
+
+	if err != nil {
+		log.Printf("Error saving pipeline: %v", err)
+		return model.Pipeline{}, err
+	}
+
+	return pipeline, nil
 }

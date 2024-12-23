@@ -31,3 +31,18 @@ func ReadDatabaseEnv() model.DatabaseEnv {
 
 	return DatabaseEnv
 }
+
+func ReadWorkFlowEnv() model.WorkflowEnv {
+	var WorkflowEnv model.WorkflowEnv
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Printf("Error loading .env file: %v", err)
+	}
+
+	WorkflowEnv.BASE_URL = utils.GetEnv("WORKFLOW_HOST", "http://localhost")
+	WorkflowEnv.DATAPIPELINE_WORKFLOW_URL = utils.GetEnv("DATA_SYNC_WORKFLOW_URL", "/workflow/datapipeline/sync")
+	WorkflowEnv.PORT = utils.GetEnv("WORKFLOW_PORT", "8088")
+
+	return WorkflowEnv
+}

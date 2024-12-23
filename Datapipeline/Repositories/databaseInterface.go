@@ -16,6 +16,8 @@ func NewRepository(db *gorm.DB) *Repository {
 }
 
 type RepositoryInterface interface {
-	InsertSourceConfiguration(configuration *model.CombinedStorageConfig) error
-	InsertDestinationConfiguration(configuration *model.CombinedStorageConfig) error
+	InsertSourceConfiguration(source *model.Source, config *model.Config) error
+	InsertDestinationConfiguration(destination *model.Destination, config *model.Config) error
+	CreatePipeline(pipeline model.Pipeline) error
+	FetchPipelineDetails(pipelineID int) (model.Pipeline, error)
 }

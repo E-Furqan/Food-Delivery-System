@@ -2,6 +2,7 @@ package main
 
 import (
 	driveClient "github.com/E-Furqan/Food-Delivery-System/Client/DriveClient"
+	workflowClient "github.com/E-Furqan/Food-Delivery-System/Client/WorkFlowClient"
 	dataController "github.com/E-Furqan/Food-Delivery-System/Controllers/DataController"
 	config "github.com/E-Furqan/Food-Delivery-System/DatabaseConfig"
 	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
@@ -12,14 +13,17 @@ import (
 
 func main() {
 	DatabaseEnv := environmentVariable.ReadDatabaseEnv()
+	WorkFlowEnv := environmentVariable.ReadWorkFlowEnv()
 
 	databaseConfig := config.NewDatabase(DatabaseEnv)
 	db := databaseConfig.Connection()
 
 	var repo database.RepositoryInterface = database.NewRepository(db)
 
+	var WorkFlowClient workflowClient.RestaurantClientInterface = workflowClient.NewClient(WorkFlowEnv)
 	var DriveClient driveClient.DriveClientInterface = driveClient.NewClient(repo)
-	var DataController dataController.DataControllerInterface = dataController.NewController(repo, DriveClient)
+
+	var DataController dataController.DataControllerInterface = dataController.NewController(repo, DriveClient, WorkFlowClient)
 
 	server := gin.Default()
 
