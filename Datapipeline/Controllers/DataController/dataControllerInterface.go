@@ -19,5 +19,6 @@ func NewController(repo database.RepositoryInterface, driveClient driveClient.Dr
 }
 
 type DataControllerInterface interface {
-	SaveConfiguration(ctx *gin.Context)
+	SourceConfiguration(ctx *gin.Context)
+	DestinationConfiguration(ctx *gin.Context)
 }

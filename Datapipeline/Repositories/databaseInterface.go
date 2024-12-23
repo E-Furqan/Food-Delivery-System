@@ -16,5 +16,6 @@ func NewRepository(db *gorm.DB) *Repository {
 }
 
 type RepositoryInterface interface {
-	InsertConfiguration(configuration *model.Config) error
+	InsertSourceConfiguration(configuration *model.CombinedStorageConfig) error
+	InsertDestinationConfiguration(configuration *model.CombinedStorageConfig) error
 }

@@ -27,7 +27,7 @@ func (driveClient *Client) loadToken(filePath string) (*oauth2.Token, error) {
 	return &token, err
 }
 
-func (driveClient *Client) CreateConnection(config model.Config) error {
+func (driveClient *Client) CreateConnection(config model.CombinedStorageConfig) error {
 
 	oauthConfig := &oauth2.Config{
 		ClientID:     config.ClientID,

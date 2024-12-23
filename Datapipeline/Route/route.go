@@ -9,6 +9,7 @@ import (
 func User_routes(DataCon dataController.DataControllerInterface, DriveClient driveClient.DriveClientInterface, server *gin.Engine) {
 
 	pipeline := server.Group("/pipeline")
-	pipeline.POST("/source/configuration", DataCon.SaveConfiguration)
+	pipeline.POST("/source/configuration", DataCon.SourceConfiguration)
+	pipeline.POST("/destination/configuration", DataCon.DestinationConfiguration)
 
 }

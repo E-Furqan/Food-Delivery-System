@@ -20,5 +20,5 @@ func NewClient(repo database.RepositoryInterface) *Client {
 
 type DriveClientInterface interface {
 	loadToken(file string) (*oauth2.Token, error)
-	CreateConnection(config model.Config) error
+	CreateConnection(config model.CombinedStorageConfig) error
 }
