@@ -138,3 +138,20 @@ func (data *Controller) FetchDestinationConfiguration(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, configDetails)
 }
+
+func (data *Controller) AddLogs(ctx *gin.Context) {
+
+	var logs model.Log
+	if err := ctx.ShouldBindJSON(&logs); err != nil {
+		utils.GenerateResponse(http.StatusBadRequest, ctx, "message", "error while binding", "error", err)
+		return
+	}
+
+	err := data.Repo.AddLogs(logs)
+	if err != nil {
+		log.Print("error while fetching error: ", err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, "Logs have been added")
+}

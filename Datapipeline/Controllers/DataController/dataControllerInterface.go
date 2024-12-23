@@ -29,4 +29,5 @@ type DataControllerInterface interface {
 	StartDatapipelineSync(ctx *gin.Context)
 	FetchDestinationConfiguration(ctx *gin.Context)
 	FetchSourceConfiguration(ctx *gin.Context)
+	AddLogs(ctx *gin.Context)
 }

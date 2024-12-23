@@ -22,4 +22,5 @@ type RepositoryInterface interface {
 	FetchPipelineDetails(pipelineID int) (model.Pipeline, error)
 	FetchConfigSourceDetails(sourceID int) (model.Config, error)
 	FetchConfigDestinationDetails(destinationID int) (model.Config, error)
+	AddLogs(logs model.Log) error
 }

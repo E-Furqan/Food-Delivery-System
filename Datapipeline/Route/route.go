@@ -13,6 +13,7 @@ func User_routes(DataCon dataController.DataControllerInterface, DriveClient dri
 	pipeline.POST("/destination/configuration", DataCon.CreateDestinationConfiguration)
 	pipeline.POST("/create/pipeline", DataCon.CreatePipeline)
 	pipeline.POST("/data/sync", DataCon.StartDatapipelineSync)
+	pipeline.POST("/add/logs", DataCon.AddLogs)
 	pipeline.GET("/fetch/source/configuration", DataCon.FetchSourceConfiguration)
 	pipeline.GET("/fetch/destination/configuration", DataCon.FetchDestinationConfiguration)
 

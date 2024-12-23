@@ -134,3 +134,13 @@ func (repo *Repository) FetchConfigDestinationDetails(destinationID int) (model.
 
 	return config, nil
 }
+
+func (repo *Repository) AddLogs(logs model.Log) error {
+	err := repo.DB.Create(logs)
+	if err.Error != nil {
+		log.Printf("Error creating logs: %v", err.Error)
+		return err.Error
+	}
+
+	return nil
+}
