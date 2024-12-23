@@ -100,3 +100,37 @@ func (repo *Repository) FetchPipelineDetails(pipelineID int) (model.Pipeline, er
 
 	return pipeline, nil
 }
+
+func (repo *Repository) FetchConfigSourceDetails(sourceID int) (model.Config, error) {
+
+	var config model.Config
+
+	err := repo.DB.Table("configs").
+		Select("client_id, client_secret , token_uri,refresh_token,folder_Url").
+		Where("sources_id = ?", sourceID).
+		First(&config).Error
+
+	if err != nil {
+		log.Printf("Error saving pipeline: %v", err)
+		return model.Config{}, err
+	}
+
+	return config, nil
+}
+
+func (repo *Repository) FetchConfigDestinationDetails(destinationID int) (model.Config, error) {
+
+	var config model.Config
+
+	err := repo.DB.Table("configs").
+		Select("client_id, client_secret , token_uri,refresh_token,folder_Url").
+		Where("destinations_id = ?", destinationID).
+		First(&config).Error
+
+	if err != nil {
+		log.Printf("Error saving pipeline: %v", err)
+		return model.Config{}, err
+	}
+
+	return config, nil
+}

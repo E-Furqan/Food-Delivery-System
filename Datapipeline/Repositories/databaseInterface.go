@@ -20,4 +20,6 @@ type RepositoryInterface interface {
 	InsertDestinationConfiguration(destination *model.Destination, config *model.Config) error
 	CreatePipeline(pipeline model.Pipeline) error
 	FetchPipelineDetails(pipelineID int) (model.Pipeline, error)
+	FetchConfigSourceDetails(sourceID int) (model.Config, error)
+	FetchConfigDestinationDetails(destinationID int) (model.Config, error)
 }

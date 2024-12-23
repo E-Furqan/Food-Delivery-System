@@ -23,8 +23,10 @@ func NewController(repo database.RepositoryInterface, driveClient driveClient.Dr
 }
 
 type DataControllerInterface interface {
-	SourceConfiguration(ctx *gin.Context)
-	DestinationConfiguration(ctx *gin.Context)
+	CreateSourceConfiguration(ctx *gin.Context)
+	CreateDestinationConfiguration(ctx *gin.Context)
 	CreatePipeline(ctx *gin.Context)
-	DatapipelineSync(ctx *gin.Context)
+	StartDatapipelineSync(ctx *gin.Context)
+	FetchDestinationConfiguration(ctx *gin.Context)
+	FetchSourceConfiguration(ctx *gin.Context)
 }

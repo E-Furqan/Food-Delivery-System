@@ -17,7 +17,7 @@ func (client *WorkflowClient) DatapipelineSync(Pipeline model.Pipeline) error {
 	}
 
 	url := fmt.Sprintf("%s:%s%s", client.envVar.BASE_URL, client.envVar.PORT, client.envVar.DATAPIPELINE_WORKFLOW_URL)
-	req, err := http.NewRequest("GET", url, bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
 	if err != nil {
 		return fmt.Errorf("error creating request: %v", err)
 	}

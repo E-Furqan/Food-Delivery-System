@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (data *Controller) SourceConfiguration(ctx *gin.Context) {
+func (data *Controller) CreateSourceConfiguration(ctx *gin.Context) {
 
 	var CombinedStorageConfig model.CombinedStorageConfig
 	if err := ctx.ShouldBindJSON(&CombinedStorageConfig); err != nil {
@@ -37,7 +37,7 @@ func (data *Controller) SourceConfiguration(ctx *gin.Context) {
 	utils.GenerateResponse(http.StatusOK, ctx, "message", mess, "", nil)
 }
 
-func (data *Controller) DestinationConfiguration(ctx *gin.Context) {
+func (data *Controller) CreateDestinationConfiguration(ctx *gin.Context) {
 
 	var CombinedStorageConfig model.CombinedStorageConfig
 	if err := ctx.ShouldBindJSON(&CombinedStorageConfig); err != nil {
@@ -82,7 +82,7 @@ func (data *Controller) CreatePipeline(ctx *gin.Context) {
 	utils.GenerateResponse(http.StatusOK, ctx, "message", mess, "", nil)
 }
 
-func (data *Controller) DatapipelineSync(ctx *gin.Context) {
+func (data *Controller) StartDatapipelineSync(ctx *gin.Context) {
 
 	var pipelineID model.Pipeline
 	if err := ctx.ShouldBindJSON(&pipelineID); err != nil {
@@ -103,4 +103,38 @@ func (data *Controller) DatapipelineSync(ctx *gin.Context) {
 	}
 
 	utils.GenerateResponse(http.StatusOK, ctx, "message", "Data Sync has started", "", nil)
+}
+
+func (data *Controller) FetchSourceConfiguration(ctx *gin.Context) {
+
+	var sourceID model.Source
+	if err := ctx.ShouldBindJSON(&sourceID); err != nil {
+		utils.GenerateResponse(http.StatusBadRequest, ctx, "message", "error while binding", "error", err)
+		return
+	}
+
+	configDetails, err := data.Repo.FetchConfigSourceDetails(sourceID.SourcesID)
+	if err != nil {
+		log.Print("error while fetching error: ", err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, configDetails)
+}
+
+func (data *Controller) FetchDestinationConfiguration(ctx *gin.Context) {
+
+	var destinationID model.Destination
+	if err := ctx.ShouldBindJSON(&destinationID); err != nil {
+		utils.GenerateResponse(http.StatusBadRequest, ctx, "message", "error while binding", "error", err)
+		return
+	}
+
+	configDetails, err := data.Repo.FetchConfigDestinationDetails(destinationID.DestinationsID)
+	if err != nil {
+		log.Print("error while fetching error: ", err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, configDetails)
 }
