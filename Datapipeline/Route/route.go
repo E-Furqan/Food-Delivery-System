@@ -11,5 +11,7 @@ func User_routes(DataCon dataController.DataControllerInterface, DriveClient dri
 	pipeline := server.Group("/pipeline")
 	pipeline.POST("/source/configuration", DataCon.SourceConfiguration)
 	pipeline.POST("/destination/configuration", DataCon.DestinationConfiguration)
+	pipeline.POST("/create/pipeline", DataCon.CreatePipeline)
+	pipeline.POST("/data/sync", DataCon.DatapipelineSync)
 
 }

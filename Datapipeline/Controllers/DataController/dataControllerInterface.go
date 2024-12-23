@@ -26,4 +26,5 @@ type DataControllerInterface interface {
 	SourceConfiguration(ctx *gin.Context)
 	DestinationConfiguration(ctx *gin.Context)
 	CreatePipeline(ctx *gin.Context)
+	DatapipelineSync(ctx *gin.Context)
 }
