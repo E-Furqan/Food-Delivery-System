@@ -13,7 +13,7 @@ func (act *Activity) SendEmail(orderID uint, orderStatus string, token string, u
 
 	}
 
-	message, err := act.Email.EmailSender(orderID, orderStatus, userEmail)
+	message, err := act.Email.SendEmail(orderID, orderStatus, userEmail)
 	if err != nil {
 		return "", err
 	}

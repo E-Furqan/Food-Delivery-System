@@ -13,5 +13,5 @@ func NewClient(envVar model.EmailEnv) *EmailClient {
 }
 
 type EmailClientInterface interface {
-	EmailSender(orderID uint, orderStatus string, userEmail string) (string, error)
+	SendEmail(orderID uint, orderStatus string, userEmail string) (string, error)
 }

@@ -96,26 +96,27 @@ func VerifyIfDriver(activeRole any) error {
 	return nil
 }
 
-func CreateAuthorizedRequest(url string, jsonData []byte, MethodType string, token string) (*http.Request, error) {
+func CreateRequest(url string, jsonData []byte, MethodType string, token string) (*http.Request, error) {
 
-	req, err := http.NewRequest(MethodType, url, bytes.NewBuffer(jsonData))
-	log.Print("create order url:", url, MethodType)
-	if err != nil {
-		return nil, fmt.Errorf("error creating request: %v", err)
+	if token != "" {
+		req, err := http.NewRequest(MethodType, url, bytes.NewBuffer(jsonData))
+		log.Print("create order url:", url, MethodType)
+		if err != nil {
+			return nil, fmt.Errorf("error creating request: %v", err)
+		}
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", "Bearer "+token)
+		return req, nil
+	} else {
+		req, err := http.NewRequest(MethodType, url, bytes.NewBuffer(jsonData))
+		if err != nil {
+			return nil, fmt.Errorf("error creating request: %v", err)
+		}
+		req.Header.Set("Content-Type", "application/json")
+
+		return req, nil
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+token)
-	return req, nil
-}
 
-func CreateRequest(url string, jsonData []byte, MethodType string) (*http.Request, error) {
-	req, err := http.NewRequest(MethodType, url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		return nil, fmt.Errorf("error creating request: %v", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	return req, nil
 }
 
 func CreateHTTPClient() *http.Client {
@@ -133,7 +134,7 @@ func CreateUrl(BaseUrl string, Port string, APIUrl string) (string, error) {
 	return finalURL, nil
 }
 
-func EmailGenerator(orderID uint, orderStatus string) ([]byte, error) {
+func GenerateEmail(orderID uint, orderStatus string) ([]byte, error) {
 	var subject, body string
 
 	switch strings.ToLower(orderStatus) {

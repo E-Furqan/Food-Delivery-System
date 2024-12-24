@@ -25,7 +25,7 @@ func (orderClient *OrderClient) UpdateOrderStatus(input model.UpdateOrder, token
 		return nil, fmt.Errorf("error: %v", err)
 	}
 
-	req, err := utils.CreateAuthorizedRequest(url, jsonData, "PATCH", token)
+	req, err := utils.CreateRequest(url, jsonData, "PATCH", token)
 	if err != nil {
 		return nil, fmt.Errorf("error: %v", err)
 	}
@@ -64,7 +64,7 @@ func (orderClient *OrderClient) FetchOrderStatus(orderID model.OrderID, token st
 		return "", fmt.Errorf("error: %v", err)
 	}
 
-	req, err := utils.CreateAuthorizedRequest(url, jsonData, "GET", token)
+	req, err := utils.CreateRequest(url, jsonData, "GET", token)
 	if err != nil {
 		return "", fmt.Errorf("error: %v", err)
 	}
@@ -106,7 +106,7 @@ func (orderClient *OrderClient) CreateOrder(order model.CombineOrderItem, token 
 		return model.UpdateOrder{}, fmt.Errorf("error: %v", err)
 	}
 
-	req, err := utils.CreateAuthorizedRequest(url, jsonData, "POST", token)
+	req, err := utils.CreateRequest(url, jsonData, "POST", token)
 	if err != nil {
 		return model.UpdateOrder{}, fmt.Errorf("error: %v", err)
 	}

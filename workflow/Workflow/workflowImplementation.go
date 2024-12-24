@@ -62,67 +62,75 @@ func (wFlow *Workflow) PlaceOrderWorkflow(ctx workflow.Context, order model.Comb
 	}
 	log.Print("Email sent successfully: ")
 
-	wFlow.DelayOrderChecker(ctx, createdOrder, token, email.Email)
+	wFlow.MonitorOrderStatus(ctx, createdOrder, token, email.Email)
 
 	return nil
 }
 
-func (wFlow *Workflow) DelayOrderChecker(ctx workflow.Context, createdOrder model.UpdateOrder, token string, email string) error {
-	var delayCounter int
+func (wFlow *Workflow) MonitorOrderStatus(ctx workflow.Context, createdOrder model.UpdateOrder, token string, email string) error {
+	delayCounter := 0
 	var message string
-	delayCounter = 0
 
 	for {
 		workflow.Sleep(ctx, 2*time.Minute)
-		var status string
-		err := workflow.ExecuteActivity(ctx, wFlow.Act.CheckOrderStatus, createdOrder.OrderId, token).Get(ctx, &status)
+
+		status, err := wFlow.getOrderStatus(ctx, createdOrder.OrderId, token)
 		if err != nil {
 			return err
 		}
-		status = strings.ToLower(status)
-		if status == utils.Accepted {
-			err = wFlow.SendEmail(ctx, createdOrder, status, &message, token, email)
-			if err != nil {
-				return err
-			}
-			log.Print("Email sent for accepted order: ", message)
-		} else if status == utils.Cancelled {
-			err = wFlow.SendEmail(ctx, createdOrder, status, &message, token, email)
-			if err != nil {
-				return err
-			}
-			log.Print("Email sent for rejected order: ", message)
-			break
-		} else if status == utils.Completed {
-			err = wFlow.SendEmail(ctx, createdOrder, status, &message, token, email)
-			if err != nil {
-				return err
-			}
-			log.Print("Email sent for completed order: ", message)
+
+		if status == utils.Completed || status == utils.Cancelled {
 			break
 		}
 
-		if delayCounter == 1 && status == utils.OrderPlaced {
-			err = wFlow.SendEmail(ctx, createdOrder, utils.Delay, &message, token, email)
-			if err != nil {
-				return err
-			}
-			log.Print("Email sent for delay order: ", message)
-
+		if err := wFlow.handleOrderStatus(ctx, createdOrder, status, message, token, email); err != nil {
+			return err
 		}
-		delayCounter += 1
 
-		if delayCounter == 5 && status == utils.OrderPlaced {
-			err = wFlow.SendEmail(ctx, createdOrder, utils.Cancelled, &message, token, email)
-			if err != nil {
+		if status == utils.OrderPlaced {
+			if delayCounter == 1 {
+				if err := wFlow.sendDelayEmail(ctx, createdOrder, token, email, &message); err != nil {
+					return err
+				}
+			}
+			delayCounter++
+		}
+
+		if delayCounter == 5 {
+			if err := wFlow.sendCancelEmail(ctx, createdOrder, token, email, &message); err != nil {
 				return err
 			}
-			log.Print("Email sent for delay order: ", message)
-			return fmt.Errorf("order status does not changes within 10 mins")
+			return fmt.Errorf("order status does not change within 10 mins")
 		}
 	}
-
 	return nil
+}
+
+func (wFlow *Workflow) getOrderStatus(ctx workflow.Context, orderId uint, token string) (string, error) {
+	var status string
+	err := workflow.ExecuteActivity(ctx, wFlow.Act.CheckOrderStatus, orderId, token).Get(ctx, &status)
+	if err != nil {
+		return "", err
+	}
+	return strings.ToLower(status), nil
+}
+
+func (wFlow *Workflow) handleOrderStatus(ctx workflow.Context, createdOrder model.UpdateOrder, status, message, token, email string) error {
+	switch status {
+	case utils.Accepted:
+		return wFlow.SendEmail(ctx, createdOrder, status, &message, token, email)
+	case utils.Cancelled, utils.Completed:
+		return wFlow.SendEmail(ctx, createdOrder, status, &message, token, email)
+	}
+	return nil
+}
+
+func (wFlow *Workflow) sendDelayEmail(ctx workflow.Context, createdOrder model.UpdateOrder, token, email string, message *string) error {
+	return wFlow.SendEmail(ctx, createdOrder, utils.Delay, message, token, email)
+}
+
+func (wFlow *Workflow) sendCancelEmail(ctx workflow.Context, createdOrder model.UpdateOrder, token, email string, message *string) error {
+	return wFlow.SendEmail(ctx, createdOrder, utils.Cancelled, message, token, email)
 }
 
 func (wFlow *Workflow) SendEmail(ctx workflow.Context, createdOrder model.UpdateOrder, status string, message *string, token string, email string) error {

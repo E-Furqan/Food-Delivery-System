@@ -7,7 +7,7 @@ import (
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 )
 
-func (email *EmailClient) EmailSender(orderID uint, orderStatus string, userEmail string) (string, error) {
+func (email *EmailClient) SendEmail(orderID uint, orderStatus string, userEmail string) (string, error) {
 	from := email.envVar.EmailAddressFrom
 	password := email.envVar.EmailPassKey
 
@@ -16,7 +16,7 @@ func (email *EmailClient) EmailSender(orderID uint, orderStatus string, userEmai
 	smtpHost := "smtp.gmail.com"
 	smtpPort := "587"
 
-	message, err := utils.EmailGenerator(orderID, orderStatus)
+	message, err := utils.GenerateEmail(orderID, orderStatus)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate email: %w", err)
 	}

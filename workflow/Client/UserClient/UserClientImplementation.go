@@ -27,7 +27,7 @@ func (userClient *UserClient) FetchEmail(token string) (*model.UserEmail, error)
 		return nil, fmt.Errorf("error: %v", err)
 	}
 
-	req, err := utils.CreateAuthorizedRequest(url, jsonData, "GET", token)
+	req, err := utils.CreateRequest(url, jsonData, "GET", token)
 	if err != nil {
 		return nil, fmt.Errorf("error: %v", err)
 	}
