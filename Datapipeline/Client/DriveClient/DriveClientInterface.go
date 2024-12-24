@@ -3,7 +3,6 @@ package driveClient
 import (
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
-	"golang.org/x/oauth2"
 )
 
 type Client struct {
@@ -19,6 +18,6 @@ func NewClient(repo database.RepositoryInterface) *Client {
 }
 
 type DriveClientInterface interface {
-	loadToken(file string) (*oauth2.Token, error)
-	CreateConnection(config model.CombinedStorageConfig) error
+	CreateSourceConnection(config model.CombinedSourceStorageConfig) error
+	CreateDestinationConnection(config model.CombinedDestinationStorageConfig) error
 }

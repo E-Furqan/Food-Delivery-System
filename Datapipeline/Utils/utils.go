@@ -29,7 +29,7 @@ func GenerateResponse(httpStatusCode int, c *gin.Context, title1 string, message
 	c.JSON(httpStatusCode, response)
 }
 
-func CreateSourceObj(combinedConfig model.CombinedStorageConfig) model.Source {
+func CreateSourceObj(combinedConfig model.CombinedSourceStorageConfig) model.Source {
 	var source model.Source
 
 	source.SourcesName = combinedConfig.Source.SourcesName
@@ -38,7 +38,7 @@ func CreateSourceObj(combinedConfig model.CombinedStorageConfig) model.Source {
 	return source
 }
 
-func CreateDestinationObj(combinedConfig model.CombinedStorageConfig) model.Destination {
+func CreateDestinationObj(combinedConfig model.CombinedDestinationStorageConfig) model.Destination {
 	var destination model.Destination
 
 	destination.DestinationsName = combinedConfig.Destination.DestinationsName
@@ -47,7 +47,19 @@ func CreateDestinationObj(combinedConfig model.CombinedStorageConfig) model.Dest
 	return destination
 }
 
-func CreateConfigObj(combinedConfig model.CombinedStorageConfig) model.Config {
+func CreateConfigObjFromSource(combinedConfig model.CombinedSourceStorageConfig) model.Config {
+	var config model.Config
+
+	config.ClientID = combinedConfig.Config.ClientID
+	config.ClientSecret = combinedConfig.Config.ClientSecret
+	config.FolderURL = combinedConfig.Config.FolderURL
+	config.RefreshToken = combinedConfig.Config.RefreshToken
+	config.TokenURI = combinedConfig.Config.TokenURI
+
+	return config
+}
+
+func CreateConfigObjFromDestination(combinedConfig model.CombinedDestinationStorageConfig) model.Config {
 	var config model.Config
 
 	config.ClientID = combinedConfig.Config.ClientID

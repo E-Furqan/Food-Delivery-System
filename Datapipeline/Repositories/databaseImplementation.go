@@ -20,11 +20,6 @@ func (repo *Repository) InsertSourceConfiguration(source *model.Source, config *
 		return err.Error
 	}
 
-	if err := tx.Commit().Error; err != nil {
-		log.Printf("Error committing transaction: %v", err)
-		return err
-	}
-
 	config.SourcesID = source.SourcesID
 	err = tx.Create(config)
 	if err.Error != nil {
@@ -54,11 +49,6 @@ func (repo *Repository) InsertDestinationConfiguration(destination *model.Destin
 		return err.Error
 	}
 
-	if err := tx.Commit().Error; err != nil {
-		log.Printf("Error committing transaction: %v", err)
-		return err
-	}
-
 	config.DestinationsID = destination.DestinationsID
 	err = tx.Create(config)
 	if err.Error != nil {
@@ -74,7 +64,7 @@ func (repo *Repository) InsertDestinationConfiguration(destination *model.Destin
 	return nil
 }
 
-func (repo *Repository) CreatePipeline(pipeline model.Pipeline) error {
+func (repo *Repository) CreatePipeline(pipeline *model.Pipeline) error {
 	err := repo.DB.Create(pipeline)
 	if err.Error != nil {
 		log.Printf("Error creating pipeline: %v", err.Error)

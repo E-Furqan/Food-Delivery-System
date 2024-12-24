@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS pipelines (
-    pipelines_id SERIAL PRIMARY KEY,
+    pipeline_id SERIAL PRIMARY KEY,
     sources_id INT,
     destinations_id INT,
     FOREIGN KEY (sources_id) REFERENCES sources(sources_id),

@@ -1,19 +1,23 @@
 package model
 
-type CombinedStorageConfig struct {
+type CombinedSourceStorageConfig struct {
+	Config `json:"config"`
+	Source `json:"source"`
+}
+
+type CombinedDestinationStorageConfig struct {
 	Config      `json:"config"`
-	Source      `json:"source"`
 	Destination `json:"destination"`
 }
 
 type Source struct {
-	SourcesID   int    `json:"sources_id"`
+	SourcesID   int    `gorm:"primaryKey;autoIncrement" json:"sources_id"`
 	SourcesName string `json:"sources_name"`
 	StorageType string `json:"storage_type" binding:"required"`
 }
 
 type Destination struct {
-	DestinationsID   int    `json:"destinations_id"`
+	DestinationsID   int    `gorm:"primaryKey;autoIncrement" json:"destinations_id"`
 	DestinationsName string `json:"destinations_name"`
 	StorageType      string `json:"storage_type" binding:"required"`
 }
