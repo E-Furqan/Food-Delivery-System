@@ -79,8 +79,8 @@ func (repo *Repository) FetchPipelineDetails(pipelineID int) (model.Pipeline, er
 	var pipeline model.Pipeline
 
 	err := repo.DB.Table("pipelines").
-		Select("pipelines_id, sources_id , destinations_id").
-		Where("pipelines_id = ?", pipeline).
+		Select("pipeline_id, sources_id , destinations_id").
+		Where("pipeline_id = ?", pipelineID).
 		First(&pipeline).Error
 
 	if err != nil {
@@ -126,11 +126,10 @@ func (repo *Repository) FetchConfigDestinationDetails(destinationID int) (model.
 }
 
 func (repo *Repository) AddLogs(logs model.Log) error {
-	err := repo.DB.Create(logs)
+	err := repo.DB.Create(&logs)
 	if err.Error != nil {
 		log.Printf("Error creating logs: %v", err.Error)
 		return err.Error
 	}
-
 	return nil
 }

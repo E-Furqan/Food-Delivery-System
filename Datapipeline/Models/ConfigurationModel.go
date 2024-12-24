@@ -13,13 +13,13 @@ type CombinedDestinationStorageConfig struct {
 type Source struct {
 	SourcesID   int    `gorm:"primaryKey;autoIncrement" json:"sources_id"`
 	SourcesName string `json:"sources_name"`
-	StorageType string `json:"storage_type" binding:"required"`
+	StorageType string `json:"storage_type"`
 }
 
 type Destination struct {
 	DestinationsID   int    `gorm:"primaryKey;autoIncrement" json:"destinations_id"`
 	DestinationsName string `json:"destinations_name"`
-	StorageType      string `json:"storage_type" binding:"required"`
+	StorageType      string `json:"storage_type"`
 }
 
 type Config struct {
