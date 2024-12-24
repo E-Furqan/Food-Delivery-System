@@ -8,3 +8,8 @@ type Log struct {
 	PipelinesID int       `json:"pipelines_id"`
 	CreatedAt   time.Time `json:"created_at"`
 }
+
+type FileCounter struct {
+	FailedCounter int
+	NoOfFiles     int
+}

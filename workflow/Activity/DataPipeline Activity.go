@@ -33,7 +33,6 @@ func (act *Activity) CreateSourceToken(source model.Config) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	log.Print("sourceToken", sourceToken)
 	return sourceToken, nil
 }
 
@@ -48,28 +47,28 @@ func (act *Activity) CreateDestinationToken(destination model.Config) (string, e
 }
 
 func (act *Activity) MoveDataFromSourceToDestination(sourceToken string, destinationToken string,
-	sourceFolderUrl string, destinationFolderUrl string, sourceConfig model.Config) (int, error) {
+	sourceFolderUrl string, destinationFolderUrl string, sourceConfig model.Config) (model.FileCounter, error) {
 
-	var failedCounter int = 0
+	var counter model.FileCounter
 
 	sourceClient, err := act.DriveClient.CreateConnection(sourceToken, sourceConfig)
 	if err != nil {
-		return failedCounter, fmt.Errorf("invalid source client: %w", err)
+		return model.FileCounter{}, fmt.Errorf("invalid source client: %w", err)
 	}
 
 	sourceFolderID, err := utils.ExtractFolderID(sourceFolderUrl)
 	if err != nil {
-		return failedCounter, fmt.Errorf("invalid source folder URL: %w", err)
+		return model.FileCounter{}, fmt.Errorf("invalid source folder URL: %w", err)
 	}
 
 	destinationFolderID, err := utils.ExtractFolderID(destinationFolderUrl)
 	if err != nil {
-		return failedCounter, fmt.Errorf("invalid destination folder URL: %w", err)
+		return model.FileCounter{}, fmt.Errorf("invalid destination folder URL: %w", err)
 	}
 
 	fileList, err := utils.ListFilesInFolder(&sourceClient, sourceFolderID)
 	if err != nil {
-		return failedCounter, fmt.Errorf("failed to list files in source folder: %w", err)
+		return model.FileCounter{}, fmt.Errorf("failed to list files in source folder: %w", err)
 	}
 
 	for _, file := range fileList {
@@ -78,18 +77,24 @@ func (act *Activity) MoveDataFromSourceToDestination(sourceToken string, destina
 			RemoveParents(sourceFolderID).
 			Do()
 		if err != nil {
-			failedCounter += 1
+			counter.FailedCounter += 1
 		}
+		counter.NoOfFiles += 1
 	}
-	log.Print("failed counter; ", failedCounter)
-	return failedCounter, nil
+	log.Print("failed counter; ", counter.FailedCounter)
+	log.Print("files; ", counter.NoOfFiles)
+
+	return counter, nil
 }
 
-func (act *Activity) AddLogs(failedCounter int, PipelinesID int) error {
+func (act *Activity) AddLogs(counter model.FileCounter, PipelinesID int) error {
 	var log model.Log
+	FilesMovedSuccessfully := counter.NoOfFiles - counter.FailedCounter
 
-	if failedCounter != 0 {
-		log.LogMessage = fmt.Sprintf("the data sync failed to move %v files", failedCounter)
+	if counter.FailedCounter != 0 {
+		log.LogMessage = fmt.Sprintf("the data sync failed to move %v files but successfully moved %v files", counter.FailedCounter, FilesMovedSuccessfully)
+	} else {
+		log.LogMessage = fmt.Sprintf("the data sync successfully moved %v files", FilesMovedSuccessfully)
 	}
 	log.PipelinesID = PipelinesID
 

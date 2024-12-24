@@ -168,14 +168,14 @@ func (wFlow *Workflow) DataSyncWorkflow(ctx workflow.Context, pipeline model.Pip
 		return err
 	}
 
-	var failedCounter int
-	err = workflow.ExecuteActivity(ctx, wFlow.Act.MoveDataFromSourceToDestination, sourceToken, destinationToken, sourceConfig.FolderURL, destinationConfig.FolderURL, sourceConfig).Get(ctx, &failedCounter)
+	var counter model.FileCounter
+	err = workflow.ExecuteActivity(ctx, wFlow.Act.MoveDataFromSourceToDestination, sourceToken, destinationToken, sourceConfig.FolderURL, destinationConfig.FolderURL, sourceConfig).Get(ctx, &counter)
 	if err != nil {
 		log.Print("error in fetching moving files", err.Error())
 		return err
 	}
 
-	err = workflow.ExecuteActivity(ctx, wFlow.Act.AddLogs, failedCounter, pipeline.PipelineID).Get(ctx, &failedCounter)
+	err = workflow.ExecuteActivity(ctx, wFlow.Act.AddLogs, counter, pipeline.PipelineID).Get(ctx, &counter)
 	if err != nil {
 		log.Print("error in fetching source configuration", err.Error())
 		return err

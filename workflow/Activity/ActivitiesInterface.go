@@ -45,7 +45,7 @@ type ActivityInterface interface {
 	FetchDestinationConfiguration(destination model.Destination) (model.Config, error)
 	CreateSourceToken(source model.Config) (string, error)
 	CreateDestinationToken(destination model.Config) (string, error)
-	AddLogs(failedCounter int, PipelinesID int) error
+	AddLogs(counter model.FileCounter, PipelinesID int) error
 	MoveDataFromSourceToDestination(sourceToken string, destinationToken string,
-		sourceFolderUrl string, destinationFolderUrl string, sourceConfig model.Config) (int, error)
+		sourceFolderUrl string, destinationFolderUrl string, sourceConfig model.Config) (model.FileCounter, error)
 }

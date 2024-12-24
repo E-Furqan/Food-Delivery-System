@@ -168,7 +168,7 @@ func EmailGenerator(orderID uint, orderStatus string) ([]byte, error) {
 
 func ActivityOptions() workflow.ActivityOptions {
 	return workflow.ActivityOptions{
-		StartToCloseTimeout: time.Second * 5,
+		StartToCloseTimeout: time.Second * 20,
 		RetryPolicy: &temporal.RetryPolicy{
 			InitialInterval:    time.Second * 10,
 			MaximumInterval:    time.Second * 30,
