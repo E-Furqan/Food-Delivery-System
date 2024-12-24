@@ -192,11 +192,24 @@ func Sleep(ctx workflow.Context) {
 }
 
 func ListFilesInFolder(client *drive.Service, folderID string) ([]*drive.File, error) {
+	log.Println("list files in folder function started")
+	if client == nil {
+		return nil, fmt.Errorf("drive client is nil")
+	}
+
+	log.Println("folderID", folderID)
 	query := fmt.Sprintf("'%s' in parents and trashed = false", folderID)
 	fileList, err := client.Files.List().Q(query).Do()
 	if err != nil {
+		log.Println("Error listing files:", err)
 		return nil, err
 	}
+	log.Printf("Listing files in folder: %s", folderID)
+
+	for _, file := range fileList.Files {
+		log.Printf("File: %s", file.Name)
+	}
+
 	return fileList.Files, nil
 }
 
@@ -216,9 +229,9 @@ func CreateSourceObj(SourcesID int) model.Source {
 	return source
 }
 
-func CreateDestinationObj(SourcesID int) model.Destination {
+func CreateDestinationObj(destinationID int) model.Destination {
 	var Destination model.Destination
 
-	Destination.DestinationsID = SourcesID
+	Destination.DestinationsID = destinationID
 	return Destination
 }

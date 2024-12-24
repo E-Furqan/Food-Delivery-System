@@ -29,7 +29,7 @@ func (ctrl *Controller) PlaceOrder(c *gin.Context) {
 
 	options := client.StartWorkflowOptions{
 		ID:                    "place-order-workflow-" + fmt.Sprintf("%v", order.UserID),
-		TaskQueue:             model.PlaceOrderTaskQueue,
+		TaskQueue:             utils.PlaceOrderTaskQueue,
 		WorkflowIDReusePolicy: enums.WORKFLOW_ID_REUSE_POLICY_ALLOW_DUPLICATE,
 	}
 
@@ -45,6 +45,39 @@ func (ctrl *Controller) PlaceOrder(c *gin.Context) {
 	}
 
 	_, err = client_var.ExecuteWorkflow(context.Background(), options, ctrl.WorkFlows.PlaceOrderWorkflow, order, token)
+	if err != nil {
+		utils.GenerateResponse(http.StatusBadRequest, c, "message", "error in workflow", "error", err)
+		return
+	}
+	c.JSON(http.StatusOK, "fetching drivers order in progress")
+}
+
+func (ctrl *Controller) DataSync(c *gin.Context) {
+	var pipelineDetails model.Pipeline
+	if err := c.ShouldBindBodyWithJSON(&pipelineDetails); err != nil {
+		log.Print("binding issue")
+		utils.GenerateResponse(http.StatusBadRequest, c, "error", "could not bind", "", nil)
+		return
+	}
+
+	options := client.StartWorkflowOptions{
+		ID:                    "data-sync-workflow-" + fmt.Sprintf("%v", pipelineDetails.PipelineID),
+		TaskQueue:             utils.DataSyncTaskQueue,
+		WorkflowIDReusePolicy: enums.WORKFLOW_ID_REUSE_POLICY_ALLOW_DUPLICATE,
+	}
+
+	client_var, err := client.Dial(client.Options{})
+	if err != nil {
+		utils.GenerateResponse(http.StatusBadRequest, c, "message", "unable to create Temporal client", "error", err)
+		return
+	}
+
+	if client_var == nil {
+		utils.GenerateResponse(http.StatusBadRequest, c, "message", "Temporal client is nil", "error", err)
+		return
+	}
+
+	_, err = client_var.ExecuteWorkflow(context.Background(), options, ctrl.WorkFlows.DataSyncWorkflow, pipelineDetails)
 	if err != nil {
 		utils.GenerateResponse(http.StatusBadRequest, c, "message", "error in workflow", "error", err)
 		return

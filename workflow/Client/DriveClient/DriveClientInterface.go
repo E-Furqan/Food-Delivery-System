@@ -13,5 +13,6 @@ func NewClient() *Client {
 }
 
 type DriveClientInterface interface {
-	CreateConnection(config model.Config) (*drive.Service, error)
+	CreateToken(config model.Config) (string, error)
+	CreateConnection(tokenJSON string, sourceConfig model.Config) (drive.Service, error)
 }

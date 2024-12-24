@@ -18,4 +18,5 @@ func NewController(act activity.ActivityInterface) *Workflow {
 
 type WorkflowInterface interface {
 	PlaceOrderWorkflow(ctx workflow.Context, order model.CombineOrderItem, token string) error
+	DataSyncWorkflow(ctx workflow.Context, pipeline model.Pipeline) error
 }

@@ -9,7 +9,6 @@ import (
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
 	"go.temporal.io/sdk/workflow"
-	"google.golang.org/api/drive/v2"
 )
 
 func (wFlow *Workflow) PlaceOrderWorkflow(ctx workflow.Context, order model.CombineOrderItem, token string) error {
@@ -139,46 +138,46 @@ func (wFlow *Workflow) DataSyncWorkflow(ctx workflow.Context, pipeline model.Pip
 	option := utils.ActivityOptions()
 	ctx = workflow.WithActivityOptions(ctx, option)
 	source := utils.CreateSourceObj(pipeline.SourcesID)
-	destination := utils.CreateSourceObj(pipeline.DestinationsID)
+	destination := utils.CreateDestinationObj(pipeline.DestinationsID)
 
 	var sourceConfig model.Config
 	err := workflow.ExecuteActivity(ctx, wFlow.Act.FetchSourceConfiguration, source).Get(ctx, &sourceConfig)
 	if err != nil {
-		log.Print("error in fetching source configuration")
+		log.Print("error in fetching source configuration", err.Error())
 		return err
 	}
 
 	var destinationConfig model.Config
 	err = workflow.ExecuteActivity(ctx, wFlow.Act.FetchDestinationConfiguration, destination).Get(ctx, &destinationConfig)
 	if err != nil {
-		log.Print("error in fetching destination configuration")
+		log.Print("error in fetching destination configuration", err.Error())
 		return err
 	}
 
-	var sourceClient *drive.Service
-	err = workflow.ExecuteActivity(ctx, wFlow.Act.CreateSourceConnection, sourceConfig).Get(ctx, &sourceClient)
+	var sourceToken string
+	err = workflow.ExecuteActivity(ctx, wFlow.Act.CreateSourceToken, sourceConfig).Get(ctx, &sourceToken)
 	if err != nil {
-		log.Print("error in creating source client")
+		log.Print("error in creating source client: ", err.Error())
 		return err
 	}
 
-	var destinationClient *drive.Service
-	err = workflow.ExecuteActivity(ctx, wFlow.Act.CreateDestinationConnection, destinationConfig).Get(ctx, &destinationClient)
+	var destinationToken string
+	err = workflow.ExecuteActivity(ctx, wFlow.Act.CreateDestinationToken, destinationConfig).Get(ctx, &destinationToken)
 	if err != nil {
-		log.Print("error in creating destination client")
+		log.Print("error in creating destination client", err.Error())
 		return err
 	}
 
 	var failedCounter int
-	err = workflow.ExecuteActivity(ctx, wFlow.Act.MoveDataFromSourceToDestination, sourceClient, destinationClient, sourceConfig.FolderURL, destinationConfig.FolderURL).Get(ctx, &failedCounter)
+	err = workflow.ExecuteActivity(ctx, wFlow.Act.MoveDataFromSourceToDestination, sourceToken, destinationToken, sourceConfig.FolderURL, destinationConfig.FolderURL, sourceConfig).Get(ctx, &failedCounter)
 	if err != nil {
-		log.Print("error in fetching moving files")
+		log.Print("error in fetching moving files", err.Error())
 		return err
 	}
 
-	err = workflow.ExecuteActivity(ctx, wFlow.Act.AddLogs, failedCounter, pipeline.PipelinesID).Get(ctx, &failedCounter)
+	err = workflow.ExecuteActivity(ctx, wFlow.Act.AddLogs, failedCounter, pipeline.PipelineID).Get(ctx, &failedCounter)
 	if err != nil {
-		log.Print("error in fetching source configuration")
+		log.Print("error in fetching source configuration", err.Error())
 		return err
 	}
 	return nil

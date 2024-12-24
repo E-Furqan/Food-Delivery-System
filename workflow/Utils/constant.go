@@ -11,3 +11,7 @@ const AcceptedSubject string = "Subject: Order Confirmation\n"
 const CompletedSubject string = "Subject: Order Completed\n"
 const OrderPlacedSubject string = "Subject: Order placed\n"
 const DelaySubject string = "Subject: Order Delayed\n"
+
+const RegisterTaskQueue = "register_task_queue"
+const PlaceOrderTaskQueue = "place_order_task_queue"
+const DataSyncTaskQueue = "data_sync_task_queue"

@@ -8,7 +8,6 @@ import (
 	"github.com/E-Furqan/Food-Delivery-System/Client/RestaurantClient"
 	userClient "github.com/E-Furqan/Food-Delivery-System/Client/UserClient"
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
-	"google.golang.org/api/drive/v3"
 )
 
 type Activity struct {
@@ -44,9 +43,9 @@ type ActivityInterface interface {
 	FetchUserEmail(token string) (*model.UserEmail, error)
 	FetchSourceConfiguration(source model.Source) (model.Config, error)
 	FetchDestinationConfiguration(destination model.Destination) (model.Config, error)
-	CreateSourceConnection(source model.Config) (*drive.Service, error)
-	CreateDestinationConnection(destination model.Config) (*drive.Service, error)
+	CreateSourceToken(source model.Config) (string, error)
+	CreateDestinationToken(destination model.Config) (string, error)
 	AddLogs(failedCounter int, PipelinesID int) error
-	MoveDataFromSourceToDestination(sourceClient *drive.Service, destinationClient *drive.Service,
-		sourceFolderUrl string, destinationFolderUrl string) (int, error)
+	MoveDataFromSourceToDestination(sourceToken string, destinationToken string,
+		sourceFolderUrl string, destinationFolderUrl string, sourceConfig model.Config) (int, error)
 }

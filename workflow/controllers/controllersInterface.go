@@ -17,4 +17,5 @@ func NewController(workFlows workflows.WorkflowInterface) *Controller {
 
 type ControllerInterface interface {
 	PlaceOrder(c *gin.Context)
+	DataSync(c *gin.Context)
 }

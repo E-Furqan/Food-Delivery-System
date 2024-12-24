@@ -2,10 +2,10 @@ package activity
 
 import (
 	"fmt"
+	"log"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
-	"google.golang.org/api/drive/v3"
 )
 
 func (act *Activity) FetchSourceConfiguration(source model.Source) (model.Config, error) {
@@ -19,7 +19,6 @@ func (act *Activity) FetchSourceConfiguration(source model.Source) (model.Config
 }
 
 func (act *Activity) FetchDestinationConfiguration(destination model.Destination) (model.Config, error) {
-
 	configuration, err := act.DatapipelineClient.FetchDestinationConfiguration(destination)
 	if err != nil {
 		return model.Config{}, err
@@ -28,41 +27,47 @@ func (act *Activity) FetchDestinationConfiguration(destination model.Destination
 	return configuration, nil
 }
 
-func (act *Activity) CreateSourceConnection(source model.Config) (*drive.Service, error) {
+func (act *Activity) CreateSourceToken(source model.Config) (string, error) {
 
-	SourceConnection, err := act.DriveClient.CreateConnection(source)
+	sourceToken, err := act.DriveClient.CreateToken(source)
 	if err != nil {
-		return &drive.Service{}, err
+		return "", err
 	}
-
-	return SourceConnection, nil
+	log.Print("sourceToken", sourceToken)
+	return sourceToken, nil
 }
 
-func (act *Activity) CreateDestinationConnection(destination model.Config) (*drive.Service, error) {
+func (act *Activity) CreateDestinationToken(destination model.Config) (string, error) {
 
-	destinationConnection, err := act.DriveClient.CreateConnection(destination)
+	destinationToken, err := act.DriveClient.CreateToken(destination)
 	if err != nil {
-		return &drive.Service{}, err
+		return "", err
 	}
 
-	return destinationConnection, nil
+	return destinationToken, nil
 }
 
-func (act *Activity) MoveDataFromSourceToDestination(sourceClient *drive.Service, destinationClient *drive.Service,
-	sourceFolderUrl string, destinationFolderUrl string) (int, error) {
+func (act *Activity) MoveDataFromSourceToDestination(sourceToken string, destinationToken string,
+	sourceFolderUrl string, destinationFolderUrl string, sourceConfig model.Config) (int, error) {
 
 	var failedCounter int = 0
+
+	sourceClient, err := act.DriveClient.CreateConnection(sourceToken, sourceConfig)
+	if err != nil {
+		return failedCounter, fmt.Errorf("invalid source client: %w", err)
+	}
 
 	sourceFolderID, err := utils.ExtractFolderID(sourceFolderUrl)
 	if err != nil {
 		return failedCounter, fmt.Errorf("invalid source folder URL: %w", err)
 	}
+
 	destinationFolderID, err := utils.ExtractFolderID(destinationFolderUrl)
 	if err != nil {
 		return failedCounter, fmt.Errorf("invalid destination folder URL: %w", err)
 	}
 
-	fileList, err := utils.ListFilesInFolder(sourceClient, sourceFolderID)
+	fileList, err := utils.ListFilesInFolder(&sourceClient, sourceFolderID)
 	if err != nil {
 		return failedCounter, fmt.Errorf("failed to list files in source folder: %w", err)
 	}
@@ -76,7 +81,7 @@ func (act *Activity) MoveDataFromSourceToDestination(sourceClient *drive.Service
 			failedCounter += 1
 		}
 	}
-
+	log.Print("failed counter; ", failedCounter)
 	return failedCounter, nil
 }
 
