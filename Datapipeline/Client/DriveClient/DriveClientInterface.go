@@ -6,18 +6,15 @@ import (
 )
 
 type Client struct {
-	codeChan chan string
-	Repo     database.RepositoryInterface
+	Repo database.RepositoryInterface
 }
 
 func NewClient(repo database.RepositoryInterface) *Client {
 	return &Client{
-		codeChan: make(chan string),
-		Repo:     repo,
+		Repo: repo,
 	}
 }
 
 type DriveClientInterface interface {
-	CreateSourceConnection(config model.CombinedSourceStorageConfig) error
-	CreateDestinationConnection(config model.CombinedDestinationStorageConfig) error
+	CreateConnection(config model.Config) error
 }

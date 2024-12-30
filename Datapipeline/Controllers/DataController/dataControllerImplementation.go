@@ -17,15 +17,14 @@ func (data *Controller) CreateSourceConfiguration(ctx *gin.Context) {
 		utils.GenerateResponse(http.StatusBadRequest, ctx, "message", "error while binding", "error", err.Error())
 		return
 	}
+	source := utils.CreateSourceObj(CombinedSourceStorageConfig)
+	config := utils.CreateConfigObjFromSource(CombinedSourceStorageConfig)
 
-	err := data.DriveClient.CreateSourceConnection(CombinedSourceStorageConfig)
+	err := data.DriveClient.CreateConnection(config)
 	if err != nil {
 		utils.GenerateResponse(http.StatusInternalServerError, ctx, "message", "error while connection with the client", "", nil)
 		return
 	}
-
-	source := utils.CreateSourceObj(CombinedSourceStorageConfig)
-	config := utils.CreateConfigObjFromSource(CombinedSourceStorageConfig)
 
 	err = data.Repo.InsertSourceConfiguration(&source, &config)
 	if err != nil {
@@ -45,14 +44,14 @@ func (data *Controller) CreateDestinationConfiguration(ctx *gin.Context) {
 		return
 	}
 
-	err := data.DriveClient.CreateDestinationConnection(CombinedDestinationStorageConfig)
+	destination := utils.CreateDestinationObj(CombinedDestinationStorageConfig)
+	config := utils.CreateConfigObjFromDestination(CombinedDestinationStorageConfig)
+
+	err := data.DriveClient.CreateConnection(config)
 	if err != nil {
 		utils.GenerateResponse(http.StatusInternalServerError, ctx, "message", "error while connection with the client", "", nil)
 		return
 	}
-
-	destination := utils.CreateDestinationObj(CombinedDestinationStorageConfig)
-	config := utils.CreateConfigObjFromDestination(CombinedDestinationStorageConfig)
 
 	err = data.Repo.InsertDestinationConfiguration(&destination, &config)
 	if err != nil {
