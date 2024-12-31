@@ -1,16 +1,16 @@
 package workflows
 
 import (
-	activity "github.com/E-Furqan/Food-Delivery-System/Activity"
+	activityPac "github.com/E-Furqan/Food-Delivery-System/Activity"
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	"go.temporal.io/sdk/workflow"
 )
 
 type Workflow struct {
-	Act activity.ActivityInterface
+	Act activityPac.ActivityInterface
 }
 
-func NewController(act activity.ActivityInterface) *Workflow {
+func NewController(act activityPac.ActivityInterface) *Workflow {
 	return &Workflow{
 		Act: act,
 	}

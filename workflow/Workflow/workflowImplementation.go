@@ -177,7 +177,9 @@ func (wFlow *Workflow) DataSyncWorkflow(ctx workflow.Context, pipeline model.Pip
 	}
 
 	var counter model.FileCounter
-	err = workflow.ExecuteActivity(ctx, wFlow.Act.MoveDataFromSourceToDestination, sourceToken, destinationToken, sourceConfig.FolderURL, destinationConfig.FolderURL, sourceConfig).Get(ctx, &counter)
+	var batchSize int = 10
+
+	err = workflow.ExecuteActivity(ctx, wFlow.Act.MoveDataFromSourceToDestination, sourceToken, destinationToken, sourceConfig.FolderURL, destinationConfig.FolderURL, sourceConfig, batchSize).Get(ctx, &counter)
 	if err != nil {
 		log.Print("error in fetching moving files", err.Error())
 		return err

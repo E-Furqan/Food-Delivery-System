@@ -1,7 +1,7 @@
 package main
 
 import (
-	activity "github.com/E-Furqan/Food-Delivery-System/Activity"
+	activityPac "github.com/E-Furqan/Food-Delivery-System/Activity"
 	datapipelineClient "github.com/E-Furqan/Food-Delivery-System/Client/DatapipelineClient"
 	driveClient "github.com/E-Furqan/Food-Delivery-System/Client/DriveClient"
 	"github.com/E-Furqan/Food-Delivery-System/Client/EmailClient"
@@ -30,7 +30,7 @@ func main() {
 	var DatapipelineClient datapipelineClient.DatapipelineClientInterface = datapipelineClient.NewClient(datapipelineClientEnv)
 	var DriveClient driveClient.DriveClientInterface = driveClient.NewClient()
 
-	var activity_var activity.ActivityInterface = activity.NewController(OrdClient, emailClient, restaurantClient, UserClient, DatapipelineClient, DriveClient)
+	var activity_var activityPac.ActivityInterface = activityPac.NewController(OrdClient, emailClient, restaurantClient, UserClient, DatapipelineClient, DriveClient)
 	var workFlow workflows.WorkflowInterface = workflows.NewController(activity_var)
 	var worker_var worker.WorkerInterface = worker.NewController(activity_var, workFlow)
 	var controller controllers.ControllerInterface = controllers.NewController(workFlow)

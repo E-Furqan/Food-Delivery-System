@@ -1,6 +1,8 @@
-package activity
+package activityPac
 
 import (
+	"context"
+
 	datapipelineClient "github.com/E-Furqan/Food-Delivery-System/Client/DatapipelineClient"
 	driveClient "github.com/E-Furqan/Food-Delivery-System/Client/DriveClient"
 	"github.com/E-Furqan/Food-Delivery-System/Client/EmailClient"
@@ -46,6 +48,6 @@ type ActivityInterface interface {
 	CreateSourceToken(source model.Config) (string, error)
 	CreateDestinationToken(destination model.Config) (string, error)
 	AddLogs(counter model.FileCounter, PipelinesID int) error
-	MoveDataFromSourceToDestination(sourceToken string, destinationToken string,
-		sourceFolderUrl string, destinationFolderUrl string, sourceConfig model.Config) (model.FileCounter, error)
+	MoveDataFromSourceToDestination(ctx context.Context, sourceToken string, destinationToken string,
+		sourceFolderUrl string, destinationFolderUrl string, sourceConfig model.Config, batchSize int) (model.FileCounter, error)
 }

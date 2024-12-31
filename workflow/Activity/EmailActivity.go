@@ -1,4 +1,4 @@
-package activity
+package activityPac
 
 import (
 	model "github.com/E-Furqan/Food-Delivery-System/Models"

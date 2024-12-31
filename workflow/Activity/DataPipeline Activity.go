@@ -1,11 +1,13 @@
-package activity
+package activityPac
 
 import (
+	"context"
 	"fmt"
 	"log"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
+	"go.temporal.io/sdk/activity"
 )
 
 func (act *Activity) FetchSourceConfiguration(source model.Source) (model.Config, error) {
@@ -46,8 +48,8 @@ func (act *Activity) CreateDestinationToken(destination model.Config) (string, e
 	return destinationToken, nil
 }
 
-func (act *Activity) MoveDataFromSourceToDestination(sourceToken string, destinationToken string,
-	sourceFolderUrl string, destinationFolderUrl string, sourceConfig model.Config) (model.FileCounter, error) {
+func (act *Activity) MoveDataFromSourceToDestination(ctx context.Context, sourceToken string, destinationToken string,
+	sourceFolderUrl string, destinationFolderUrl string, sourceConfig model.Config, batchSize int) (model.FileCounter, error) {
 
 	var counter model.FileCounter
 
@@ -56,6 +58,7 @@ func (act *Activity) MoveDataFromSourceToDestination(sourceToken string, destina
 		return model.FileCounter{}, fmt.Errorf("invalid source client: %w", err)
 	}
 
+	activity.RecordHeartbeat(ctx, nil)
 	sourceFolderID, err := utils.ExtractFolderID(sourceFolderUrl)
 	if err != nil {
 		return model.FileCounter{}, fmt.Errorf("invalid source folder URL: %w", err)
@@ -71,16 +74,34 @@ func (act *Activity) MoveDataFromSourceToDestination(sourceToken string, destina
 		return model.FileCounter{}, fmt.Errorf("failed to list files in source folder: %w", err)
 	}
 
-	for _, file := range fileList {
-		_, err := sourceClient.Files.Update(file.Id, nil).
-			AddParents(destinationFolderID).
-			RemoveParents(sourceFolderID).
-			Do()
-		if err != nil {
-			counter.FailedCounter += 1
+	totalFiles := len(fileList)
+
+	for i := 0; i < totalFiles; i += batchSize {
+		end := i + batchSize
+		if end > totalFiles {
+			end = totalFiles
 		}
-		counter.NoOfFiles += 1
+
+		batch := fileList[i:end]
+		for _, file := range batch {
+			_, err := sourceClient.Files.Update(file.Id, nil).
+				AddParents(destinationFolderID).
+				RemoveParents(sourceFolderID).
+				Do()
+
+			if err != nil {
+				counter.FailedCounter += 1
+				log.Printf("Failed to move file ID %s: %v", file.Id, err)
+			}
+
+			counter.NoOfFiles += 1
+		}
+
+		log.Printf("Processed batch %d - %d", i+1, end)
+
+		activity.RecordHeartbeat(ctx, nil)
 	}
+
 	log.Print("failed counter; ", counter.FailedCounter)
 	log.Print("files; ", counter.NoOfFiles)
 
