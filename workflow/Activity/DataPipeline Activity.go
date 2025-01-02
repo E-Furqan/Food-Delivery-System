@@ -48,6 +48,24 @@ func (act *Activity) CreateDestinationToken(destination model.Config) (string, e
 	return destinationToken, nil
 }
 
+func (act *Activity) CountFilesInFolder(sourceToken string, sourceConfig model.Config, folderID string) (int, error) {
+	sourceClient, err := act.DriveClient.CreateConnection(sourceToken, sourceConfig)
+	if err != nil {
+		return 0, fmt.Errorf("invalid source client: %w", err)
+	}
+
+	log.Println("folderID", folderID)
+	query := fmt.Sprintf("'%s' in parents and trashed = false", folderID)
+	fileList, err := sourceClient.Files.List().Q(query).Do()
+	if err != nil {
+		log.Println("Error listing files:", err)
+		return 0, err
+	}
+	log.Printf("counting files in folder: %s", folderID)
+
+	return len(fileList.Files), nil
+}
+
 func (act *Activity) MoveDataFromSourceToDestination(ctx context.Context, sourceToken string, destinationToken string,
 	sourceFolderUrl string, destinationFolderUrl string, sourceConfig model.Config, batchSize int) (model.FileCounter, error) {
 
@@ -84,6 +102,7 @@ func (act *Activity) MoveDataFromSourceToDestination(ctx context.Context, source
 
 		batch := fileList[i:end]
 		for _, file := range batch {
+
 			_, err := sourceClient.Files.Update(file.Id, nil).
 				AddParents(destinationFolderID).
 				RemoveParents(sourceFolderID).
@@ -91,10 +110,10 @@ func (act *Activity) MoveDataFromSourceToDestination(ctx context.Context, source
 
 			if err != nil {
 				counter.FailedCounter += 1
-				log.Printf("Failed to move file ID %s: %v", file.Id, err)
+				log.Printf("Failed to move file name %s: %v", file.Name, err)
 			}
-
 			counter.NoOfFiles += 1
+
 		}
 
 		log.Printf("Processed batch %d - %d", i+1, end)
@@ -122,6 +141,35 @@ func (act *Activity) AddLogs(counter model.FileCounter, PipelinesID int) error {
 	err := act.DatapipelineClient.AddLogs(log)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (act *Activity) MoveBatchActivity(ctx context.Context, sourceToken string, destinationToken string, sourceConfig model.Config,
+	destinationConfig model.Config, sourceFolderID string, destinationFolderID string, startIndex int, endIndex int) error {
+
+	sourceClient, err := act.DriveClient.CreateConnection(sourceToken, model.Config{})
+	if err != nil {
+		return fmt.Errorf("invalid source client: %w", err)
+	}
+
+	fileList, err := utils.ListFilesInFolder(&sourceClient, sourceFolderID)
+	if err != nil {
+		return err
+	}
+
+	batch := fileList[startIndex:endIndex]
+
+	for _, file := range batch {
+		_, err := sourceClient.Files.Update(file.Id, nil).
+			AddParents(destinationFolderID).
+			RemoveParents(sourceFolderID).
+			Do()
+
+		if err != nil {
+			log.Printf("Failed to move file ID %s: %v", file.Id, err)
+		}
 	}
 
 	return nil

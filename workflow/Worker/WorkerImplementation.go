@@ -32,6 +32,8 @@ func (work *Worker) WorkerUserStart() {
 	w2.RegisterActivity(work.Act.FetchDestinationConfiguration)
 	w2.RegisterActivity(work.Act.MoveDataFromSourceToDestination)
 	w2.RegisterActivity(work.Act.AddLogs)
+	w2.RegisterActivity(work.Act.CountFilesInFolder)
+	w2.RegisterActivity(work.Act.MoveBatchActivity)
 
 	// log.Print("worker started")
 	// err = w.Run(worker.InterruptCh())

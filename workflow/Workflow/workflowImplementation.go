@@ -179,9 +179,19 @@ func (wFlow *Workflow) DataSyncWorkflow(ctx workflow.Context, pipeline model.Pip
 	var counter model.FileCounter
 	var batchSize int = 10
 
-	err = workflow.ExecuteActivity(ctx, wFlow.Act.MoveDataFromSourceToDestination, sourceToken, destinationToken, sourceConfig.FolderURL, destinationConfig.FolderURL, sourceConfig, batchSize).Get(ctx, &counter)
+	sourceFolderID, err := utils.ExtractFolderID(sourceConfig.FolderURL)
 	if err != nil {
-		log.Print("error in fetching moving files", err.Error())
+		return err
+	}
+
+	destinationFolderID, err := utils.ExtractFolderID(destinationConfig.FolderURL)
+	if err != nil {
+		return err
+	}
+
+	err = workflow.ExecuteChildWorkflow(ctx, wFlow.MoveDataWorkflow, sourceToken, destinationToken, sourceFolderID, destinationFolderID, sourceConfig, destinationConfig, 0, batchSize).Get(ctx, nil)
+	if err != nil {
+		log.Print("error in moving data", err.Error())
 		return err
 	}
 
@@ -191,4 +201,36 @@ func (wFlow *Workflow) DataSyncWorkflow(ctx workflow.Context, pipeline model.Pip
 		return err
 	}
 	return nil
+}
+
+func (wFlow *Workflow) MoveDataWorkflow(ctx workflow.Context, sourceToken string, destinationToken string,
+	sourceFolderID string, destinationFolderID string, sourceConfig model.Config, destinationConfig model.Config, startIndex int, batchSize int) error {
+
+	option := utils.ActivityOptions()
+	ctx = workflow.WithActivityOptions(ctx, option)
+
+	var totalFiles int
+	err := workflow.ExecuteActivity(ctx, wFlow.Act.CountFilesInFolder, sourceToken, sourceFolderID).Get(ctx, &totalFiles)
+	if err != nil {
+		return fmt.Errorf("failed to list files: %w", err)
+	}
+
+	if startIndex >= totalFiles {
+		log.Print("All files processed")
+		return nil
+	}
+
+	endIndex := startIndex + batchSize
+	if endIndex > totalFiles {
+		endIndex = totalFiles
+	}
+
+	err = workflow.ExecuteActivity(ctx, wFlow.Act.MoveBatchActivity, sourceToken, destinationToken, sourceConfig, destinationConfig, sourceFolderID, destinationFolderID, startIndex, endIndex).Get(ctx, nil)
+	if err != nil {
+		log.Printf("Error processing batch %d - %d: %v", startIndex, endIndex, err)
+	}
+
+	log.Printf("Processed batch %d - %d", startIndex, endIndex)
+
+	return workflow.ContinueAsNew(ctx, wFlow.MoveDataWorkflow, sourceToken, destinationToken, sourceFolderID, destinationFolderID, sourceConfig, destinationConfig, endIndex, batchSize)
 }

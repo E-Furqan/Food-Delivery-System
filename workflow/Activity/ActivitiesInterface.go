@@ -48,6 +48,10 @@ type ActivityInterface interface {
 	CreateSourceToken(source model.Config) (string, error)
 	CreateDestinationToken(destination model.Config) (string, error)
 	AddLogs(counter model.FileCounter, PipelinesID int) error
+	CountFilesInFolder(sourceToken string, sourceConfig model.Config, folderID string) (int, error)
 	MoveDataFromSourceToDestination(ctx context.Context, sourceToken string, destinationToken string,
 		sourceFolderUrl string, destinationFolderUrl string, sourceConfig model.Config, batchSize int) (model.FileCounter, error)
+
+	MoveBatchActivity(ctx context.Context, sourceToken string, destinationToken string, sourceConfig model.Config,
+		destinationConfig model.Config, sourceFolderID string, destinationFolderID string, startIndex int, endIndex int) error
 }
