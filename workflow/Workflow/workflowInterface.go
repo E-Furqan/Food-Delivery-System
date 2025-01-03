@@ -21,5 +21,5 @@ type WorkflowInterface interface {
 	DataSyncWorkflow(ctx workflow.Context, pipeline model.Pipeline) error
 	MonitorOrderStatus(ctx workflow.Context, createdOrder model.UpdateOrder, token string, email string) error
 	MoveDataWorkflow(ctx workflow.Context, sourceToken string, destinationToken string, sourceFolderID string, destinationFolderID string,
-		sourceConfig model.Config, destinationConfig model.Config, startIndex int, batchSize int) error
+		sourceConfig model.Config, destinationConfig model.Config, startIndex int, batchSize int, counter model.FileCounter) (model.FileCounter, error)
 }

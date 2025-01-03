@@ -10,6 +10,7 @@ import (
 	"github.com/E-Furqan/Food-Delivery-System/Client/RestaurantClient"
 	userClient "github.com/E-Furqan/Food-Delivery-System/Client/UserClient"
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
+	"google.golang.org/api/drive/v3"
 )
 
 type Activity struct {
@@ -48,10 +49,10 @@ type ActivityInterface interface {
 	CreateSourceToken(source model.Config) (string, error)
 	CreateDestinationToken(destination model.Config) (string, error)
 	AddLogs(counter model.FileCounter, PipelinesID int) error
-	CountFilesInFolder(sourceToken string, sourceConfig model.Config, folderID string) (int, error)
-	MoveDataFromSourceToDestination(ctx context.Context, sourceToken string, destinationToken string,
-		sourceFolderUrl string, destinationFolderUrl string, sourceConfig model.Config, batchSize int) (model.FileCounter, error)
+	ListFilesInFolder(sourceToken string, sourceConfig model.Config, folderID string) ([]*drive.File, error)
+	// MoveDataFromSourceToDestination(ctx context.Context, sourceToken string, destinationToken string,
+	// 	sourceFolderUrl string, destinationFolderUrl string, sourceConfig model.Config, batchSize int) (model.FileCounter, error)
 
-	MoveBatchActivity(ctx context.Context, sourceToken string, destinationToken string, sourceConfig model.Config,
-		destinationConfig model.Config, sourceFolderID string, destinationFolderID string, startIndex int, endIndex int) error
+	CopyBatchActivity(ctx context.Context, sourceToken string, destinationToken string, sourceConfig model.Config,
+		destinationConfig model.Config, sourceFolderID string, destinationFolderID string, fileList []*drive.File, counter model.FileCounter, startIndex int, endIndex int) (model.FileCounter, error)
 }

@@ -26,14 +26,15 @@ func (work *Worker) WorkerUserStart() {
 
 	w2 := worker.New(client_var, utils.DataSyncTaskQueue, worker.Options{})
 	w2.RegisterWorkflow(work.WorkFlow.DataSyncWorkflow)
+	w2.RegisterWorkflow(work.WorkFlow.MoveDataWorkflow)
 	w2.RegisterActivity(work.Act.CreateSourceToken)
 	w2.RegisterActivity(work.Act.CreateDestinationToken)
 	w2.RegisterActivity(work.Act.FetchSourceConfiguration)
 	w2.RegisterActivity(work.Act.FetchDestinationConfiguration)
-	w2.RegisterActivity(work.Act.MoveDataFromSourceToDestination)
+	// w2.RegisterActivity(work.Act.MoveDataFromSourceToDestination)
 	w2.RegisterActivity(work.Act.AddLogs)
-	w2.RegisterActivity(work.Act.CountFilesInFolder)
-	w2.RegisterActivity(work.Act.MoveBatchActivity)
+	w2.RegisterActivity(work.Act.ListFilesInFolder)
+	w2.RegisterActivity(work.Act.CopyBatchActivity)
 
 	// log.Print("worker started")
 	// err = w.Run(worker.InterruptCh())

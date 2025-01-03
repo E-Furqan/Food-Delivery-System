@@ -193,25 +193,30 @@ func Sleep(ctx workflow.Context) {
 }
 
 func ListFilesInFolder(client *drive.Service, folderID string) ([]*drive.File, error) {
-	log.Println("list files in folder function started")
-	if client == nil {
-		return nil, fmt.Errorf("drive client is nil")
-	}
-
-	log.Println("folderID", folderID)
 	query := fmt.Sprintf("'%s' in parents and trashed = false", folderID)
-	fileList, err := client.Files.List().Q(query).Do()
-	if err != nil {
-		log.Println("Error listing files:", err)
-		return nil, err
-	}
-	log.Printf("Listing files in folder: %s", folderID)
+	nextPageToken := ""
+	var allFiles []*drive.File
 
-	for _, file := range fileList.Files {
-		log.Printf("File: %s", file.Name)
+	for {
+		fileList, err := client.Files.List().
+			Q(query).
+			Fields("nextPageToken, files(id, name)").
+			PageSize(1000).
+			PageToken(nextPageToken).
+			Do()
+		if err != nil {
+			return nil, fmt.Errorf("unable to retrieve files: %w", err)
+		}
+
+		allFiles = append(allFiles, fileList.Files...)
+
+		if fileList.NextPageToken == "" {
+			break
+		}
+		nextPageToken = fileList.NextPageToken
 	}
 
-	return fileList.Files, nil
+	return allFiles, nil
 }
 
 func ExtractFolderID(folderUrl string) (string, error) {
