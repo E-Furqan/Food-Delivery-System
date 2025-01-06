@@ -13,7 +13,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
-	"google.golang.org/api/drive/v3"
 )
 
 func GenerateResponse(httpStatusCode int, c *gin.Context, title1 string, message1 string, title2 string, input interface{}) {
@@ -190,33 +189,6 @@ func UpdateOrderStatusTOCancel(orderID uint) model.UpdateOrder {
 
 func Sleep(ctx workflow.Context) {
 	workflow.Sleep(ctx, 2*time.Second)
-}
-
-func ListFilesInFolder(client *drive.Service, folderID string) ([]*drive.File, error) {
-	query := fmt.Sprintf("'%s' in parents and trashed = false", folderID)
-	nextPageToken := ""
-	var allFiles []*drive.File
-
-	for {
-		fileList, err := client.Files.List().
-			Q(query).
-			Fields("nextPageToken, files(id, name)").
-			PageSize(1000).
-			PageToken(nextPageToken).
-			Do()
-		if err != nil {
-			return nil, fmt.Errorf("unable to retrieve files: %w", err)
-		}
-
-		allFiles = append(allFiles, fileList.Files...)
-
-		if fileList.NextPageToken == "" {
-			break
-		}
-		nextPageToken = fileList.NextPageToken
-	}
-
-	return allFiles, nil
 }
 
 func ExtractFolderID(folderUrl string) (string, error) {

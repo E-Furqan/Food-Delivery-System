@@ -2,6 +2,7 @@ package environmentVariable
 
 import (
 	"log"
+	"strconv"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
 	utils "github.com/E-Furqan/Food-Delivery-System/Utils"
@@ -67,7 +68,7 @@ func ReadUserClientEnv() model.UserClientEnv {
 	return envVar
 }
 
-func ReadPipelineEnv() model.DatapipelineClientEnv {
+func ReadPipelineClientEnv() model.DatapipelineClientEnv {
 	var envVar model.DatapipelineClientEnv
 
 	err := godotenv.Load()
@@ -80,6 +81,23 @@ func ReadPipelineEnv() model.DatapipelineClientEnv {
 	envVar.FETCH_DESTINATION_CONFIGURATION_URL = utils.GetEnv("FETCH_DESTINATION_CONFIGURATION_URL", "/pipeline/fetch/destination/configuration")
 	envVar.ADD_LOGS_URL = utils.GetEnv("ADD_LOGS_URL", "/pipeline/add/logs")
 	envVar.DATAPIPELINE_PORT = utils.GetEnv("DATAPIPELINE_PORT", "8085")
+
+	return envVar
+}
+
+func ReadWorkFlowEnv() model.WorkFlowEnv {
+	var envVar model.WorkFlowEnv
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Printf("Error loading .env file: %v", err)
+	}
+	batchSizeStr := utils.GetEnv("BATCH_SIZE", "10")
+	batchSize, err := strconv.Atoi(batchSizeStr)
+	if err != nil {
+		log.Fatalf("Failed to convert BATCH_SIZE to int: %v", err)
+	}
+	envVar.BATCH_SIZE = batchSize
 
 	return envVar
 }

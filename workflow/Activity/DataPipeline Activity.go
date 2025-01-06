@@ -48,22 +48,50 @@ func (act *Activity) CreateDestinationToken(destination model.Config) (string, e
 	return destinationToken, nil
 }
 
-func (act *Activity) ListFilesInFolder(sourceToken string, sourceConfig model.Config, folderID string) ([]*drive.File, error) {
+func (act *Activity) ListFilesInFolder(sourceToken string, sourceConfig model.Config, folderID string,
+	bathSize int, startIndex int) ([]*drive.File, error) {
 	sourceClient, err := act.DriveClient.CreateConnection(sourceToken, sourceConfig)
 	if err != nil {
 		return nil, fmt.Errorf("invalid source client: %w", err)
 	}
 
-	log.Println("folderID", folderID)
 	query := fmt.Sprintf("'%s' in parents and trashed = false", folderID)
-	fileList, err := sourceClient.Files.List().Q(query).Do()
-	if err != nil {
-		log.Println("Error listing files:", err)
-		return nil, err
-	}
-	log.Printf("counting files in folder: %s", folderID)
+	nextPageToken := ""
+	var FileList []*drive.File
 
-	return fileList.Files, nil
+	for {
+		fileList, err := sourceClient.Files.List().
+			Q(query).
+			Fields("nextPageToken, files(id, name, mimeType)").
+			PageToken(nextPageToken).
+			Do()
+
+		if err != nil {
+			return nil, fmt.Errorf("unable to retrieve files: %w", err)
+		}
+
+		for _, item := range fileList.Files {
+			if item.MimeType == "application/vnd.google-apps.folder" {
+
+				subFolderResult, err := act.ListFilesInFolder(sourceToken, sourceConfig, item.Id, bathSize, 0)
+				if err != nil {
+					return nil, fmt.Errorf("failed to list files in subfolder %s: %w", item.Name, err)
+				}
+
+				FileList = append(FileList, subFolderResult...)
+			} else {
+				FileList = append(FileList, item)
+			}
+		}
+		if fileList.NextPageToken == "" {
+			break
+		}
+
+		nextPageToken = fileList.NextPageToken
+	}
+	log.Print("files fetched: ", len(FileList))
+
+	return FileList, nil
 }
 
 func (act *Activity) AddLogs(counter model.FileCounter, PipelinesID int) error {
@@ -86,20 +114,30 @@ func (act *Activity) AddLogs(counter model.FileCounter, PipelinesID int) error {
 }
 
 func (act *Activity) CopyBatchActivity(ctx context.Context, sourceToken string, destinationToken string, sourceConfig model.Config,
-	destinationConfig model.Config, sourceFolderID string, destinationFolderID string, fileList []*drive.File, counter model.FileCounter, startIndex int, endIndex int) (model.FileCounter, error) {
+	destinationConfig model.Config, sourceFolderID string, destinationFolderID string, fileList []*drive.File, counter model.FileCounter) (model.FileCounter, error) {
 
+	// Create a connection to the source client
 	sourceClient, err := act.DriveClient.CreateConnection(sourceToken, model.Config{})
 	if err != nil {
 		return counter, fmt.Errorf("invalid source client: %w", err)
 	}
 
-	if startIndex < 0 || endIndex > len(fileList) || startIndex > endIndex {
-		return counter, fmt.Errorf("invalid startIndex or endIndex: startIndex=%d, endIndex=%d, fileList length=%d", startIndex, endIndex, len(fileList))
-	}
+	totalFiles := len(fileList)
+	log.Printf("Copying %d files", totalFiles)
 
-	// Iterate through the batch
-	for i := startIndex; i < endIndex; i++ {
+	var lastProcessedIndex int = 0
+	hb := activity.GetHeartbeatDetails(ctx, &lastProcessedIndex)
+	if hb == nil {
+		log.Printf("error while getting heartbeat  %v", hb)
+	}
+	log.Printf("Last processed file index: %d", lastProcessedIndex)
+
+	for i := lastProcessedIndex; i < totalFiles; i++ {
 		file := fileList[i]
+		if file.MimeType == "application/vnd.google-apps.folder" {
+			log.Printf("Skipping folder name %s", file.Name)
+			continue
+		}
 
 		newFile := &drive.File{
 			Name:    file.Name,
@@ -107,14 +145,18 @@ func (act *Activity) CopyBatchActivity(ctx context.Context, sourceToken string, 
 		}
 
 		_, err := sourceClient.Files.Copy(file.Id, newFile).Do()
-		activity.RecordHeartbeat(ctx, i)
 		if err != nil {
 			log.Printf("Failed to copy file name %s: %v", file.Name, err)
 			counter.FailedCounter++
+
+			activity.RecordHeartbeat(ctx, int(i))
+			return counter, fmt.Errorf("failed to copy file name %s: %v", file.Name, err)
 		} else {
 			log.Printf("Successfully copied file name %s", file.Name)
 			counter.NoOfFiles++
 		}
+
+		activity.RecordHeartbeat(ctx, int(i))
 	}
 
 	return counter, nil

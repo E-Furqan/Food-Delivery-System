@@ -21,7 +21,8 @@ func main() {
 	RestaurantClientEnv := environmentVariable.ReadRestaurantClientEnv()
 	EmailClientEnv := environmentVariable.ReadEmailClientEnv()
 	UserClientEnv := environmentVariable.ReadUserClientEnv()
-	datapipelineClientEnv := environmentVariable.ReadPipelineEnv()
+	datapipelineClientEnv := environmentVariable.ReadPipelineClientEnv()
+	WorkFlowEnv := environmentVariable.ReadWorkFlowEnv()
 
 	var OrdClient OrderClient.OrdClientInterface = OrderClient.NewClient(OrderClientEnv)
 	var emailClient EmailClient.EmailClientInterface = EmailClient.NewClient(EmailClientEnv)
@@ -31,7 +32,7 @@ func main() {
 	var DriveClient driveClient.DriveClientInterface = driveClient.NewClient()
 
 	var activity_var activityPac.ActivityInterface = activityPac.NewController(OrdClient, emailClient, restaurantClient, UserClient, DatapipelineClient, DriveClient)
-	var workFlow workflows.WorkflowInterface = workflows.NewController(activity_var)
+	var workFlow workflows.WorkflowInterface = workflows.NewController(activity_var, WorkFlowEnv)
 	var worker_var worker.WorkerInterface = worker.NewController(activity_var, workFlow)
 	var controller controllers.ControllerInterface = controllers.NewController(workFlow)
 

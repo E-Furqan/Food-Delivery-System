@@ -178,7 +178,6 @@ func (wFlow *Workflow) DataSyncWorkflow(ctx workflow.Context, pipeline model.Pip
 	}
 
 	var counter model.FileCounter
-	var batchSize int = 10
 
 	sourceFolderID, err := utils.ExtractFolderID(sourceConfig.FolderURL)
 	if err != nil {
@@ -190,7 +189,9 @@ func (wFlow *Workflow) DataSyncWorkflow(ctx workflow.Context, pipeline model.Pip
 		return err
 	}
 
-	err = workflow.ExecuteChildWorkflow(ctx, wFlow.MoveDataWorkflow, sourceToken, destinationToken, sourceFolderID, destinationFolderID, sourceConfig, destinationConfig, 0, batchSize, counter).Get(ctx, &counter)
+	err = workflow.ExecuteChildWorkflow(ctx, wFlow.MoveDataWorkflow, sourceToken, destinationToken, sourceFolderID, destinationFolderID,
+		sourceConfig, destinationConfig, wFlow.EnvVar.BATCH_SIZE, counter).Get(ctx, &counter)
+
 	if err != nil {
 		log.Print("error in moving data", err.Error())
 		return err
@@ -204,20 +205,25 @@ func (wFlow *Workflow) DataSyncWorkflow(ctx workflow.Context, pipeline model.Pip
 	return nil
 }
 
-func (wFlow *Workflow) MoveDataWorkflow(ctx workflow.Context, sourceToken string, destinationToken string, sourceFolderID string, destinationFolderID string,
-	sourceConfig model.Config, destinationConfig model.Config, startIndex int, batchSize int, counter model.FileCounter) (model.FileCounter, error) {
+func (wFlow *Workflow) MoveDataWorkflow(ctx workflow.Context, sourceToken string, destinationToken string,
+	sourceFolderID string, destinationFolderID string,
+	sourceConfig model.Config, destinationConfig model.Config,
+	batchSize int, counter model.FileCounter, startIndex int) (model.FileCounter, error) {
 
 	log.Print("counter:", counter)
 	option := utils.ActivityOptions()
 	ctx = workflow.WithActivityOptions(ctx, option)
 
-	var fileList []*drive.File
-	err := workflow.ExecuteActivity(ctx, wFlow.Act.ListFilesInFolder, sourceToken, sourceConfig, sourceFolderID).Get(ctx, &fileList)
+	var FileList []*drive.File
+	err := workflow.ExecuteActivity(ctx, wFlow.Act.ListFilesInFolder, sourceToken, sourceConfig, sourceFolderID,
+		batchSize, startIndex).Get(ctx, &FileList)
+
 	if err != nil {
 		return model.FileCounter{}, fmt.Errorf("failed to list files: %w", err)
 	}
 
-	totalFiles := len(fileList)
+	totalFiles := len(FileList)
+	log.Print("total files = ", totalFiles)
 	if startIndex >= totalFiles {
 		log.Print("All files processed")
 		return counter, nil
@@ -228,12 +234,21 @@ func (wFlow *Workflow) MoveDataWorkflow(ctx workflow.Context, sourceToken string
 		endIndex = totalFiles
 	}
 
-	err = workflow.ExecuteActivity(ctx, wFlow.Act.CopyBatchActivity, sourceToken, destinationToken, sourceConfig, destinationConfig, sourceFolderID, destinationFolderID, fileList, counter, startIndex, endIndex).Get(ctx, &counter)
-	if err != nil {
-		log.Printf("Error processing batch %d - %d: %v", startIndex, endIndex, err)
+	if startIndex < 0 || endIndex > len(FileList) || startIndex > endIndex {
+		return counter, fmt.Errorf("invalid startIndex or endIndex: startIndex=%d, endIndex=%d, fileList length=%d", startIndex, endIndex, len(FileList))
 	}
 
-	log.Printf("Processed batch %d - %d", startIndex, endIndex)
+	FileList = FileList[startIndex:endIndex]
 
-	return model.FileCounter{}, workflow.NewContinueAsNewError(ctx, wFlow.MoveDataWorkflow, sourceToken, destinationToken, sourceFolderID, destinationFolderID, sourceConfig, destinationConfig, endIndex, batchSize, counter)
+	err = workflow.ExecuteActivity(ctx, wFlow.Act.CopyBatchActivity, sourceToken, destinationToken, sourceConfig, destinationConfig,
+		sourceFolderID, destinationFolderID, FileList, counter).Get(ctx, &counter)
+	if err != nil {
+		log.Printf("error: %s", err)
+		return counter, nil
+	}
+
+	log.Printf("Processing batch %d - %d  file count %d", startIndex, endIndex, len(FileList))
+
+	return model.FileCounter{}, workflow.NewContinueAsNewError(ctx, wFlow.MoveDataWorkflow, sourceToken, destinationToken, sourceFolderID,
+		destinationFolderID, sourceConfig, destinationConfig, batchSize, counter, endIndex)
 }

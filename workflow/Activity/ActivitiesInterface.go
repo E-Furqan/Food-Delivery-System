@@ -49,10 +49,11 @@ type ActivityInterface interface {
 	CreateSourceToken(source model.Config) (string, error)
 	CreateDestinationToken(destination model.Config) (string, error)
 	AddLogs(counter model.FileCounter, PipelinesID int) error
-	ListFilesInFolder(sourceToken string, sourceConfig model.Config, folderID string) ([]*drive.File, error)
+	ListFilesInFolder(sourceToken string, sourceConfig model.Config, folderID string,
+		bathSize int, startIndex int) ([]*drive.File, error)
 	// MoveDataFromSourceToDestination(ctx context.Context, sourceToken string, destinationToken string,
 	// 	sourceFolderUrl string, destinationFolderUrl string, sourceConfig model.Config, batchSize int) (model.FileCounter, error)
 
 	CopyBatchActivity(ctx context.Context, sourceToken string, destinationToken string, sourceConfig model.Config,
-		destinationConfig model.Config, sourceFolderID string, destinationFolderID string, fileList []*drive.File, counter model.FileCounter, startIndex int, endIndex int) (model.FileCounter, error)
+		destinationConfig model.Config, sourceFolderID string, destinationFolderID string, fileList []*drive.File, counter model.FileCounter) (model.FileCounter, error)
 }
