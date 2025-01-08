@@ -52,23 +52,23 @@ func (s *UnitTestSuite) Test_DataSyncWorkflow_Success() {
 	source.SourcesID = 1
 
 	s.env.OnActivity(activity.FetchSourceConfiguration, source).Return(model.Config{
-		ClientID:       "953677147721-dp7jshkdljtj0j8ma3skb8gsrdmf0c3n.apps.googleusercontent.com ",
-		ClientSecret:   "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",
-		TokenURI:       "https://oauth2.googleapis.com/token",
-		RefreshToken:   "1//03E1wRPBmKGOkCgYIARAAGAMSNwF-L9Irlk7J2YDIyBmVTura7A7Il7bJ1PtblBsYDTSgP0Wpn0sh58PHyaFOb1aH-kpCbzo1FFM",
+		ClientID:       "ClientID",
+		ClientSecret:   "ClientSecret",
+		TokenURI:       "TokenURI",
+		RefreshToken:   "RefreshToken",
 		FolderURL:      "https://drive.google.com/drive/u/0/folders/140UlUXL5QXfG4sSxmpBAE_c77gqeVPgD",
 		SourcesID:      1,
-		DestinationsID: 1,
+		DestinationsID: 2,
 	}, nil)
 
 	var destination model.Destination
 	destination.DestinationsID = 1
 
 	s.env.OnActivity(activity.FetchDestinationConfiguration, destination).Return(model.Config{
-		ClientID:       "953677147721-dp7jshkdljtj0j8ma3skb8gsrdmf0c3n.apps.googleusercontent.com",
-		ClientSecret:   "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",
-		TokenURI:       "https://oauth2.googleapis.com/token",
-		RefreshToken:   "1//03E1wRPBmKGOkCgYIARAAGAMSNwF-L9Irlk7J2YDIyBmVTura7A7Il7bJ1PtblBsYDTSgP0Wpn0sh58PHyaFOb1aH-kpCbzo1FFM",
+		ClientID:       "ClientID",
+		ClientSecret:   "ClientSecret",
+		TokenURI:       "TokenURI",
+		RefreshToken:   "RefreshToken",
 		FolderURL:      "https://drive.google.com/drive/u/0/folders/1HhBcRTdBWgcR5lPlslJucpyuaGODDTXc",
 		SourcesID:      1,
 		DestinationsID: 2,
@@ -135,21 +135,21 @@ func (s *UnitTestSuite) Test_MoveDataWorkflow_Success() {
 
 	// Configurations for source and destination
 	sourceConfig := model.Config{
-		ClientID:       "953677147721-dp7jshkdljtj0j8ma3skb8gsrdmf0c3n.apps.googleusercontent.com ",
-		ClientSecret:   "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",
-		TokenURI:       "https://oauth2.googleapis.com/token",
-		RefreshToken:   "1//03E1wRPBmKGOkCgYIARAAGAMSNwF-L9Irlk7J2YDIyBmVTura7A7Il7bJ1PtblBsYDTSgP0Wpn0sh58PHyaFOb1aH-kpCbzo1FFM",
+		ClientID:       "ClientID",
+		ClientSecret:   "ClientSecret",
+		TokenURI:       "TokenURI",
+		RefreshToken:   "RefreshToken",
 		FolderURL:      "https://drive.google.com/drive/u/0/folders/140UlUXL5QXfG4sSxmpBAE_c77gqeVPgD",
 		SourcesID:      1,
-		DestinationsID: 1,
+		DestinationsID: 2,
 	}
 
 	destConfig := model.Config{
-		ClientID:       "953677147721-dp7jshkdljtj0j8ma3skb8gsrdmf0c3n.apps.googleusercontent.com",
-		ClientSecret:   "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",
-		TokenURI:       "https://oauth2.googleapis.com/token",
-		RefreshToken:   "1//03E1wRPBmKGOkCgYIARAAGAMSNwF-L9Irlk7J2YDIyBmVTura7A7Il7bJ1PtblBsYDTSgP0Wpn0sh58PHyaFOb1aH-kpCbzo1FFM",
-		FolderURL:      "https://drive.google.com/drive/u/0/folders/1HhBcRTdBWgcR5lPlslJucpyuaGODDTXc",
+		ClientID:       "ClientID",
+		ClientSecret:   "ClientSecret",
+		TokenURI:       "TokenURI",
+		RefreshToken:   "RefreshToken",
+		FolderURL:      "https://drive.google.com/drive/u/0/folders/140UlUXL5QXfG4sSxmpBAE_c77gqeVPgD",
 		SourcesID:      1,
 		DestinationsID: 2,
 	}
