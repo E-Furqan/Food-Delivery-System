@@ -35,75 +35,138 @@ func TestDataSyncWorkflowTestSuite(t *testing.T) {
 	suite.Run(t, new(UnitTestSuite))
 }
 
+func TestUnitTestSuite(t *testing.T) {
+	suite.Run(t, new(UnitTestSuite))
+}
+
 func (s *UnitTestSuite) Test_DataSyncWorkflow_Success() {
-	// Initialize the necessary environment and clients
+
 	datapipelineClientEnv := environmentVariable.ReadPipelineClientEnv()
 	var DatapipelineClient datapipelineClient.DatapipelineClientInterface = datapipelineClient.NewClient(datapipelineClientEnv)
 	var DriveClient driveClient.DriveClientInterface = driveClient.NewClient()
 
-	// Create activity and workflow environment
 	activity := activityPac.NewController(nil, nil, nil, nil, DatapipelineClient, DriveClient)
 	workflow := workflows.NewController(activity, model.WorkFlowEnv{BATCH_SIZE: 20})
 
-	// Mock the activities with correct return types based on your models
-	s.env.OnActivity(activity.FetchSourceConfiguration, mock.Anything, mock.Anything).Return(model.Config{
-		ClientID:       "clientID",
-		ClientSecret:   "clientSecret",
-		TokenURI:       "tokenURI",
-		RefreshToken:   "refreshToken",
-		FolderURL:      "folderURL",
+	var source model.Source
+	source.SourcesID = 1
+
+	s.env.OnActivity(activity.FetchSourceConfiguration, source).Return(model.Config{
+		ClientID:       "953677147721-dp7jshkdljtj0j8ma3skb8gsrdmf0c3n.apps.googleusercontent.com ",
+		ClientSecret:   "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",
+		TokenURI:       "https://oauth2.googleapis.com/token",
+		RefreshToken:   "1//03E1wRPBmKGOkCgYIARAAGAMSNwF-L9Irlk7J2YDIyBmVTura7A7Il7bJ1PtblBsYDTSgP0Wpn0sh58PHyaFOb1aH-kpCbzo1FFM",
+		FolderURL:      "https://drive.google.com/drive/u/0/folders/140UlUXL5QXfG4sSxmpBAE_c77gqeVPgD",
 		SourcesID:      1,
 		DestinationsID: 1,
 	}, nil)
 
-	s.env.OnActivity(activity.FetchDestinationConfiguration, mock.Anything, mock.Anything).Return(model.Config{
-		ClientID:       "destClientID",
-		ClientSecret:   "destClientSecret",
-		TokenURI:       "destTokenURI",
-		RefreshToken:   "destRefreshToken",
-		FolderURL:      "destFolderURL",
+	var destination model.Destination
+	destination.DestinationsID = 1
+
+	s.env.OnActivity(activity.FetchDestinationConfiguration, destination).Return(model.Config{
+		ClientID:       "953677147721-dp7jshkdljtj0j8ma3skb8gsrdmf0c3n.apps.googleusercontent.com",
+		ClientSecret:   "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",
+		TokenURI:       "https://oauth2.googleapis.com/token",
+		RefreshToken:   "1//03E1wRPBmKGOkCgYIARAAGAMSNwF-L9Irlk7J2YDIyBmVTura7A7Il7bJ1PtblBsYDTSgP0Wpn0sh58PHyaFOb1aH-kpCbzo1FFM",
+		FolderURL:      "https://drive.google.com/drive/u/0/folders/1HhBcRTdBWgcR5lPlslJucpyuaGODDTXc",
 		SourcesID:      1,
 		DestinationsID: 2,
 	}, nil)
 
-	s.env.OnActivity(activity.CreateSourceToken, mock.Anything, mock.Anything).Return("sourceToken", nil)
-	s.env.OnActivity(activity.CreateDestinationToken, mock.Anything, mock.Anything).Return("destinationToken", nil)
+	s.env.OnActivity(activity.CreateSourceToken, mock.Anything).Return("sourceToken", nil)
+	s.env.OnActivity(activity.CreateDestinationToken, mock.Anything).Return("destinationToken", nil)
+	s.env.OnActivity(activity.AddLogs, model.FileCounter{NoOfFiles: 5, FailedCounter: 1}, 2).Return(nil)
 
-	s.env.OnActivity(activity.ListFilesInFolder, mock.Anything, mock.Anything).Return([]*drive.File{
-		&drive.File{Name: "file1"},
-		&drive.File{Name: "file2"},
-	}, nil)
+	s.env.OnWorkflow(workflow.MoveDataWorkflow, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything,
+		mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(model.FileCounter{NoOfFiles: 5, FailedCounter: 1}, nil)
 
-	s.env.OnActivity(activity.CopyBatchActivity, mock.Anything, mock.Anything).Return(nil)
-	s.env.OnActivity(activity.AddLogs, mock.Anything, mock.Anything).Return(nil)
+	s.env.ExecuteWorkflow(workflow.DataSyncWorkflow, model.Pipeline{PipelineID: 2, SourcesID: 1, DestinationsID: 1})
 
-	// Execute the workflow
-	s.env.ExecuteWorkflow(workflow.DataSyncWorkflow, "test_success")
-
-	// Verify if the workflow completed successfully
 	s.True(s.env.IsWorkflowCompleted())
 	err := s.env.GetWorkflowError()
 	s.NoError(err)
 }
 
 func (s *UnitTestSuite) Test_DataSyncWorkflow_FetchSourceConfiguration_Failure() {
+	datapipelineClientEnv := environmentVariable.ReadPipelineClientEnv()
+	var DatapipelineClient datapipelineClient.DatapipelineClientInterface = datapipelineClient.NewClient(datapipelineClientEnv)
+	var DriveClient driveClient.DriveClientInterface = driveClient.NewClient()
+
+	activity := activityPac.NewController(nil, nil, nil, nil, DatapipelineClient, DriveClient)
+	workflow := workflows.NewController(activity, model.WorkFlowEnv{BATCH_SIZE: 20})
+	s.env.OnActivity(activity.FetchSourceConfiguration, mock.Anything, mock.Anything).Return(model.Config{}, errors.New("FetchSourceConfiguration failed"))
+
+	pipeline := model.Pipeline{SourcesID: 1, DestinationsID: 1, PipelineID: 2}
+	s.env.ExecuteWorkflow(workflow.DataSyncWorkflow, pipeline)
+
+	assert.True(s.T(), s.env.IsWorkflowCompleted())
+	err := s.env.GetWorkflowError()
+	assert.Error(s.T(), err)
+	assert.Contains(s.T(), err.Error(), "FetchSourceConfiguration failed")
+
+}
+
+func (s *UnitTestSuite) Test_MoveDataWorkflow_Success() {
+
 	// Initialize clients
 	datapipelineClientEnv := environmentVariable.ReadPipelineClientEnv()
 	var DatapipelineClient datapipelineClient.DatapipelineClientInterface = datapipelineClient.NewClient(datapipelineClientEnv)
 	var DriveClient driveClient.DriveClientInterface = driveClient.NewClient()
 
-	// Create activity and workflow environment
+	// Initialize activity controller and workflow controller
 	activity := activityPac.NewController(nil, nil, nil, nil, DatapipelineClient, DriveClient)
-	workflow := workflows.NewController(activity, model.WorkFlowEnv{BATCH_SIZE: 20})
-	s.env.OnActivity(activity.FetchSourceConfiguration, mock.Anything, mock.Anything).Return("", errors.New("FetchSourceConfiguration failed"))
+	workflow1 := workflows.NewController(activity, model.WorkFlowEnv{BATCH_SIZE: 20})
+
+	// Mocking activity ListFilesInFolder
+	s.env.OnActivity(activity.ListFilesInFolder, mock.Anything, mock.Anything, mock.Anything, 2, 0).
+		Return([]*drive.File{
+			&drive.File{Name: "pipelineModel.go"},
+			&drive.File{Name: "LogModel.go"},
+		}, nil)
+
+	// Mocking activity CopyBatchActivity
+	s.env.OnActivity(activity.CopyBatchActivity, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything,
+		[]*drive.File{
+			&drive.File{Name: "pipelineModel.go"},
+			&drive.File{Name: "LogModel.go"},
+		}, model.FileCounter{}).
+		Return(model.FileCounter{NoOfFiles: 5, FailedCounter: 1}, nil)
+
+	// Configurations for source and destination
+	sourceConfig := model.Config{
+		ClientID:       "953677147721-dp7jshkdljtj0j8ma3skb8gsrdmf0c3n.apps.googleusercontent.com ",
+		ClientSecret:   "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",
+		TokenURI:       "https://oauth2.googleapis.com/token",
+		RefreshToken:   "1//03E1wRPBmKGOkCgYIARAAGAMSNwF-L9Irlk7J2YDIyBmVTura7A7Il7bJ1PtblBsYDTSgP0Wpn0sh58PHyaFOb1aH-kpCbzo1FFM",
+		FolderURL:      "https://drive.google.com/drive/u/0/folders/140UlUXL5QXfG4sSxmpBAE_c77gqeVPgD",
+		SourcesID:      1,
+		DestinationsID: 1,
+	}
+
+	destConfig := model.Config{
+		ClientID:       "953677147721-dp7jshkdljtj0j8ma3skb8gsrdmf0c3n.apps.googleusercontent.com",
+		ClientSecret:   "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",
+		TokenURI:       "https://oauth2.googleapis.com/token",
+		RefreshToken:   "1//03E1wRPBmKGOkCgYIARAAGAMSNwF-L9Irlk7J2YDIyBmVTura7A7Il7bJ1PtblBsYDTSgP0Wpn0sh58PHyaFOb1aH-kpCbzo1FFM",
+		FolderURL:      "https://drive.google.com/drive/u/0/folders/1HhBcRTdBWgcR5lPlslJucpyuaGODDTXc",
+		SourcesID:      1,
+		DestinationsID: 2,
+	}
+
+	// // Mocking the workflow
+	// s.env.OnWorkflow(workflow1.MoveDataWorkflow, mock.Anything, "source token", "Destination Token", "140UlUXL5QXfG4sSxmpBAE_c77gqeVPgD", "1HhBcRTdBWgcR5lPlslJucpyuaGODDTXc",
+	// 	sourceConfig, destConfig, 2, model.FileCounter{NoOfFiles: 5, FailedCounter: 1}, 0).
+	// 	Return(model.FileCounter{NoOfFiles: 0, FailedCounter: 0}, nil)
 
 	// Execute the workflow
-	pipeline := model.Pipeline{SourcesID: 1, DestinationsID: 1, PipelineID: 2}
-	s.env.ExecuteWorkflow(workflow.DataSyncWorkflow, pipeline)
+	s.env.ExecuteWorkflow(workflow1.MoveDataWorkflow, "source token", "Destination Token", "140UlUXL5QXfG4sSxmpBAE_c77gqeVPgD", "1HhBcRTdBWgcR5lPlslJucpyuaGODDTXc",
+		sourceConfig, destConfig, 2, model.FileCounter{NoOfFiles: 0, FailedCounter: 0}, 0)
 
-	// Assert error
-	assert.True(s.T(), s.env.IsWorkflowCompleted())
+	// Check if the workflow was completed
+	s.True(s.env.IsWorkflowCompleted())
+
+	// Get the workflow error if any
 	err := s.env.GetWorkflowError()
-	assert.Error(s.T(), err)
-	assert.Equal(s.T(), "FetchSourceConfiguration failed", err.Error())
+	s.NoError(err)
 }

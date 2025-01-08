@@ -14,7 +14,7 @@ func ReadOrderClientEnv() model.OrderClientEnv {
 
 	err := godotenv.Load()
 	if err != nil {
-		log.Printf("Error loading .env file: %v", err)
+		log.Printf("loading .env file: %v", err)
 	}
 	OrderClientEnv.BASE_URL = utils.GetEnv("BASE_URL", "http://localhost")
 	OrderClientEnv.UPDATE_ORDER_STATUS_URL = utils.GetEnv("UPDATE_ORDER_STATUS_URL", "/order/update/status")
@@ -30,7 +30,7 @@ func ReadRestaurantClientEnv() model.RestaurantClientEnv {
 
 	err := godotenv.Load()
 	if err != nil {
-		log.Printf("Error loading .env file: %v", err)
+		log.Printf(" loading .env file: %v", err)
 	}
 
 	envVar.BASE_URL = utils.GetEnv("BASE_URL", "http://localhost")
@@ -45,7 +45,7 @@ func ReadEmailClientEnv() model.EmailEnv {
 
 	err := godotenv.Load()
 	if err != nil {
-		log.Printf("Error loading .env file: %v", err)
+		log.Printf("loading .env file: %v", err)
 	}
 
 	envVar.EmailAddressFrom = utils.GetEnv("EMAIL_FROM", "furqan.ali@emumba.com")
@@ -58,7 +58,7 @@ func ReadUserClientEnv() model.UserClientEnv {
 
 	err := godotenv.Load()
 	if err != nil {
-		log.Printf("Error loading .env file: %v", err)
+		log.Printf("loading .env file: %v", err)
 	}
 
 	envVar.BASE_URL = utils.GetEnv("BASE_URL", "http://localhost")
@@ -73,7 +73,7 @@ func ReadPipelineClientEnv() model.DatapipelineClientEnv {
 
 	err := godotenv.Load()
 	if err != nil {
-		log.Printf("Error loading .env file: %v", err)
+		log.Printf("loading .env file: %v", err)
 	}
 
 	envVar.BASE_URL = utils.GetEnv("BASE_URL", "http://localhost")
@@ -90,7 +90,7 @@ func ReadWorkFlowEnv() model.WorkFlowEnv {
 
 	err := godotenv.Load()
 	if err != nil {
-		log.Printf("Error loading .env file: %v", err)
+		log.Printf("loading .env file: %v", err)
 	}
 	batchSizeStr := utils.GetEnv("BATCH_SIZE", "10")
 	batchSize, err := strconv.Atoi(batchSizeStr)

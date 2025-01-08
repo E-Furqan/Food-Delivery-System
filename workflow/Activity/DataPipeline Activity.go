@@ -48,6 +48,25 @@ func (act *Activity) CreateDestinationToken(destination model.Config) (string, e
 	return destinationToken, nil
 }
 
+func (act *Activity) AddLogs(counter model.FileCounter, PipelinesID int) error {
+	var log model.Log
+	FilesMovedSuccessfully := counter.NoOfFiles - counter.FailedCounter
+
+	if counter.FailedCounter != 0 {
+		log.LogMessage = fmt.Sprintf("the data sync failed to move %v files but successfully moved %v files", counter.FailedCounter, FilesMovedSuccessfully)
+	} else {
+		log.LogMessage = fmt.Sprintf("the data sync successfully moved %v files", FilesMovedSuccessfully)
+	}
+	log.PipelinesID = PipelinesID
+
+	err := act.DatapipelineClient.AddLogs(log)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (act *Activity) ListFilesInFolder(sourceToken string, sourceConfig model.Config, folderID string,
 	bathSize int, startIndex int) ([]*drive.File, error) {
 	sourceClient, err := act.DriveClient.CreateConnection(sourceToken, sourceConfig)
@@ -92,25 +111,6 @@ func (act *Activity) ListFilesInFolder(sourceToken string, sourceConfig model.Co
 	log.Print("files fetched: ", len(FileList))
 
 	return FileList, nil
-}
-
-func (act *Activity) AddLogs(counter model.FileCounter, PipelinesID int) error {
-	var log model.Log
-	FilesMovedSuccessfully := counter.NoOfFiles - counter.FailedCounter
-
-	if counter.FailedCounter != 0 {
-		log.LogMessage = fmt.Sprintf("the data sync failed to move %v files but successfully moved %v files", counter.FailedCounter, FilesMovedSuccessfully)
-	} else {
-		log.LogMessage = fmt.Sprintf("the data sync successfully moved %v files", FilesMovedSuccessfully)
-	}
-	log.PipelinesID = PipelinesID
-
-	err := act.DatapipelineClient.AddLogs(log)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (act *Activity) CopyBatchActivity(ctx context.Context, sourceToken string, destinationToken string, sourceConfig model.Config,
