@@ -17,21 +17,21 @@ func User_routes(ctrl UserControllers.UserControllerInterface, rCtrl RoleControl
 
 	user.Use(middleware.AuthMiddleware())
 	{
-		user.POST("/assign/driver", ctrl.AssignDriver)
 
 		user.GET("/fetch/active/user", ctrl.FetchActiveUser)
 
 		user.GET("/get/roles", rCtrl.GetRoles)
 		user.GET("/get/users", ctrl.GetUsers)
 		user.GET("/profile", ctrl.Profile)
+
+		user.POST("/assign/driver", ctrl.AssignDriver)
 		user.GET("/view/user/orders", ctrl.ViewUserOrders)
 		user.GET("/view/driver/orders", ctrl.ViewDriverOrders)
 		user.GET("/view/orders/without/driver", ctrl.ViewOrdersWithoutDriver)
-
 		user.PATCH("/update/order/status", ctrl.UpdateOrderStatus)
-		user.PATCH("/update/profile", ctrl.UpdateUser)
 		user.PATCH("/switch/role", rCtrl.SwitchRole)
 
+		user.PATCH("/update/profile", ctrl.UpdateUser)
 		user.DELETE("/delete/user", ctrl.DeleteUser)
 		user.DELETE("/delete/role", rCtrl.DeleteRole)
 
