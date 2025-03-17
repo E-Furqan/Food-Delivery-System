@@ -2,7 +2,11 @@ package main
 
 import (
 	"github.com/E-Furqan/Food-Delivery-System/Client/RestaurantClient"
+	WorkFlow "github.com/E-Furqan/Food-Delivery-System/Client/WorkFlowClient"
+	CustomerController "github.com/E-Furqan/Food-Delivery-System/Controllers/CustomerContoller"
+	RiderController "github.com/E-Furqan/Food-Delivery-System/Controllers/DeliverRiderController"
 	OrderControllers "github.com/E-Furqan/Food-Delivery-System/Controllers/OrderController"
+	"github.com/E-Furqan/Food-Delivery-System/Controllers/RestaurantController"
 	config "github.com/E-Furqan/Food-Delivery-System/DatabaseConfig"
 	environmentVariable "github.com/E-Furqan/Food-Delivery-System/EnviormentVariable"
 	"github.com/E-Furqan/Food-Delivery-System/Middleware"
@@ -16,6 +20,7 @@ func main() {
 	DatabaseConfigEnv := environmentVariable.ReadDatabaseConfigEnv()
 	RestaurantClientEnv := environmentVariable.ReadRestaurantClientEnv()
 	MiddlewareEnv := environmentVariable.ReadMiddlewareEnv()
+	WorkFlowClientEnv := environmentVariable.ReadWorkflowClientEnv()
 
 	config := config.NewDatabase(DatabaseConfigEnv)
 	db := config.Connection()
@@ -24,12 +29,16 @@ func main() {
 
 	var middle Middleware.MiddlewareInterface = Middleware.NewMiddleware(&MiddlewareEnv)
 
+	var WorkFlowClient WorkFlow.WorkFlowClientInterface = WorkFlow.NewClient(&WorkFlowClientEnv)
 	var ResClient RestaurantClient.RestaurantClientInterface = RestaurantClient.NewClient(&RestaurantClientEnv)
-	var OrderCtrl OrderControllers.OrderControllerInterface = OrderControllers.NewController(repo, ResClient)
+	var OrderCtrl OrderControllers.OrderControllerInterface = OrderControllers.NewController(repo, ResClient, WorkFlowClient)
+	var restCtrl RestaurantController.RestaurantControllerInterface = RestaurantController.NewController(repo)
+	var cusCtrl CustomerController.CustomerControllerInterface = CustomerController.NewController(repo)
+	var riderCtrl RiderController.RiderControllerInterface = RiderController.NewController(repo)
 
 	server := gin.Default()
 
-	Routes.Order_routes(OrderCtrl, middle, server)
+	Routes.Order_routes(OrderCtrl, restCtrl, cusCtrl, riderCtrl, middle, server)
 
 	server.Run(":8081")
 }

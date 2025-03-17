@@ -17,7 +17,7 @@ func (client *RestaurantClient) GetItems(getItems model.GetItems) ([]model.Items
 	}
 
 	url := fmt.Sprintf("%s%s%s", client.envVar.BASE_URL, client.envVar.RESTAURANT_PORT, client.envVar.Get_Items_URL)
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
+	req, err := http.NewRequest("GET", url, bytes.NewBuffer(body))
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %v", err)
 	}

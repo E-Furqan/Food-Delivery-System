@@ -18,11 +18,11 @@ func ReadDatabaseConfigEnv() model.DatabaseConfigEnv {
 		log.Printf("Error loading .env file: %v", err)
 	}
 
-	envVar.DATABASE_HOST = utils.GetEnv("DATABASE_HOST", "db")
+	envVar.DATABASE_HOST = utils.GetEnv("DATABASE_HOST", "localhost")
 	envVar.DATABASE_USER = utils.GetEnv("DATABASE_USER", "furqan")
 	envVar.DATABASE_PASSWORD = utils.GetEnv("DATABASE_PASSWORD", "furqan")
 	envVar.DATABASE_NAME = utils.GetEnv("DATABASE_NAME", "Order")
-	portStr := utils.GetEnv("DATABASE_PORT", "5432")
+	portStr := utils.GetEnv("DATABASE_PORT", "5431")
 	envVar.DATABASE_PORT, err = strconv.Atoi(portStr)
 	if err != nil {
 		log.Printf("Error converting PORT to integer: %v", err)
@@ -55,5 +55,20 @@ func ReadMiddlewareEnv() model.MiddlewareEnv {
 	}
 	envVar.JWT_SECRET = utils.GetEnv("JWT_SECRET", "Furqan")
 	envVar.RefreshTokenKey = utils.GetEnv("REFRESH_TOKEN_SECRET", "Ali")
+	return envVar
+}
+
+func ReadWorkflowClientEnv() model.WorkFlowClientEnv {
+	var envVar model.WorkFlowClientEnv
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Printf("Error loading .env file: %v", err)
+	}
+
+	envVar.BASE_URL = utils.GetEnv("BASE_URL", "http://localhost")
+	envVar.PLACE_ORDER_URL = utils.GetEnv("Get_Items_URL", "/workflow/place/order")
+	envVar.WORKFLOW_PORT = utils.GetEnv("RESTAURANT_PORT", ":8088")
+
 	return envVar
 }

@@ -41,12 +41,12 @@ func TestGetOrders(t *testing.T) {
 	cleanupDB()
 
 	mockOrder := model.Order{
-		UserId:           1,
-		RestaurantID:     1,
-		DeliveryDriverID: 0,
-		OrderStatus:      "completed",
-		TotalBill:        50.0,
-		Time:             time.Now(),
+		UserId:         1,
+		RestaurantID:   1,
+		DeliveryDriver: 0,
+		OrderStatus:    "completed",
+		TotalBill:      50.0,
+		Time:           time.Now(),
 	}
 	err := DB.Create(&mockOrder).Error
 	assert.NoError(t, err)
@@ -96,12 +96,12 @@ func TestGetOrder(t *testing.T) {
 	repo := setupRepository()
 	cleanupDB()
 	mockOrder := model.Order{
-		UserId:           1,
-		RestaurantID:     1,
-		DeliveryDriverID: 0,
-		OrderStatus:      "completed",
-		TotalBill:        50.0,
-		Time:             time.Now(),
+		UserId:         1,
+		RestaurantID:   1,
+		DeliveryDriver: 0,
+		OrderStatus:    "completed",
+		TotalBill:      50.0,
+		Time:           time.Now(),
 	}
 	err := DB.Create(&mockOrder).Error
 	assert.NoError(t, err)
@@ -143,23 +143,23 @@ func TestGetOrderWithoutRider(t *testing.T) {
 	repo := setupRepository()
 	cleanupDB()
 	mockOrder := model.Order{
-		UserId:           1,
-		RestaurantID:     1,
-		DeliveryDriverID: 0,
-		OrderStatus:      "completed",
-		TotalBill:        50.0,
-		Time:             time.Now(),
+		UserId:         1,
+		RestaurantID:   1,
+		DeliveryDriver: 0,
+		OrderStatus:    "completed",
+		TotalBill:      50.0,
+		Time:           time.Now(),
 	}
 	err := DB.Create(&mockOrder).Error
 	assert.NoError(t, err)
 
 	mockOrder1 := model.Order{
-		UserId:           2,
-		RestaurantID:     1,
-		DeliveryDriverID: 1,
-		OrderStatus:      "order placed",
-		TotalBill:        500.0,
-		Time:             time.Now(),
+		UserId:         2,
+		RestaurantID:   1,
+		DeliveryDriver: 1,
+		OrderStatus:    "order placed",
+		TotalBill:      500.0,
+		Time:           time.Now(),
 	}
 	err = DB.Create(&mockOrder1).Error
 	assert.NoError(t, err)
@@ -197,7 +197,7 @@ func TestGetOrderWithoutRider(t *testing.T) {
 	assert.Equal(t, mockOrder.TotalBill, orders[0].TotalBill)
 	assert.Len(t, orders[0].Item, 1)
 	assert.Equal(t, mockItem.ItemId, orders[0].Item[0].ItemId)
-	assert.Equal(t, mockOrder.DeliveryDriverID, orders[0].DeliveryDriverID)
+	assert.Equal(t, mockOrder.DeliveryDriver, orders[0].DeliveryDriver)
 
 	cleanupDB()
 }
@@ -206,12 +206,12 @@ func TestGetOrderItems(t *testing.T) {
 	repo := setupRepository()
 	cleanupDB()
 	mockOrder := model.Order{
-		UserId:           1,
-		RestaurantID:     1,
-		DeliveryDriverID: 0,
-		OrderStatus:      "completed",
-		TotalBill:        50.0,
-		Time:             time.Now(),
+		UserId:         1,
+		RestaurantID:   1,
+		DeliveryDriver: 0,
+		OrderStatus:    "completed",
+		TotalBill:      50.0,
+		Time:           time.Now(),
 	}
 	err := DB.Create(&mockOrder).Error
 	assert.NoError(t, err)
@@ -277,12 +277,12 @@ func TestUpdate(t *testing.T) {
 	repo := setupRepository()
 	cleanupDB()
 	mockOrder := model.Order{
-		UserId:           1,
-		RestaurantID:     1,
-		DeliveryDriverID: 0,
-		OrderStatus:      "completed",
-		TotalBill:        50.0,
-		Time:             time.Now(),
+		UserId:         1,
+		RestaurantID:   1,
+		DeliveryDriver: 0,
+		OrderStatus:    "completed",
+		TotalBill:      50.0,
+		Time:           time.Now(),
 	}
 	err := DB.Create(&mockOrder).Error
 	assert.NoError(t, err)
@@ -303,7 +303,7 @@ func TestUpdate(t *testing.T) {
 
 	mockOrder.UserId = 2
 	mockOrder.RestaurantID = 2
-	mockOrder.DeliveryDriverID = 3
+	mockOrder.DeliveryDriver = 3
 	mockOrder.OrderStatus = "order placed"
 	mockOrder.TotalBill = 100
 	mockOrder.Time = time.Now()
@@ -318,7 +318,7 @@ func TestUpdate(t *testing.T) {
 	assert.Equal(t, mockOrder.OrderID, order.OrderID)
 	assert.Equal(t, mockOrder.UserId, order.UserId)
 	assert.Equal(t, mockOrder.RestaurantID, order.RestaurantID)
-	assert.Equal(t, mockOrder.DeliveryDriverID, order.DeliveryDriverID)
+	assert.Equal(t, mockOrder.DeliveryDriver, order.DeliveryDriver)
 	assert.Equal(t, mockOrder.OrderStatus, order.OrderStatus)
 	assert.Equal(t, mockOrder.TotalBill, order.TotalBill)
 	expectedTime := mockOrder.Time.Truncate(time.Second)
@@ -332,20 +332,20 @@ func TestPlaceOrder(t *testing.T) {
 	repo := setupRepository()
 	cleanupDB()
 	mockOrder := model.Order{
-		UserId:           1,
-		RestaurantID:     1,
-		DeliveryDriverID: 0,
-		OrderStatus:      "order placed",
-		TotalBill:        50.0,
-		Time:             time.Now(),
+		UserId:         1,
+		RestaurantID:   1,
+		DeliveryDriver: 0,
+		OrderStatus:    "order placed",
+		TotalBill:      50.0,
+		Time:           time.Now(),
 	}
 
 	mockCombineOrderItem := model.CombineOrderItem{
 		ID: model.ID{
-			OrderID:          mockOrder.OrderID,
-			RestaurantId:     mockOrder.RestaurantID,
-			UserId:           mockOrder.UserId,
-			DeliveryDriverID: mockOrder.DeliveryDriverID,
+			OrderID:        mockOrder.OrderID,
+			RestaurantId:   mockOrder.RestaurantID,
+			UserId:         mockOrder.UserId,
+			DeliveryDriver: mockOrder.DeliveryDriver,
 		},
 		Items: []model.OrderItemPayload{
 			{ItemId: 1, Quantity: 2},
@@ -365,7 +365,7 @@ func TestPlaceOrder(t *testing.T) {
 	assert.Equal(t, mockOrder.RestaurantID, order.RestaurantID)
 	assert.Equal(t, mockOrder.OrderStatus, order.OrderStatus)
 	assert.Equal(t, mockOrder.TotalBill, order.TotalBill)
-	assert.Equal(t, mockOrder.DeliveryDriverID, order.DeliveryDriverID)
+	assert.Equal(t, mockOrder.DeliveryDriver, order.DeliveryDriver)
 	expectedTime := mockOrder.Time.Truncate(time.Second)
 	actualTime := order.Time.Truncate(time.Second)
 	assert.Equal(t, expectedTime, actualTime)
@@ -388,20 +388,20 @@ func TestFetchAllOrders(t *testing.T) {
 	cleanupDB()
 	mockOrders := []model.Order{
 		{
-			UserId:           1,
-			RestaurantID:     1,
-			DeliveryDriverID: 0,
-			OrderStatus:      "completed",
-			TotalBill:        50.0,
-			Time:             time.Now(),
+			UserId:         1,
+			RestaurantID:   1,
+			DeliveryDriver: 0,
+			OrderStatus:    "completed",
+			TotalBill:      50.0,
+			Time:           time.Now(),
 		},
 		{
-			UserId:           2,
-			RestaurantID:     1,
-			DeliveryDriverID: 1,
-			OrderStatus:      "pending",
-			TotalBill:        75.0,
-			Time:             time.Now(),
+			UserId:         2,
+			RestaurantID:   1,
+			DeliveryDriver: 1,
+			OrderStatus:    "pending",
+			TotalBill:      75.0,
+			Time:           time.Now(),
 		},
 	}
 	for _, mockOrder := range mockOrders {

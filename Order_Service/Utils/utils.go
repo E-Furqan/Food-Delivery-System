@@ -1,11 +1,15 @@
 package utils
 
 import (
+	"bytes"
 	"fmt"
+	"log"
+	"net/http"
 	"os"
 	"strings"
 
 	model "github.com/E-Furqan/Food-Delivery-System/Models"
+	database "github.com/E-Furqan/Food-Delivery-System/Repositories"
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,6 +23,15 @@ func GenerateResponse(httpStatusCode int, c *gin.Context, title1 string, message
 	}
 
 	c.JSON(httpStatusCode, response)
+}
+
+func CreateHTTPClient() *http.Client {
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+	return client
 }
 
 func GetEnv(key string, defaultVal string) string {
@@ -92,7 +105,7 @@ func CalculateBill(CombineOrderItem model.CombineOrderItem, items []model.Items)
 	return totalBill, nil
 }
 
-func VerifyRole(c *gin.Context) (string, error) {
+func FetchRoleFromClaims(c *gin.Context) (string, error) {
 	activeRole, exists := c.Get("activeRole")
 	if !exists {
 		return "", fmt.Errorf("userId role does not exist")
@@ -103,6 +116,20 @@ func VerifyRole(c *gin.Context) (string, error) {
 		return "", fmt.Errorf("activeRole is not a string")
 	}
 	return activeRoleStr, nil
+}
+
+func FetchIDFromClaim(c *gin.Context) (uint, error) {
+	Id, exists := c.Get("ID")
+	if !exists {
+		return 0, fmt.Errorf("id id does not exist")
+	}
+
+	ID, ok := Id.(uint)
+	if !ok {
+		return 0, fmt.Errorf("claimId is not a valid uint")
+	}
+
+	return ID, nil
 }
 
 func IsCustomerOrAdminRole(activeRoleStr string) bool {
@@ -127,4 +154,71 @@ func IsDriverOrAdminRole(activeRoleStr string) bool {
 	} else {
 		return false
 	}
+}
+
+func IsAdminRole(activeRoleStr string) bool {
+	if strings.ToLower(activeRoleStr) == "admin" {
+		return true
+	} else {
+		return false
+	}
+}
+
+func FetchOrdersByTimeFrameHelper(Repo database.RepositoryInterface, request model.TimeFrame) (interface{}, error) {
+	switch request.TimeFrame {
+	case "day":
+		result, err := Repo.FetchOrdersByDay(request)
+		if err != nil {
+			return nil, err
+		}
+		return result, nil
+	case "week":
+		result, err := Repo.FetchOrdersByWeek(request)
+		if err != nil {
+			return nil, err
+		}
+		return result, nil
+	case "month":
+		result, err := Repo.FetchOrdersByMonth(request)
+		if err != nil {
+			return nil, err
+		}
+		return result, nil
+	case "year":
+		result, err := Repo.FetchOrdersByYear(request)
+		if err != nil {
+			return nil, err
+		}
+		return result, nil
+	default:
+
+		return nil, fmt.Errorf("invalid time frame. Choose from 'day', 'week', 'month', or 'year'")
+	}
+}
+
+func CreateAuthorizedRequest(url string, jsonData []byte, MethodType string, token string) (*http.Request, error) {
+
+	req, err := http.NewRequest(MethodType, url, bytes.NewBuffer(jsonData))
+	log.Print("create order url:", url, MethodType)
+	if err != nil {
+		return nil, fmt.Errorf("error creating request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+	return req, nil
+}
+
+func GetAuthToken(c *gin.Context) (string, error) {
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		return "", fmt.Errorf("authorization token not provided")
+	}
+
+	tokenParts := strings.Split(authHeader, " ")
+	if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
+		return "", fmt.Errorf("invalid authorization header format")
+	}
+
+	token := tokenParts[1]
+	return token, nil
 }
