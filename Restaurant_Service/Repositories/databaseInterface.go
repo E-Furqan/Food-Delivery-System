@@ -24,4 +24,6 @@ type RepositoryInterface interface {
 	RemoveItem(restaurantId uint, itemId uint) error
 	GetAllRestaurants(restaurants *[]model.Restaurant) error
 	UpdateRestaurantStatus(restaurant *model.Restaurant, input model.Input) error
+	FetchOpenRestaurant() (model.OpenRestaurantCount, error)
+	FetchItemPrices(items model.CombinedItemsRestaurantID) ([]model.Item, error)
 }

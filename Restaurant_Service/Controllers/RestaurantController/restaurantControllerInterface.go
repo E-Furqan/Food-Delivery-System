@@ -26,7 +26,9 @@ type RestaurantControllerInterface interface {
 	Login(c *gin.Context)
 	GetAllRestaurants(c *gin.Context)
 	UpdateRestaurantStatus(c *gin.Context)
+	FetchItemPrices(c *gin.Context)
 	ViewMenu(c *gin.Context)
 	UpdateOrderStatus(c *gin.Context)
 	ViewRestaurantOrders(c *gin.Context)
+	FetchOpenRestaurant(c *gin.Context)
 }

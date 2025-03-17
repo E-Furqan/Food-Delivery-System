@@ -16,9 +16,12 @@ func Restaurant_routes(RestaurantController RestaurantController.RestaurantContr
 	restaurantRoute.POST("/login", RestaurantController.Login)
 	restaurantRoute.POST("/refresh/token", middleware.RefreshToken)
 	restaurantRoute.GET("/view/menu", RestaurantController.ViewMenu)
+	restaurantRoute.GET("/fetch/item/prices", RestaurantController.FetchItemPrices)
 	restaurantRoute.GET("/get/restaurants", RestaurantController.GetAllRestaurants)
+
 	restaurantRoute.Use(middleware.AuthMiddleware())
 	{
+		restaurantRoute.GET("/get/open/restaurants", RestaurantController.FetchOpenRestaurant)
 		restaurantRoute.PATCH("/update/order/status", RestaurantController.UpdateOrderStatus)
 		restaurantRoute.POST("/add/items", ItemController.AddItemsInMenu)
 		restaurantRoute.DELETE("/delete/items", ItemController.DeleteItemsFromMenu)
